@@ -18,7 +18,7 @@ Work in progress. This section is updated as each part is built and measured.
 | --- | --- |
 | Project skeleton, SolidHat test setup, test wallet tooling | done |
 | Escrow contracts and SolidHat tests (lifecycle, rejections, payout checks) | done |
-| Regtest run with real consensus limits | not started |
+| Regtest run with real consensus limits (stock BCHN node, five branches) | done, see `docs/MEASURED.md` |
 | Mainnet lifecycle run | not started |
 | Web app (English and Bahasa Melayu) | not started |
 
@@ -46,6 +46,17 @@ npm run gate            # lint, types, SolidHat tests, unit tests, build
 
 Project values (network, Electrum server, token category, fees, waiting time, spending budget) live in `config/jamin.json`.
 User interface text lives in `lang/en.json` and `lang/ms.json`. Decisions are recorded in `docs/decisions/`.
+
+### Regtest run
+
+Runs the five lifecycle branches (BCH release, token release, buyer cancel, seller cancel after the waiting time,
+dispute and resolution) on a throwaway Bitcoin Cash Node in Docker with stock limits. Needs Docker and `jq`.
+
+```sh
+bash scripts/regtest-node.sh start
+npm run lifecycle -- --network regtest
+bash scripts/regtest-node.sh stop
+```
 
 ### Test wallet
 
