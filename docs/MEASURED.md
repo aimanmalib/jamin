@@ -196,3 +196,17 @@ the recorded regtest txids, a feature reference opening its source line, and no 
 
 The same engine runs in Node in `tests/sim-engine.test.ts` (five branches and named rejections).
 
+
+## Public deployment
+
+`deploy/deploy.sh` on 2026-11-17 19:25 UTC, image `9c68833-202611171925` (nginx 1.30.6 on Alpine, read-only, as the
+`nginx` user): public `https://jamin.sasateguh.com/healthz` returned 200 on the first try, then the Playwright suite
+against the public URL passed 24 of 24 tests (the 22 web app tests plus the header check of `e2e/live.spec.ts`, each on
+Chromium desktop and WebKit iPhone 13) in 3.8 minutes. The same 24 tests passed earlier against the image's nginx config
+on a local port, which shows the Content-Security-Policy does not block the in-browser simulator (WebAssembly) or
+any other page. Response header of `/` measured with `curl -D -`:
+
+```
+content-security-policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' wss://bch.imaginary.cash:50004; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+cache-control: no-cache, no-transform
+```
