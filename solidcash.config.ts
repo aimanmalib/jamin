@@ -8,7 +8,8 @@ export default defineConfig({
     artifacts: 'artifacts',
     tests: 'test',
   },
-  compiler: { evmCompat: true },
+  // Native SolidCash ABI and selectors: smaller scripts than evmCompat (docs/decisions/0002).
+  compiler: { evmCompat: false },
   typegen: {
     targets: [{ target: 'ethers6', layout: 'typechain', outDir: 'typechain-types' }],
   },
