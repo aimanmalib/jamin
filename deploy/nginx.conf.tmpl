@@ -1,0 +1,59 @@
+# Web server for the built app (dist/). Runs as an unprivileged user on a read-only file system: every writable
+# path is under /tmp, which the container mounts as tmpfs. scripts/nginx-conf.ts fills the @...@ values from
+# config/jamin.json when the image is built.
+worker_processes 1;
+pid /tmp/nginx.pid;
+error_log /dev/stderr warn;
+
+events { worker_connections 256; }
+
+http {
+  include /etc/nginx/mime.types;
+  default_type application/octet-stream;
+  access_log off;
+  server_tokens off;
+  sendfile on;
+  client_body_temp_path /tmp/client_body;
+  proxy_temp_path /tmp/proxy;
+  fastcgi_temp_path /tmp/fastcgi;
+  uwsgi_temp_path /tmp/uwsgi;
+  scgi_temp_path /tmp/scgi;
+  client_max_body_size 1k;
+
+  # HTML carries `no-transform`, so the CDN in front does not compress it: compress here instead.
+  gzip on;
+  gzip_min_length 256;
+  gzip_types text/css application/javascript application/json image/svg+xml application/wasm text/plain;
+
+  server {
+    listen 8080;
+    root /srv/jamin;
+    index index.html;
+
+    # add_header inside a location drops the inherited ones, so each location sets its full list.
+    set $csp "@CSP@";
+
+    location = /healthz {
+      default_type text/plain;
+      add_header Cache-Control "no-store" always;
+      return 200 "ok\n";
+    }
+
+    # Vite puts a content hash in every asset name: a changed file always gets a new URL.
+    location /assets/ {
+      add_header Cache-Control "public, max-age=@ASSET_MAX_AGE@, immutable" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      try_files $uri =404;
+    }
+
+    location / {
+      add_header Content-Security-Policy $csp always;
+      add_header Cache-Control "no-cache, no-transform" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      add_header Referrer-Policy "no-referrer" always;
+      add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+      add_header Strict-Transport-Security "max-age=31536000" always;
+      try_files $uri /index.html;
+    }
+  }
+}

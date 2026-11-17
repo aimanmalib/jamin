@@ -1,0 +1,28 @@
+# Route for the public host name to the jamin container, on its own routers so a certificate problem here cannot
+# affect any other name. deploy/deploy.sh fills the @...@ values from deploy/hos.env and copies the result into the
+# proxy's dynamic configuration folder. The container compresses its own responses.
+http:
+  routers:
+    jamin:
+      entryPoints: [https]
+      rule: Host(`@DOMAIN@`)
+      service: jamin-svc
+      tls:
+        certResolver: @CERT_RESOLVER@
+      priority: 100
+    jamin-http:
+      entryPoints: [http]
+      rule: Host(`@DOMAIN@`)
+      service: jamin-svc
+      middlewares: [jamin-https]
+      priority: 100
+  middlewares:
+    jamin-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+  services:
+    jamin-svc:
+      loadBalancer:
+        servers:
+          - url: http://jamin:8080

@@ -1,0 +1,18 @@
+# jamin: one static web container behind the host's reverse proxy. No published port, no volume, no keys.
+# Run through deploy/deploy.sh, which sources deploy/hos.env (host values, not tracked).
+name: jamin
+services:
+  jamin:
+    image: jamin:${JAMIN_TAG:-latest}
+    container_name: jamin
+    restart: unless-stopped
+    read_only: true
+    tmpfs: [/tmp]
+    cpus: 0.25
+    mem_limit: 64m
+    networks: [proxy]
+
+networks:
+  proxy:
+    name: ${JAMIN_NETWORK:?set JAMIN_NETWORK in deploy/hos.env}
+    external: true

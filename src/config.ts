@@ -50,6 +50,8 @@ export interface JaminConfig {
     /** Satoshis that open an escrow's single satoshi container at deployment; they stay when it closes. */
     containerReserveSats: number;
   };
+  /** Public web server: security policy directives and the cache lifetime of hashed assets. */
+  deploy: { contentSecurityPolicy: Record<string, string[]>; assetMaxAgeSeconds: number };
 }
 
 /** Absolute path of the repository root (this file lives in src/). */
