@@ -210,3 +210,16 @@ any other page. Response header of `/` measured with `curl -D -`:
 content-security-policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' wss://bch.imaginary.cash:50004; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
 cache-control: no-cache, no-transform
 ```
+
+## Mainnet run before funding
+
+2026-11-17 22:58 UTC, `npm run lifecycle -- --network mainnet` against `bch.imaginary.cash`: the seller address
+`bitcoincash:qqjjt27z8wc44lkdd9x8jm3e2az8a5xleu92s5nusl` held 0 sat; the run printed "not funded: needs at least
+1000000 sat; nothing broadcast" and exited 3. No ledger was written.
+
+The wallet context behind the spending gate on the mock network (production profile), `tests/mainnet-context.test.ts`:
+branch A records all four contract transactions in the ledger; with a budget of 100 sat the gate refuses the first
+deployment before it is sent and the seller's balance is unchanged; branch D stops at its waiting time, a second run
+before the time still waits, and a run after it cancels the escrow attached from its address; a 500-unit token coin is
+split for branch B. With the gate on `sendRawTransaction` only, the branch A test failed: the ledger was empty because
+the SDK broadcast through `sendPreparedTransaction` (F9).

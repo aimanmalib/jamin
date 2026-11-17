@@ -101,6 +101,20 @@ Upstream status was checked against open issues and pull requests on 2026-11-17.
   `test/JaminEscrow.state.test.ts`); the sabotage table in `docs/MEASURED.md` shows which check each test needs.
 - Upstream: no matching open issue or pull request found on 2026-11-17. A debugging aid, not a correctness issue.
 
+## F9: a provider is asked to broadcast through two methods, and `disconnect` throws on a provider that connects itself
+
+- Repro: wrap a `MockNetworkProvider` so that `sendRawTransaction` records each transaction, then deploy and call a
+  stateful contract through the wrapper. Nothing is recorded: `TransactionBuilder.send` and the stateful submit path
+  call `sendPreparedTransaction` when the provider has it and fall back to `sendRawTransaction` only when it does not.
+  Separately, `new ElectrumNetworkProvider(Network.MAINNET, { hostname })` reads fine, but its `disconnect()` throws
+  "Manual connection management is disabled", so a script that disconnects in `finally` fails after it has finished.
+- Effect in this project: the spending gate (`src/budget/gate.ts`) gates both methods and refuses any other provider
+  method whose name starts with send, broadcast, publish or submit; the mainnet script opens the Electrum provider
+  with `manualConnectionManagement: true`. The test "runs branch A and records every broadcast in the ledger" in
+  `tests/mainnet-context.test.ts` failed with a gate on `sendRawTransaction` alone and passes with both.
+- Upstream: a documentation point (which methods a provider wrapper must cover), not a correctness issue; not
+  prepared as a fix.
+
 ## Fixes prepared for upstream
 
 Two findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
@@ -113,4 +127,4 @@ the change. They are prepared as branches and have not been submitted yet.
 
 The others are not prepared as fixes: F1, F2 and F5 change how calls are derived or compiled, which is larger than a
 small patch and needs the maintainers' view first; F3 may be intended; F6 is fixed by open pull request #6; F7 is how
-BCH time locks fail.
+BCH time locks fail; F9 is a documentation point.

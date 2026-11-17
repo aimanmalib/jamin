@@ -23,7 +23,7 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   standardness rules on: 20 transactions mined, largest unlocking script 6,759 of 10,000 bytes
   (`docs/MEASURED.md`, "Regtest").
 - **Mainnet:** not run yet (see "Known limits").
-- **SolidCash features used:** 20, each with the test that exercises it, in `docs/FEATURES.md`.
+- **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Port:** every OpenPeerEscrow function, event and modifier and what became of it, in `docs/PORTING.md`.
 
 ## Who it is for
@@ -95,16 +95,18 @@ The full table, with file and line and the test for each row, is `docs/FEATURES.
 
 ## Upstream contributions
 
-Building Jamin turned up eight issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
+Building Jamin turned up nine issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
 `docs/SOLIDCASH-FINDINGS.md`. Two have a small fix with a regression test that fails on upstream `master` and passes
 with the change: a constructor `require` that fails is reported as missing state writes (F8), and
 `MockNetworkProvider` does not type-check under `exactOptionalPropertyTypes` (F4). Both are prepared as branches
-and have not been submitted as pull requests yet. The reasons the other six are not are in the same file.
+and have not been submitted as pull requests yet. The reasons the other seven are not are in the same file.
 
 ## Known limits
 
-- **Mainnet:** the lifecycle has not been run on mainnet yet. The same script ran all five branches on a stock
-  BCHN regtest node with mainnet relay rules (`docs/MEASURED.md`).
+- **Mainnet:** the lifecycle has not been run on mainnet yet: the test wallet is not funded. The mainnet run
+  (`npm run lifecycle -- --network mainnet`, `docs/decisions/0007-mainnet-run.md`) is tested on the mock network
+  behind the spending gate. The same branches ran on a stock BCHN regtest node with mainnet relay rules
+  (`docs/MEASURED.md`).
 - **Reserve left behind:** a single satoshi container cannot be emptied by a call, so each escrow keeps the reserve
   it was opened with (1,000 sats). A token escrow also keeps one base unit (0.01 PUSD) and its token container's
   satoshis.
