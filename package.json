@@ -18,7 +18,8 @@
     "test": "vitest run",
     "build": "solidhat compile",
     "gate": "bash scripts/gerbang-ujian.sh",
-    "wallet": "tsx scripts/wallet.ts"
+    "wallet": "tsx scripts/wallet.ts",
+    "lifecycle": "tsx scripts/lifecycle.ts"
   },
   "dependencies": {
     "@bitauth/libauth": "3.0.0",
