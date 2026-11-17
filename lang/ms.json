@@ -2,28 +2,212 @@
   "app": {
     "name": "Jamin",
     "tagline": "Escrow dagangan rakan ke rakan untuk BCH dan PUSD, ditulis dalam SolidCash.",
-    "languageToggle": "English"
+    "languageToggle": "English",
+    "skip": "Langkau ke kandungan",
+    "tabsLabel": "Bahagian"
+  },
+  "tabs": {
+    "home": "Utama",
+    "try": "Cuba",
+    "lifecycle": "Kitaran hayat",
+    "contract": "Kontrak"
   },
   "banner": {
-    "event": "Dibina untuk BCH BLAZE 2026",
-    "bounty": "Ganjaran: Best SolidCash Application",
+    "label": "Acara",
+    "bounty": "Ganjaran: {bounty}",
     "repo": "Kod sumber",
+    "deck": "Slaid",
     "prizeAddress": "Alamat hadiah",
-    "deck": "Slaid"
+    "copy": "Salin",
+    "copied": "Disalin"
   },
   "roles": {
     "seller": "Penjual",
     "buyer": "Pembeli",
     "arbitrator": "Penimbang tara",
-    "feeRecipient": "Penerima yuran"
+    "feeRecipient": "Penerima yuran",
+    "outsider": "Orang lain"
   },
   "states": {
-    "created": "Dana dikunci",
+    "created": "Dicipta",
+    "funded": "Syiling dikunci",
     "paid": "Ditanda sudah bayar",
-    "released": "Dilepaskan kepada pembeli",
-    "buyerCancelled": "Dibatalkan oleh pembeli",
-    "sellerCancelled": "Dibatalkan oleh penjual",
     "disputed": "Dalam pertikaian",
+    "released": "Dilepas kepada pembeli",
+    "cancelledByBuyer": "Dibatalkan pembeli",
+    "cancelledBySeller": "Dibatalkan penjual",
     "resolved": "Pertikaian diputuskan"
+  },
+  "home": {
+    "title": "Jual BCH atau PUSD kepada orang asing untuk wang tunai. Kontrak memegang syiling sehingga anda dibayar.",
+    "lede": "Penjual mengunci syiling dalam kontrak SolidCash. Pembeli membayar melalui pindahan bank atau tunai dan menanda sudah bayar. Penjual melepaskan syiling, atau penimbang tara memutuskan. Tiada sesiapa memegang syiling di tengah-tengah.",
+    "actionTitle": "Jalankan dagangan dalam pelayar anda",
+    "actionNote": "Kontrak sebenar yang sudah dikompil, atas rangkaian simulasi. Main peranan penjual, pembeli dan penimbang tara. Tidak perlu dompet.",
+    "actionButton": "Mula dagangan",
+    "artTitle": "Penjual dan pembeli di kiri dan kanan sebuah peti berkunci yang memegang syiling",
+    "artContract": "Kontrak SolidCash",
+    "judgeTitle": "Menilai? Tiga hentian.",
+    "judge1": "Mula dagangan dan bertindak sebagai setiap peranan. Langkah salah dipulangkan dengan nama ralat kontrak itu sendiri.",
+    "judge2": "Lihat transaksi yang direkod pada rangkaian sebenar.",
+    "judge3": "Baca kontrak dan setiap ciri SolidCash yang dipakainya, bersama ujian yang menjalankannya.",
+    "howTitle": "Bagaimana dagangan berjalan",
+    "how1Title": "1. Penjual mengunci syiling",
+    "how1": "Penjual mencipta escrow dan mendeposit amaun serta yuran dagangan. Kini hanya kontrak boleh memindahkannya.",
+    "how2Title": "2. Pembeli membayar dan menanda sudah bayar",
+    "how2": "Pembeli membayar di luar rantaian dan menandatangani \"ditanda sudah bayar\". Selepas itu penjual tidak boleh membatalkan.",
+    "how3Title": "3. Lepas, atau keputusan",
+    "how3": "Penjual melepaskan syiling kepada pembeli. Jika tidak bersetuju, mana-mana pihak membuka pertikaian dengan yuran, dan penimbang tara memilih pemenang.",
+    "limitsTitle": "Had",
+    "limit1": "Binaan hackathon, belum diaudit. Apa-apa yang anda buat dalam simulator tidak disiarkan.",
+    "limit2": "Semasa pertikaian dibuka, hanya penimbang tara boleh menyelesaikan dagangan.",
+    "limit3": "Escrow yang ditutup menyimpan {reserve} sat (dan satu unit token untuk dagangan token): kontrak memerlukannya untuk wujud."
+  },
+  "diagram": {
+    "title": "Keadaan escrow. Semasa: {state}",
+    "markAsPaid": "pembeli tanda bayar",
+    "openDispute": "pertikaian",
+    "sellerCancel": "selepas tempoh menunggu",
+    "release": "penjual melepas",
+    "resolve": "penimbang tara",
+    "buyerCancel": "pembeli membatal"
+  },
+  "try": {
+    "title": "Cuba satu dagangan",
+    "lede": "Ini menjalankan kontrak Jamin yang sudah dikompil atas rangkaian olok-olok SolidCash dengan had saiz Bitcoin Cash. Kunci dicipta dalam halaman ini dan dibuang.",
+    "assetLegend": "Apa yang dijual",
+    "asset": {
+      "bch": "BCH",
+      "token": "Token ujian (seperti PUSD)"
+    },
+    "start": "Mula dagangan",
+    "restart": "Mula semula",
+    "working": "Membina dan menyemak transaksi...",
+    "failed": "Simulator berhenti: {message}",
+    "statusLabel": "Status:",
+    "actorLegend": "Anda ialah",
+    "actionsTitle": "Bertindak sebagai {role}",
+    "logTitle": "Transaksi",
+    "empty": "Mula dagangan untuk melihat transaksinya di sini."
+  },
+  "actions": {
+    "markAsPaid": {
+      "label": "Tanda sudah bayar",
+      "who": "pembeli, selepas membayar"
+    },
+    "release": {
+      "label": "Lepas",
+      "who": "penjual"
+    },
+    "buyerCancel": {
+      "label": "Batal sebagai pembeli",
+      "who": "pembeli, bila-bila sebelum dilepas"
+    },
+    "sellerCancel": {
+      "label": "Batal sebagai penjual",
+      "who": "penjual, selepas tempoh menunggu, jika belum dibayar"
+    },
+    "openDispute": {
+      "label": "Buka pertikaian",
+      "who": "pembeli atau penjual, selepas ditanda bayar"
+    },
+    "resolveForBuyer": {
+      "label": "Putus untuk pembeli",
+      "who": "penimbang tara"
+    },
+    "resolveForSeller": {
+      "label": "Putus untuk penjual",
+      "who": "penimbang tara"
+    },
+    "wait": {
+      "label": "Biarkan tempoh menunggu berlalu",
+      "who": "menggerakkan jam simulasi"
+    }
+  },
+  "log": {
+    "accepted": "Diterima",
+    "rejected": "Ditolak",
+    "tx": "{bytes} bait, txid",
+    "waited": "Jam simulasi bergerak melepasi tempoh menunggu penjual.",
+    "step": {
+      "createEscrow": "cipta escrow",
+      "fund": "deposit BCH",
+      "deposit": "deposit token",
+      "wait": "tempoh menunggu berlalu",
+      "markAsPaid": "tanda sudah bayar",
+      "release": "lepas",
+      "buyerCancel": "batal sebagai pembeli",
+      "sellerCancel": "batal sebagai penjual",
+      "openDispute": "buka pertikaian",
+      "resolveForBuyer": "putus untuk pembeli",
+      "resolveForSeller": "putus untuk penjual",
+      "resolveDispute": "putuskan pertikaian"
+    }
+  },
+  "errors": {
+    "InvalidAmount": "Amaun mesti melebihi sifar.",
+    "InvalidDisputeFee": "Yuran pertikaian tidak sah.",
+    "InvalidCancelTime": "Tempoh menunggu tidak sah.",
+    "NotSeller": "Hanya tandatangan penjual boleh melakukan ini.",
+    "NotBuyer": "Hanya tandatangan pembeli boleh melakukan ini.",
+    "NotArbitrator": "Hanya tandatangan penimbang tara boleh melakukan ini.",
+    "NotFunded": "Syiling belum dikunci.",
+    "AlreadyFunded": "Syiling sudah dikunci.",
+    "WrongDeposit": "Deposit bukan tepat amaun serta yuran.",
+    "NotOpen": "Dagangan tidak lagi terbuka untuk ini.",
+    "AlreadyMarkedPaid": "Pembeli sudah menanda bayar, jadi penjual tidak boleh membatalkan.",
+    "TooEarly": "Tempoh menunggu penjual belum berlalu.",
+    "NotPaid": "Pertikaian memerlukan dagangan ditanda sudah bayar dahulu.",
+    "WrongDisputeFee": "Yuran pertikaian yang dibayar bukan amaun yang dipersetujui.",
+    "AlreadyPaidDispute": "Pihak ini sudah membayar yuran pertikaiannya.",
+    "NoDispute": "Tiada pertikaian terbuka untuk diputuskan.",
+    "WrongToken": "Itu bukan token yang dipegang escrow ini.",
+    "Rejected": "Transaksi ditolak."
+  },
+  "units": {
+    "sats": "{n} sat"
+  },
+  "terms": {
+    "amount": "Amaun",
+    "fee": "Yuran dagangan ({bps} mata asas)",
+    "disputeFee": "Yuran pertikaian, setiap pihak",
+    "wait": "Penjual boleh membatal",
+    "waitLeft": "dalam {minutes} min, jika belum ditanda bayar",
+    "waitOver": "sekarang, jika belum ditanda bayar"
+  },
+  "lifecycle": {
+    "title": "Kitaran hayat pada rangkaian sebenar",
+    "lede": "Setiap escrow yang Jamin jalankan di luar simulator, bersama transaksinya.",
+    "diagramTitle": "Keadaan dan siapa menggerakkannya",
+    "mainnetTitle": "Mainnet",
+    "mainnetEmpty": "Belum dijalankan di mainnet. Dompet ujian projek belum diisi dana. Larian di bawah memakai Bitcoin Cash Node stok dengan peraturan mainnet.",
+    "regtestTitle": "Regtest dengan had konsensus sebenar",
+    "regtestNote": "{node}, binaan stok, peraturan standard dihidupkan, {date}. {count} transaksi, semuanya diterima dan dilombong. Transaksi regtest hanya wujud pada rantaian pakai buang itu, jadi tiada pautan penjelajah.",
+    "branchTitle": "{branch}: {name}",
+    "branch": {
+      "A": "lepas, BCH",
+      "B": "lepas, token",
+      "C": "pembeli membatal",
+      "D": "penjual membatal selepas tempoh menunggu",
+      "E": "pertikaian, penimbang tara memutuskan"
+    },
+    "colStep": "Langkah",
+    "colTx": "Txid",
+    "colBytes": "Bait tx",
+    "colUnlock": "Skrip buka terbesar / had",
+    "reading": "membaca syiling...",
+    "readFailed": "tidak dapat mencapai pelayan Electrum",
+    "coins": "{count} syiling, {sats} sat sekarang"
+  },
+  "contract": {
+    "title": "Kontrak",
+    "lede": "Dua kontrak SolidCash berkongsi satu asas: JaminEscrow memegang BCH, JaminTokenEscrow memegang CashToken seperti PUSD. Diport daripada OpenPeerEscrow (MIT).",
+    "featuresTitle": "Ciri SolidCash yang dipakai ({count})",
+    "testedBy": "Diuji oleh:",
+    "sourceTitle": "Sumber",
+    "filesLabel": "Fail kontrak"
+  },
+  "footer": {
+    "what": "Jamin bermaksud jaminan. Dibina untuk BCH BLAZE 2026.",
+    "license": "Sumber terbuka, MIT"
   }
 }

@@ -2,11 +2,18 @@
   "site": {
     "url": "https://jamin.sasateguh.com",
     "defaultLanguage": "en",
-    "languages": ["en", "ms"]
+    "languages": [
+      "en",
+      "ms"
+    ]
   },
   "networks": {
     "default": "mock",
-    "lifecycle": ["mock", "regtest", "mainnet"]
+    "lifecycle": [
+      "mock",
+      "regtest",
+      "mainnet"
+    ]
   },
   "electrum": {
     "mainnet": {
@@ -74,5 +81,26 @@
     "partySats": 50000000,
     "genesisCoinSats": 100000,
     "tokenAmount": 200
+  },
+  "simulator": {
+    "bchAmountSats": 20000,
+    "tokenAmount": 200,
+    "tokenSymbol": "TEST",
+    "tokenDecimals": 2
+  },
+  "web": {
+    "tabs": [
+      "home",
+      "try",
+      "lifecycle",
+      "contract"
+    ],
+    "contracts": [
+      "JaminEscrow.scash",
+      "JaminTokenEscrow.scash",
+      "EscrowBase.scash",
+      "FeeMath.scash"
+    ],
+    "languageStorageKey": "jamin.lang"
   }
 }

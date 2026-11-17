@@ -2,28 +2,212 @@
   "app": {
     "name": "Jamin",
     "tagline": "Peer-to-peer trade escrow for BCH and PUSD, written in SolidCash.",
-    "languageToggle": "Bahasa Melayu"
+    "languageToggle": "Bahasa Melayu",
+    "skip": "Skip to content",
+    "tabsLabel": "Sections"
+  },
+  "tabs": {
+    "home": "Home",
+    "try": "Try it",
+    "lifecycle": "Lifecycle",
+    "contract": "Contract"
   },
   "banner": {
-    "event": "Built for BCH BLAZE 2026",
-    "bounty": "Bounty: Best SolidCash Application",
+    "label": "Event",
+    "bounty": "Bounty: {bounty}",
     "repo": "Source code",
+    "deck": "Slides",
     "prizeAddress": "Prize address",
-    "deck": "Slides"
+    "copy": "Copy",
+    "copied": "Copied"
   },
   "roles": {
     "seller": "Seller",
     "buyer": "Buyer",
     "arbitrator": "Arbitrator",
-    "feeRecipient": "Fee recipient"
+    "feeRecipient": "Fee recipient",
+    "outsider": "Someone else"
   },
   "states": {
-    "created": "Funds locked",
+    "created": "Created",
+    "funded": "Coins locked",
     "paid": "Marked as paid",
-    "released": "Released to buyer",
-    "buyerCancelled": "Cancelled by buyer",
-    "sellerCancelled": "Cancelled by seller",
     "disputed": "In dispute",
+    "released": "Released to buyer",
+    "cancelledByBuyer": "Cancelled by buyer",
+    "cancelledBySeller": "Cancelled by seller",
     "resolved": "Dispute resolved"
+  },
+  "home": {
+    "title": "Sell BCH or PUSD to a stranger for cash. A contract holds the coins until you are paid.",
+    "lede": "The seller locks the coins in a SolidCash contract. The buyer pays by bank transfer or in cash and marks it paid. The seller releases the coins, or an arbitrator decides. Nobody holds the coins in between.",
+    "actionTitle": "Run a trade in your browser",
+    "actionNote": "The real compiled contract on a simulated network. Play seller, buyer and arbitrator. No wallet needed.",
+    "actionButton": "Start a trade",
+    "artTitle": "A seller and a buyer either side of a locked box holding the coins",
+    "artContract": "SolidCash contract",
+    "judgeTitle": "Judging? Three stops.",
+    "judge1": "Start a trade and act as each role. Wrong moves come back with the contract's own error name.",
+    "judge2": "See the transactions recorded on a real network.",
+    "judge3": "Read the contract and each SolidCash feature it uses, with the test that runs it.",
+    "howTitle": "How a trade goes",
+    "how1Title": "1. The seller locks the coins",
+    "how1": "The seller creates the escrow and deposits the amount plus the trade fee. Only the contract can move them now.",
+    "how2Title": "2. The buyer pays and marks it paid",
+    "how2": "The buyer pays outside the chain and signs \"marked as paid\". From then on the seller cannot cancel.",
+    "how3Title": "3. Release, or a decision",
+    "how3": "The seller releases the coins to the buyer. If they disagree, either side opens a dispute with a fee, and the arbitrator picks the winner.",
+    "limitsTitle": "Limits",
+    "limit1": "Hackathon build, not audited. Nothing you do in the simulator is broadcast.",
+    "limit2": "While a dispute is open, only the arbitrator can settle the trade.",
+    "limit3": "A closed escrow keeps {reserve} sats (and one token unit for a token trade): the contract needs them to exist."
+  },
+  "diagram": {
+    "title": "Escrow states. Current: {state}",
+    "markAsPaid": "buyer marks paid",
+    "openDispute": "dispute",
+    "sellerCancel": "after waiting time",
+    "release": "seller releases",
+    "resolve": "arbitrator",
+    "buyerCancel": "buyer cancels"
+  },
+  "try": {
+    "title": "Try a trade",
+    "lede": "This runs the compiled Jamin contract on the SolidCash mock network with Bitcoin Cash size limits. Keys are made up in this page and thrown away.",
+    "assetLegend": "What is being sold",
+    "asset": {
+      "bch": "BCH",
+      "token": "Test token (like PUSD)"
+    },
+    "start": "Start a trade",
+    "restart": "Start again",
+    "working": "Building and checking the transaction...",
+    "failed": "The simulator stopped: {message}",
+    "statusLabel": "Status:",
+    "actorLegend": "You are",
+    "actionsTitle": "Act as {role}",
+    "logTitle": "Transactions",
+    "empty": "Start a trade to see its transactions here."
+  },
+  "actions": {
+    "markAsPaid": {
+      "label": "Mark as paid",
+      "who": "buyer, after paying"
+    },
+    "release": {
+      "label": "Release",
+      "who": "seller"
+    },
+    "buyerCancel": {
+      "label": "Cancel as buyer",
+      "who": "buyer, any time before release"
+    },
+    "sellerCancel": {
+      "label": "Cancel as seller",
+      "who": "seller, after the waiting time, if unpaid"
+    },
+    "openDispute": {
+      "label": "Open a dispute",
+      "who": "buyer or seller, after marked paid"
+    },
+    "resolveForBuyer": {
+      "label": "Decide for buyer",
+      "who": "arbitrator"
+    },
+    "resolveForSeller": {
+      "label": "Decide for seller",
+      "who": "arbitrator"
+    },
+    "wait": {
+      "label": "Let the waiting time pass",
+      "who": "moves the simulated clock"
+    }
+  },
+  "log": {
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "tx": "{bytes} bytes, txid",
+    "waited": "The simulated clock moved past the seller's waiting time.",
+    "step": {
+      "createEscrow": "create escrow",
+      "fund": "deposit BCH",
+      "deposit": "deposit tokens",
+      "wait": "waiting time passes",
+      "markAsPaid": "mark as paid",
+      "release": "release",
+      "buyerCancel": "cancel as buyer",
+      "sellerCancel": "cancel as seller",
+      "openDispute": "open dispute",
+      "resolveForBuyer": "decide for buyer",
+      "resolveForSeller": "decide for seller",
+      "resolveDispute": "resolve dispute"
+    }
+  },
+  "errors": {
+    "InvalidAmount": "The amount must be above zero.",
+    "InvalidDisputeFee": "The dispute fee is not valid.",
+    "InvalidCancelTime": "The waiting time is not valid.",
+    "NotSeller": "Only the seller's signature can do this.",
+    "NotBuyer": "Only the buyer's signature can do this.",
+    "NotArbitrator": "Only the arbitrator's signature can do this.",
+    "NotFunded": "The coins are not locked yet.",
+    "AlreadyFunded": "The coins are already locked.",
+    "WrongDeposit": "The deposit is not exactly amount plus fee.",
+    "NotOpen": "The trade is no longer open for this.",
+    "AlreadyMarkedPaid": "The buyer has already marked it paid, so the seller cannot cancel.",
+    "TooEarly": "The seller's waiting time has not passed yet.",
+    "NotPaid": "A dispute needs the trade to be marked as paid first.",
+    "WrongDisputeFee": "The dispute fee paid is not the agreed amount.",
+    "AlreadyPaidDispute": "This side has already paid its dispute fee.",
+    "NoDispute": "There is no open dispute to decide.",
+    "WrongToken": "That is not the token this escrow holds.",
+    "Rejected": "The transaction was rejected."
+  },
+  "units": {
+    "sats": "{n} sats"
+  },
+  "terms": {
+    "amount": "Amount",
+    "fee": "Trade fee ({bps} basis points)",
+    "disputeFee": "Dispute fee, each side",
+    "wait": "Seller can cancel",
+    "waitLeft": "in {minutes} min, if not marked paid",
+    "waitOver": "now, if not marked paid"
+  },
+  "lifecycle": {
+    "title": "Lifecycle on real networks",
+    "lede": "Every escrow Jamin has run outside the simulator, with its transactions.",
+    "diagramTitle": "States and who moves them",
+    "mainnetTitle": "Mainnet",
+    "mainnetEmpty": "Not yet run on mainnet. The project's test wallet has not been funded yet. The run below used a stock Bitcoin Cash Node with mainnet rules.",
+    "regtestTitle": "Regtest with real consensus limits",
+    "regtestNote": "{node}, stock build, standardness rules on, {date}. {count} transactions, all accepted and mined. Regtest transactions exist only on that throwaway chain, so they have no explorer link.",
+    "branchTitle": "{branch}: {name}",
+    "branch": {
+      "A": "release, BCH",
+      "B": "release, token",
+      "C": "buyer cancels",
+      "D": "seller cancels after the waiting time",
+      "E": "dispute, arbitrator decides"
+    },
+    "colStep": "Step",
+    "colTx": "Txid",
+    "colBytes": "Tx bytes",
+    "colUnlock": "Largest unlocking script / limit",
+    "reading": "reading coins...",
+    "readFailed": "could not reach the Electrum server",
+    "coins": "{count} coins, {sats} sats now"
+  },
+  "contract": {
+    "title": "The contract",
+    "lede": "Two SolidCash contracts share one base: JaminEscrow holds BCH, JaminTokenEscrow holds a CashToken such as PUSD. Ported from OpenPeerEscrow (MIT).",
+    "featuresTitle": "SolidCash features used ({count})",
+    "testedBy": "Tested by:",
+    "sourceTitle": "Source",
+    "filesLabel": "Contract files"
+  },
+  "footer": {
+    "what": "Jamin means guarantee in Malay. Built for BCH BLAZE 2026.",
+    "license": "Open source, MIT"
   }
 }

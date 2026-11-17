@@ -3,8 +3,12 @@
     "target": "ES2023",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "lib": ["ES2023"],
-    "types": ["node"],
+    "lib": [
+      "ES2023"
+    ],
+    "types": [
+      "node"
+    ],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
@@ -17,6 +21,22 @@
     "verbatimModuleSyntax": true,
     "noEmit": true
   },
-  "include": ["scripts/**/*.ts", "src/**/*.ts", "test/**/*.ts", "tests/**/*.ts", "solidcash.config.ts", "vitest.config.ts", "vitest.solidhat.config.ts"],
-  "exclude": ["node_modules", "artifacts", "typechain-types", "dist"]
+  "include": [
+    "scripts/**/*.ts",
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "tests/**/*.ts",
+    "solidcash.config.ts",
+    "vitest.config.ts",
+    "vitest.solidhat.config.ts",
+    "e2e/**/*.ts",
+    "playwright.config.ts",
+    "vite.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "artifacts",
+    "typechain-types",
+    "dist"
+  ]
 }
