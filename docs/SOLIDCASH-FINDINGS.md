@@ -86,3 +86,17 @@ Upstream status was checked against open issues and pull requests on 2026-11-17.
 - Workaround in this project: the tests match either `TooEarly` or the required locktime equal to the escrow's own
   `sellerCanCancelAfter` (`tooEarly` in `test/helpers/escrow.ts`).
 - Upstream: not reported; it is a debugging aid, not a correctness issue.
+
+## F8: a failing `require` in a constructor is reported as missing state writes
+
+- Repro: deploy `JaminEscrow` with `initArgs` `[0, 30, 5000, <time>]`, so that `require(amount > 0, InvalidAmount())`
+  in `EscrowBase.setUp` fails. `StatefulContract.deploy` throws "Failed to derive initial state commitments from
+  constructor. Ensure the constructor writes all state variables. VM error at instruction 47/266: Program failed an
+  OP_VERIFY operation." The custom error is not named, and the hint points at state writes, which are complete.
+  The same happens for `InvalidDisputeFee` and `InvalidCancelTime`.
+- Cause: `packages/solidcash/src/stateful/sc-derive-deploy-commitments.ts` builds this message from the last failing
+  VM step only. Calls after deployment map the failing step to its `require` site ("failing require in
+  JaminEscrow:90 (require failed: AlreadyMarkedPaid(...))"); the constructor probe does not.
+- Workaround in this project: the tests match the VM failure of the constructor probe (`CONSTRUCTOR_CHECK` in
+  `test/JaminEscrow.state.test.ts`); the sabotage table in `docs/MEASURED.md` shows which check each test needs.
+- Upstream: no matching open issue or pull request found on 2026-11-17. A debugging aid, not a correctness issue.
