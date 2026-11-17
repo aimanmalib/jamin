@@ -1,0 +1,19 @@
+// The slice of config/jamin.json the web app reads. Values change there, not in components.
+import raw from '../../config/jamin.json' with { type: 'json' };
+
+export interface WebConfig {
+  site: { url: string; defaultLanguage: 'en' | 'ms' };
+  explorer: { mainnetTx: string; mainnetAddress: string };
+  electrum: { mainnet: { hostname: string; port: number; scheme: 'wss' | 'ws'; timeoutMs: number } };
+  escrow: { feeBps: number; disputeFeeSats: number; sellerWaitingTimeSeconds: number; containerReserveSats: number };
+  simulator: { bchAmountSats: number; tokenAmount: number; tokenSymbol: string; tokenDecimals: number };
+  banner: { event: string; bounty: string; repoUrl: string; prizeAddress: string; deckUrl: string };
+  web: { tabs: string[]; contracts: string[]; languageStorageKey: string };
+}
+
+export const config = raw as WebConfig;
+
+/** `template` with `{txid}` / `{address}` replaced. */
+export function explorerLink(template: string, value: string): string {
+  return template.replace(/\{(txid|address)\}/, value);
+}
