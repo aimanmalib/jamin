@@ -23,7 +23,7 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   standardness rules on: 20 transactions mined, largest unlocking script 6,759 of 10,000 bytes
   (`docs/MEASURED.md`, "Regtest").
 - **Mainnet:** not run yet (see "Known limits").
-- **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
+- **SolidCash features used:** 20, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Port:** every OpenPeerEscrow function, event and modifier and what became of it, in `docs/PORTING.md`.
 
 ## Who it is for
