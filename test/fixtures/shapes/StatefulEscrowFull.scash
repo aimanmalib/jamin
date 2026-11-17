@@ -1,0 +1,92 @@
+pragma solidcash ^0.51.0;
+
+// Shape B with every target entry point, compiled for size only (the spike runs the minimal B).
+contract StatefulEscrowFull(pubkey seller, pubkey buyer, pubkey arbitrator, bytes20 feeRecipient) {
+    enum Status { None, Funded, Paid, Disputed, Closed }
+
+    Status public status;
+    int public amount;
+    int public fee;
+    int public disputeFee;
+    int public sellerCanCancelAfter;
+    bool public buyerPaidDispute;
+    bool public sellerPaidDispute;
+
+    event Released(int amount);
+    event CancelledByBuyer(int amount);
+    event CancelledBySeller(int amount);
+    event MarkedAsPaid();
+    event DisputeOpened(bool byBuyer);
+    event DisputeResolved(bool buyerWins);
+
+    modifier onlySeller(sig s) { require(checkSig(s, seller), "not seller"); _; }
+    modifier onlyBuyer(sig s) { require(checkSig(s, buyer), "not buyer"); _; }
+
+    constructor(int escrowAmount, int escrowFee, int escrowDisputeFee, int cancelAfter) {
+        require(escrowAmount > 0, "invalid amount");
+        this.amount = escrowAmount;
+        this.fee = escrowFee;
+        this.disputeFee = escrowDisputeFee;
+        this.sellerCanCancelAfter = cancelAfter;
+        this.status = Status.Funded;
+    }
+
+    function markAsPaid(sig s) public onlyBuyer(s) {
+        require(this.status == Status.Funded, "not funded");
+        this.status = Status.Paid;
+        emit MarkedAsPaid();
+    }
+
+    function release(sig s) public onlySeller(s) {
+        require(this.status == Status.Funded || this.status == Status.Paid, "not open");
+        this.status = Status.Closed;
+        this.transfer(new LockingBytecodeP2PKH(feeRecipient), this.fee);
+        this.transfer(new LockingBytecodeP2PKH(hash160(buyer)), this.amount);
+        emit Released(this.amount);
+    }
+
+    function buyerCancel(sig s) public onlyBuyer(s) {
+        require(this.status == Status.Funded || this.status == Status.Paid, "not open");
+        this.status = Status.Closed;
+        this.transfer(new LockingBytecodeP2PKH(hash160(seller)), this.amount + this.fee);
+        emit CancelledByBuyer(this.amount);
+    }
+
+    function sellerCancel(sig s) public onlySeller(s) {
+        require(this.status == Status.Funded, "already paid");
+        require(tx.time >= this.sellerCanCancelAfter, "too early");
+        this.status = Status.Closed;
+        this.transfer(new LockingBytecodeP2PKH(hash160(seller)), this.amount + this.fee);
+        emit CancelledBySeller(this.amount);
+    }
+
+    function openDispute(sig s, bool byBuyer) public payable {
+        require(this.status == Status.Paid || this.status == Status.Disputed, "not paid");
+        require(msg.value == this.disputeFee, "wrong dispute fee");
+        if (byBuyer) {
+            require(checkSig(s, buyer), "not buyer");
+            require(!this.buyerPaidDispute, "already paid");
+            this.buyerPaidDispute = true;
+        } else {
+            require(checkSig(s, seller), "not seller");
+            require(!this.sellerPaidDispute, "already paid");
+            this.sellerPaidDispute = true;
+        }
+        this.status = Status.Disputed;
+        emit DisputeOpened(byBuyer);
+    }
+
+    function resolveDispute(sig s, bool buyerWins) public {
+        require(checkSig(s, arbitrator), "not arbitrator");
+        require(this.status == Status.Disputed, "no dispute");
+        require(this.buyerPaidDispute && this.sellerPaidDispute, "fees unpaid");
+        this.status = Status.Closed;
+        this.transfer(new LockingBytecodeP2PKH(feeRecipient), this.fee + this.disputeFee);
+        if (buyerWins) {
+            this.transfer(new LockingBytecodeP2PKH(hash160(buyer)), this.amount + this.disputeFee);
+        } else {
+            this.transfer(new LockingBytecodeP2PKH(hash160(seller)), this.amount + this.disputeFee);
+        }
+        emit DisputeResolved(buyerWins);
+    }
+}

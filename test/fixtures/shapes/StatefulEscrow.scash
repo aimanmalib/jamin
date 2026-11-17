@@ -1,0 +1,44 @@
+pragma solidcash ^0.51.0;
+
+// Shape B: native stateful contract. One contract instance (CashToken category) per escrow.
+contract StatefulEscrow(pubkey seller, pubkey buyer, bytes20 feeRecipient) {
+    enum Status { None, Funded, Paid, Closed }
+
+    Status public status;
+    int public amount;
+    int public fee;
+
+    event EscrowCreated(int amount, int fee);
+    event Released(int amount);
+    event CancelledByBuyer(int amount);
+
+    error WrongStatus(int status);
+
+    modifier onlySeller(sig s) { require(checkSig(s, seller), "not seller"); _; }
+    modifier onlyBuyer(sig s) { require(checkSig(s, buyer), "not buyer"); _; }
+
+    constructor(int escrowAmount, int escrowFee) payable {
+        require(escrowAmount > 0, "invalid amount");
+        // require(msg.value == escrowAmount + escrowFee, "wrong deposit");
+        this.amount = escrowAmount;
+        this.fee = escrowFee;
+        this.status = Status.Funded;
+        emit EscrowCreated(escrowAmount, escrowFee);
+    }
+
+    function release(sig s) public onlySeller(s) {
+        require(this.status == Status.Funded || this.status == Status.Paid, "not open");
+        this.status = Status.Closed;
+        // Smaller payment first: see docs/SOLIDCASH-FINDINGS.md (payment order and container drain).
+        this.transfer(new LockingBytecodeP2PKH(feeRecipient), this.fee);
+        this.transfer(new LockingBytecodeP2PKH(hash160(buyer)), this.amount);
+        emit Released(this.amount);
+    }
+
+    function buyerCancel(sig s) public onlyBuyer(s) {
+        require(this.status == Status.Funded || this.status == Status.Paid, "not open");
+        this.status = Status.Closed;
+        this.transfer(new LockingBytecodeP2PKH(hash160(seller)), this.amount + this.fee);
+        emit CancelledByBuyer(this.amount);
+    }
+}

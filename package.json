@@ -22,7 +22,9 @@
   },
   "dependencies": {
     "@bitauth/libauth": "3.0.0",
-    "@electrum-cash/network": "4.4.8"
+    "@electrum-cash/network": "4.4.8",
+    "@solidcash/solidc": "0.51.1",
+    "@solidcash/solidcash": "0.51.1"
   },
   "devDependencies": {
     "@eslint/js": "9.39.5",

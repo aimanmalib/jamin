@@ -1,0 +1,29 @@
+pragma solidcash ^0.51.0;
+
+// Shape A: stateless covenant. One UTXO per escrow; terms are constructor parameters.
+// Funding the address creates the escrow. Every spend pins its outputs.
+contract CovenantEscrow(
+    pubkey seller,
+    pubkey buyer,
+    bytes20 feeRecipient,
+    int amount,
+    int fee,
+    int minerFee
+) {
+    function release(sig sellerSig) {
+        require(checkSig(sellerSig, seller));
+        require(tx.outputs.length == 2);
+        require(tx.outputs[0].lockingBytecode == new LockingBytecodeP2PKH(hash160(buyer)));
+        require(tx.outputs[0].value == amount);
+        require(tx.outputs[1].lockingBytecode == new LockingBytecodeP2PKH(feeRecipient));
+        require(tx.outputs[1].value == fee);
+        require(tx.inputs[this.activeInputIndex].value == amount + fee + minerFee);
+    }
+
+    function buyerCancel(sig buyerSig) {
+        require(checkSig(buyerSig, buyer));
+        require(tx.outputs.length == 1);
+        require(tx.outputs[0].lockingBytecode == new LockingBytecodeP2PKH(hash160(seller)));
+        require(tx.outputs[0].value == tx.inputs[this.activeInputIndex].value - minerFee);
+    }
+}
