@@ -31,6 +31,8 @@ export interface Step {
   branch: string;
   step: string;
   txid: string;
+  /** The escrow's address, on the step that created it. */
+  escrow?: string;
 }
 
 export interface Ctx {

@@ -26,6 +26,18 @@ export interface JaminConfig {
     fundingRequest: { bchSats: number; pusd: string };
     escrowAmountSats: number;
     minFundingSats: number;
+    /** Electrum servers a mainnet run may broadcast through; the run refuses any other. */
+    broadcastHosts: string[];
+    feeRateSatsPerByte: number;
+    /** Satoshis of the output-0 coin each deployment spends for its CashToken genesis; the change returns. */
+    genesisCoinSats: number;
+    /** Satoshis the buyer and the arbitrator keep for their own transaction fees and the dispute fee. */
+    partyFloatSats: number;
+    /** Token units traded in branch B (PUSD has two decimals: 100 = 1.00 PUSD). */
+    tokenAmount: number;
+    /** An escrow waiting for its seller-cancel time between runs. */
+    pendingFile: string;
+    outputDir: string;
   };
   regtest: {
     image: string;
@@ -41,6 +53,8 @@ export interface JaminConfig {
     /** Token units traded in branch B (a two-decimal token: 200 = 2.00). */
     tokenAmount: number;
   };
+  /** Every mainnet escrow and its transactions, in the shape the web app reads. */
+  mainnetExamples: string;
   tokens: { pusd: { symbol: string; category: string; decimals: number } };
   escrow: {
     feeBps: number;

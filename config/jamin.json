@@ -47,7 +47,16 @@
       "pusd": "2.00"
     },
     "escrowAmountSats": 20000,
-    "minFundingSats": 1000000
+    "minFundingSats": 1000000,
+    "broadcastHosts": [
+      "bch.imaginary.cash"
+    ],
+    "feeRateSatsPerByte": 1,
+    "genesisCoinSats": 50000,
+    "partyFloatSats": 40000,
+    "tokenAmount": 100,
+    "pendingFile": "state/mainnet/pending.json",
+    "outputDir": "state/mainnet"
   },
   "tokens": {
     "pusd": {

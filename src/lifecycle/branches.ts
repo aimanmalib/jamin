@@ -23,16 +23,22 @@ async function run(ctx: Ctx, branch: string, step: string, send: Promise<Transac
   ctx.record({ branch, step, txid });
 }
 
-async function deploy(ctx: Ctx, branch: string, name: string, extra: unknown[], amount: bigint): Promise<Escrow> {
+/** Contract parameters of an escrow between the context's parties. */
+function escrowParams(ctx: Ctx, extra: unknown[]): unknown[] {
   const { seller, buyer, arbitrator, fees } = ctx.parties;
+  return [seller.publicKey, buyer.publicKey, arbitrator.publicKey, fees.signer.pkh, ...extra];
+}
+
+async function deploy(ctx: Ctx, branch: string, name: string, extra: unknown[], amount: bigint): Promise<Escrow> {
+  const { seller } = ctx.parties;
   const now = BigInt(await ctx.provider.getMedianTimePast());
-  const params = [seller.publicKey, buyer.publicKey, arbitrator.publicKey, fees.signer.pkh, ...extra];
+  const params = escrowParams(ctx, extra);
   const { contract, tx } = await StatefulContract.deploy(loadArtifact(name), params as never, {
     provider: ctx.provider, fundingUtxo: await ctx.genesisCoin('seller'), funder: seller.signer.unlockP2PKH(),
     changeAddress: seller.address, initialBalance: ctx.terms.reserve,
     initArgs: [amount, ctx.terms.feeBps, ctx.terms.disputeFee, now + ctx.terms.waitSeconds] as never,
   });
-  ctx.record({ branch, step: 'createEscrow', txid: tx.txid });
+  ctx.record({ branch, step: 'createEscrow', txid: tx.txid, escrow: await contract.getAddress() });
   return contract;
 }
 
@@ -113,6 +119,20 @@ export async function branchC(ctx: Ctx): Promise<void> {
 export async function startD(ctx: Ctx): Promise<{ sc: Escrow; fee: bigint; after: bigint }> {
   const { sc, fee } = await openBch(ctx, 'D');
   return { sc, fee, after: (await stateOf(sc)).terms.sellerCanCancelAfter };
+}
+
+/** What a later run needs to finish a D escrow: where it is and its terms. */
+export interface PendingD { address: string; fee: bigint; after: bigint }
+
+export async function pendingD(d: { sc: Escrow; fee: bigint; after: bigint }): Promise<PendingD> {
+  return { address: await d.sc.getAddress(), fee: d.fee, after: d.after };
+}
+
+/** The D escrow a previous run opened, attached again from its address. */
+export async function resumeD(ctx: Ctx, p: PendingD): Promise<{ sc: Escrow; fee: bigint; after: bigint }> {
+  const sc = await StatefulContract.at(p.address, loadArtifact('JaminEscrow'), ctx.provider,
+    { constructorArgs: escrowParams(ctx, []) as never });
+  return { sc: sc as unknown as Escrow, fee: p.fee, after: p.after };
 }
 
 export async function finishD(ctx: Ctx, d: { sc: Escrow; fee: bigint; after: bigint }): Promise<void> {

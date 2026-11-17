@@ -1,12 +1,14 @@
 // Runs the five escrow lifecycle branches on a real network and writes every transaction with its sizes.
 //   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E]
-// Regtest needs a node: bash scripts/regtest-node.sh start (and stop afterwards).
+//   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E]   (test wallet, spending gate; see below)
+// Regtest needs a node: bash scripts/regtest-node.sh start (and stop afterwards). Mainnet: scripts/lifecycle-mainnet.ts.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { loadConfig, repoRoot } from '../src/config.js';
 import { branchA, branchB, branchC, branchE, finishD, startD } from '../src/lifecycle/branches.js';
 import type { Ctx, Terms } from '../src/lifecycle/context.js';
 import { measure } from '../src/lifecycle/inspect.js';
 import { regtestContext } from '../src/lifecycle/regtest.js';
+import { mainnetRun } from './lifecycle-mainnet.js';
 
 function arg(name: string, fallback: string): string {
   const i = process.argv.indexOf(`--${name}`);
@@ -15,8 +17,9 @@ function arg(name: string, fallback: string): string {
 
 const network = arg('network', '');
 const wanted = new Set(arg('branches', 'A,B,C,D,E').split(','));
+if (network === 'mainnet') process.exit(await mainnetRun([...wanted]));
 if (network !== 'regtest') {
-  console.error('usage: tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E]');
+  console.error('usage: tsx scripts/lifecycle.ts --network regtest|mainnet [--branches A,B,C,D,E]');
   process.exit(2);
 }
 
