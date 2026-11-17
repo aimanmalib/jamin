@@ -17,7 +17,7 @@ Work in progress. This section is updated as each part is built and measured.
 | Part | State |
 | --- | --- |
 | Project skeleton, SolidHat test setup, test wallet tooling | done |
-| Escrow contract and SolidHat tests | not started |
+| Escrow contracts and SolidHat tests (lifecycle, rejections, payout checks) | done |
 | Regtest run with real consensus limits | not started |
 | Mainnet lifecycle run | not started |
 | Web app (English and Bahasa Melayu) | not started |

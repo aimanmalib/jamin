@@ -102,3 +102,27 @@ deleted after each run.
 
 In each run every other test passed. In the `onlyArbitrator` run the failure was "promise resolved ... instead of
 rejecting": the outsider's call went through.
+
+## Sabotage checks of the payout and state tests
+
+Measured 2026-11-17 with the same method as above. Payout runs used `test/JaminEscrow.covenant.test.ts` or
+`test/JaminTokenEscrow.covenant.test.ts` with `test/lifecycle.test.ts` and the lifecycle file of that contract;
+state runs used `test/JaminEscrow.state.test.ts` (13 tests). The payout checks are compiled from `this.transfer`, so
+"sabotage" here means paying a different party or dropping a payment.
+
+| Change | Where | Tests that failed |
+|---|---|---|
+| release pays the amount to the seller instead of the buyer | `JaminEscrow.release` | 3 of 24: lifecycle "A: BCH release ...", covenant "accepts a release whose payments are named by hand ...", BCH "marks as paid, then releases ..." |
+| release drops the fee payment | `JaminEscrow.release` | 2 of 13: lifecycle "A: BCH release ...", covenant "accepts a release whose payments are named by hand ..." |
+| token release pays the seller instead of the buyer | `JaminTokenEscrow.release` | 3 of 17: lifecycle "B: token release ...", token covenant "accepts a token release ...", token "releases tokens to the buyer ..." |
+| `require(status == Disputed, NoDispute())` removed | `JaminEscrow.resolveDispute` | 1 of 13: "refuses a dispute resolution when no dispute is open (NoDispute)" |
+| `require(status != Created, NotFunded())` removed | `EscrowBase.recordPaid` | 1 of 13: "refuses mark as paid before the deposit (NotFunded)" |
+| `require(amount > 0, InvalidAmount())` removed | `EscrowBase.setUp` | 1 of 13: "refuses to create an escrow with a zero amount (InvalidAmount)" |
+
+When the three state runs were started in parallel on the shared host, each also failed two or three slow tests by
+timeout (126 s to 364 s against the 120 s limit). Run one after another, each failed only the test listed.
+
+## Test count
+
+`npx solidhat test` on 2026-11-17: 8 files, 71 tests (BCH 11 lifecycle, 11 rejections, 13 state rules, 8 payout
+checks; CashToken 6 lifecycle, 11 rejections, 6 payout checks; 5 end-to-end branches).
