@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Jamin",
+    "tagline": "Escrow dagangan rakan ke rakan untuk BCH dan PUSD, ditulis dalam SolidCash.",
+    "languageToggle": "English"
+  },
+  "banner": {
+    "event": "Dibina untuk BCH BLAZE 2026",
+    "bounty": "Ganjaran: Best SolidCash Application",
+    "repo": "Kod sumber",
+    "prizeAddress": "Alamat hadiah",
+    "deck": "Slaid"
+  },
+  "roles": {
+    "seller": "Penjual",
+    "buyer": "Pembeli",
+    "arbitrator": "Penimbang tara",
+    "feeRecipient": "Penerima yuran"
+  },
+  "states": {
+    "created": "Dana dikunci",
+    "paid": "Ditanda sudah bayar",
+    "released": "Dilepaskan kepada pembeli",
+    "buyerCancelled": "Dibatalkan oleh pembeli",
+    "sellerCancelled": "Dibatalkan oleh penjual",
+    "disputed": "Dalam pertikaian",
+    "resolved": "Pertikaian diputuskan"
+  }
+}

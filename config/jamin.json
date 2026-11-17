@@ -1,0 +1,66 @@
+{
+  "site": {
+    "url": "https://jamin.sasateguh.com",
+    "defaultLanguage": "en",
+    "languages": ["en", "ms"]
+  },
+  "networks": {
+    "default": "mock",
+    "lifecycle": ["mock", "regtest", "mainnet"]
+  },
+  "electrum": {
+    "mainnet": {
+      "hostname": "bch.imaginary.cash",
+      "port": 50004,
+      "scheme": "wss",
+      "timeoutMs": 15000
+    }
+  },
+  "explorer": {
+    "mainnetTx": "https://blockchair.com/bitcoin-cash/transaction/{txid}",
+    "mainnetAddress": "https://blockchair.com/bitcoin-cash/address/{address}"
+  },
+  "wallet": {
+    "mnemonicEnv": "JAMIN_TEST_MNEMONIC",
+    "envFile": ".env",
+    "derivationBase": "m/44'/145'/0'/0",
+    "roles": {
+      "seller": 0,
+      "buyer": 1,
+      "arbitrator": 2,
+      "feeRecipient": 3
+    },
+    "receiveIndex": 0
+  },
+  "mainnet": {
+    "budgetSats": 2000000,
+    "ledgerFile": "state/belanja.json",
+    "fundingRequest": {
+      "bchSats": 2000000,
+      "pusd": "2.00"
+    },
+    "escrowAmountSats": 20000,
+    "minFundingSats": 1000000
+  },
+  "tokens": {
+    "pusd": {
+      "symbol": "PUSD",
+      "category": "2469acc5afa4b10cb5b5c04afb89c3a3ffd61c5da9c01e26d00951cae2a02544",
+      "decimals": 2
+    }
+  },
+  "escrow": {
+    "feeBps": 30,
+    "disputeFeeSats": 5000,
+    "sellerWaitingTimeSeconds": 3600,
+    "minSellerWaitingTimeSeconds": 900
+  },
+  "banner": {
+    "event": "BCH BLAZE 2026",
+    "bounty": "Best SolidCash Application",
+    "repoUrl": "https://github.com/aimanmalib/jamin",
+    "prizeAddress": "bitcoincash:zplrydnf2z4pj4z9rv7uhmwsuxyrm8hj7uken87e7q",
+    "deckUrl": ""
+  },
+  "mainnetExamples": "examples/mainnet.json"
+}

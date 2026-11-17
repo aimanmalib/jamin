@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "Jamin",
+    "tagline": "Peer-to-peer trade escrow for BCH and PUSD, written in SolidCash.",
+    "languageToggle": "Bahasa Melayu"
+  },
+  "banner": {
+    "event": "Built for BCH BLAZE 2026",
+    "bounty": "Bounty: Best SolidCash Application",
+    "repo": "Source code",
+    "prizeAddress": "Prize address",
+    "deck": "Slides"
+  },
+  "roles": {
+    "seller": "Seller",
+    "buyer": "Buyer",
+    "arbitrator": "Arbitrator",
+    "feeRecipient": "Fee recipient"
+  },
+  "states": {
+    "created": "Funds locked",
+    "paid": "Marked as paid",
+    "released": "Released to buyer",
+    "buyerCancelled": "Cancelled by buyer",
+    "sellerCancelled": "Cancelled by seller",
+    "disputed": "In dispute",
+    "resolved": "Dispute resolved"
+  }
+}
