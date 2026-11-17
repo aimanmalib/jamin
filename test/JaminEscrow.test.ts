@@ -3,15 +3,13 @@ import { describe, expect, it } from 'vitest';
 import {
   TERMS, Status, deploy, entry, lockOf, lockTimeNow, roleParams, satsAt, statusOf, world, type World,
 } from './helpers/escrow.js';
+import { BCH_FEE, openBch, waitOut } from './helpers/flows.js';
 
-const FEE = 600n; // 30 bps of 200,000 sats
+const FEE = BCH_FEE;
 const INIT = [TERMS.amount, TERMS.feeBps, TERMS.disputeFee];
 
-async function open(w: World): Promise<Awaited<ReturnType<typeof deploy>>> {
-  const { seller } = w.roles;
-  const d = await deploy(w, 'JaminEscrow', roleParams(w.roles), [...INIT, w.cancelAfter]);
-  await entry(d.sc.connect(seller), 'fund', w.sig(seller)).withValue(TERMS.amount + FEE).send();
-  return d;
+async function open(w: World): Promise<{ sc: Awaited<ReturnType<typeof openBch>> }> {
+  return { sc: await openBch(w) };
 }
 
 describe('JaminEscrow (BCH)', () => {
@@ -60,8 +58,7 @@ describe('JaminEscrow (BCH)', () => {
     const w = await world();
     const { seller } = w.roles;
     const { sc } = await open(w);
-    w.provider.increaseTime(TERMS.waitSeconds + 60n);
-    await w.provider.mine(1);
+    await waitOut(w);
     await entry(sc.connect(seller), 'sellerCancel', w.sig(seller)).setLocktime(await lockTimeNow(w))
       .transfer(lockOf(seller.address), TERMS.amount + FEE).send();
     expect(await statusOf(sc)).toBe(Status.CancelledBySeller);

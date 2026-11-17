@@ -1,50 +1,14 @@
 // CashToken escrow rejections and the seller-wins dispute: each rejection fails if the check it names is removed.
 import { describe, expect, it } from 'vitest';
-import type { Utxo } from '@solidcash/solidcash';
-import {
-  TERMS, Status, deploy, entry, lockOf, lockTimeNow, roleParams, satsAt, statusOf, tokensAt, tooEarly, world,
-  type World,
-} from './helpers/escrow.js';
+import { TERMS, Status, entry, lockOf, lockTimeNow, satsAt, statusOf, tokensAt, tooEarly } from './helpers/escrow.js';
+import { TOKEN, disputedToken, openToken, paidToken, tokenWorld, type TokenWorld, waitOut } from './helpers/flows.js';
 
-const AMOUNT = 200n; // 2.00 of a two-decimal token
-const FEE = 1n; // 30 bps of 200 units is 0.6, raised to the one-unit floor
-const RESERVE = 1n;
-
-interface TokenWorld extends World { category: string; sellerCoin: Utxo }
-type Escrow = Awaited<ReturnType<typeof deploy>>['sc'];
-
-async function tokenWorld(): Promise<TokenWorld> {
-  const w = await world();
-  const { categoryId, utxos } = await w.provider.addTokenUtxos([
-    { address: w.roles.seller.address, satoshis: 1_000n, token: { amount: AMOUNT + FEE + RESERVE } },
-  ]);
-  const sellerCoin = utxos[0];
-  if (!sellerCoin) throw new Error('token coin missing');
-  return { ...w, category: categoryId, sellerCoin };
-}
-
-async function openFunded(w: TokenWorld): Promise<Escrow> {
-  const { seller } = w.roles;
-  const d = await deploy(w, 'JaminTokenEscrow', [...roleParams(w.roles), w.category],
-    [AMOUNT, TERMS.feeBps, TERMS.disputeFee, w.cancelAfter]);
-  await entry(d.sc.connect(seller), 'deposit', w.sig(seller), w.category)
-    .addInput(w.sellerCoin, seller.unlockP2PKH()).tokenContainerDeposit(w.category, AMOUNT + FEE + RESERVE).send();
-  return d.sc;
-}
-
-async function paid(w: TokenWorld): Promise<Escrow> {
-  const { buyer } = w.roles;
-  const sc = await openFunded(w);
-  await entry(sc.connect(buyer), 'markAsPaid', w.sig(buyer), w.category).send();
-  return sc;
-}
-
-async function disputed(w: TokenWorld): Promise<Escrow> {
-  const { buyer } = w.roles;
-  const sc = await paid(w);
-  await entry(sc.connect(buyer), 'openDispute', w.sig(buyer), true).withValue(TERMS.disputeFee).send();
-  return sc;
-}
+const AMOUNT = TOKEN.amount;
+const FEE = TOKEN.fee;
+const openFunded = openToken;
+const paid = paidToken;
+const disputed = disputedToken;
+type Escrow = Awaited<ReturnType<typeof openToken>>;
 
 function sellerCancel(w: TokenWorld, sc: Escrow, lockTime: number): Promise<unknown> {
   const { seller } = w.roles;
@@ -63,8 +27,7 @@ describe('JaminTokenEscrow (CashToken) rejections', () => {
   it('rejects a seller cancel after mark as paid, even after the waiting time (AlreadyMarkedPaid)', async () => {
     const w = await tokenWorld();
     const sc = await paid(w);
-    w.provider.increaseTime(TERMS.waitSeconds + 60n);
-    await w.provider.mine(1);
+    await waitOut(w);
     await expect(sellerCancel(w, sc, await lockTimeNow(w))).rejects.toThrow(/AlreadyMarkedPaid/);
     expect(await statusOf(sc)).toBe(Status.Paid);
   });

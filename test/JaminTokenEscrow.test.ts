@@ -1,33 +1,13 @@
 // CashToken escrow lifecycle on the production-profile mock network, with a test token issued on the mock.
 import { describe, expect, it } from 'vitest';
-import type { Utxo } from '@solidcash/solidcash';
-import {
-  TERMS, Status, deploy, entry, lockOf, lockTimeNow, roleParams, statusOf, tokensAt, world, type World,
-} from './helpers/escrow.js';
+import { TERMS, Status, entry, lockOf, lockTimeNow, statusOf, tokensAt } from './helpers/escrow.js';
+import { TOKEN, openToken, tokenWorld, type TokenWorld, waitOut } from './helpers/flows.js';
 
-const AMOUNT = 200n; // 2.00 of a two-decimal token
-const FEE = 1n; // 30 bps of 200 units is 0.6, raised to the one-unit floor
-const RESERVE = 1n;
+const AMOUNT = TOKEN.amount;
+const FEE = TOKEN.fee;
 
-interface TokenWorld extends World { category: string; sellerCoin: Utxo }
-
-async function tokenWorld(): Promise<TokenWorld> {
-  const w = await world();
-  const { categoryId, utxos } = await w.provider.addTokenUtxos([
-    { address: w.roles.seller.address, satoshis: 1_000n, token: { amount: AMOUNT + FEE + RESERVE } },
-  ]);
-  const sellerCoin = utxos[0];
-  if (!sellerCoin) throw new Error('token coin missing');
-  return { ...w, category: categoryId, sellerCoin };
-}
-
-async function openFunded(w: TokenWorld): Promise<Awaited<ReturnType<typeof deploy>>> {
-  const { seller } = w.roles;
-  const d = await deploy(w, 'JaminTokenEscrow', [...roleParams(w.roles), w.category],
-    [AMOUNT, TERMS.feeBps, TERMS.disputeFee, w.cancelAfter]);
-  await entry(d.sc.connect(seller), 'deposit', w.sig(seller), w.category)
-    .addInput(w.sellerCoin, seller.unlockP2PKH()).tokenContainerDeposit(w.category, AMOUNT + FEE + RESERVE).send();
-  return d;
+async function openFunded(w: TokenWorld): Promise<{ sc: Awaited<ReturnType<typeof openToken>> }> {
+  return { sc: await openToken(w) };
 }
 
 describe('JaminTokenEscrow (CashToken)', () => {
@@ -63,8 +43,7 @@ describe('JaminTokenEscrow (CashToken)', () => {
     const w = await tokenWorld();
     const { seller } = w.roles;
     const { sc } = await openFunded(w);
-    w.provider.increaseTime(TERMS.waitSeconds + 60n);
-    await w.provider.mine(1);
+    await waitOut(w);
     await entry(sc.connect(seller), 'sellerCancel', w.sig(seller), w.category).setLocktime(await lockTimeNow(w))
       .tokenContainerTransfer(w.category, lockOf(seller.address), AMOUNT + FEE).send();
     expect(await statusOf(sc)).toBe(Status.CancelledBySeller);
