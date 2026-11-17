@@ -27,6 +27,20 @@ export interface JaminConfig {
     escrowAmountSats: number;
     minFundingSats: number;
   };
+  regtest: {
+    image: string;
+    container: string;
+    rpcPort: number;
+    cpus: number;
+    upgrade12ActivationTime: number;
+    outputDir: string;
+    /** Satoshis given to each party at the start of a regtest run. */
+    partySats: number;
+    /** Satoshis of the output-0 coin each deployment spends for its CashToken genesis. */
+    genesisCoinSats: number;
+    /** Token units traded in branch B (a two-decimal token: 200 = 2.00). */
+    tokenAmount: number;
+  };
   tokens: { pusd: { symbol: string; category: string; decimals: number } };
   escrow: {
     feeBps: number;

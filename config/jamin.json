@@ -63,5 +63,16 @@
     "prizeAddress": "bitcoincash:zplrydnf2z4pj4z9rv7uhmwsuxyrm8hj7uken87e7q",
     "deckUrl": ""
   },
-  "mainnetExamples": "examples/mainnet.json"
+  "mainnetExamples": "examples/mainnet.json",
+  "regtest": {
+    "image": "mainnet/bitcoin-cash-node:v29.0.0",
+    "container": "jamin-regtest-bchn",
+    "rpcPort": 18443,
+    "cpus": 1,
+    "upgrade12ActivationTime": 1690000000,
+    "outputDir": "state/regtest",
+    "partySats": 50000000,
+    "genesisCoinSats": 100000,
+    "tokenAmount": 200
+  }
 }
