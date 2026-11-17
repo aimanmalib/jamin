@@ -20,7 +20,7 @@ Work in progress. This section is updated as each part is built and measured.
 | Escrow contracts and SolidHat tests (lifecycle, rejections, payout checks) | done |
 | Regtest run with real consensus limits (stock BCHN node, five branches) | done, see `docs/MEASURED.md` |
 | Mainnet lifecycle run | not started |
-| Web app (English and Bahasa Melayu): in-browser simulator, recorded runs, contract view | built, not yet deployed; see `docs/MEASURED.md` |
+| Web app (English and Bahasa Melayu): in-browser simulator, recorded runs, contract view | deployed at https://jamin.sasateguh.com; see `docs/MEASURED.md` |
 
 Claims about mainnet runs, script sizes and test counts appear here only after they are recorded in `docs/MEASURED.md`.
 
@@ -69,6 +69,10 @@ transaction or the contract's named error), **Lifecycle** (the state machine and
 npm run build        # compile the contracts, then build the static site into dist/
 npm run e2e          # Playwright: Chromium desktop and WebKit iPhone 13 against vite preview
 ```
+
+The public site is one static container (nginx, read-only, no keys) built from a clean `git archive` of HEAD.
+`deploy/deploy.sh` builds and starts it, then checks `/healthz` and runs the Playwright suite against the public URL,
+rolling back to the previous image if that fails (`--rollback`, `--status`). See `docs/decisions/0006-deployment.md`.
 
 ### Test wallet
 
