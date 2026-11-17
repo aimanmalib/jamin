@@ -82,3 +82,23 @@ Notes from the same runs:
   coin per call. With the pragma all deposits go into one coin.
 - Seller cancel needs its payment named by hand (F6).
 - Mock network results are not a real-node result; the regtest section will hold the BCHN numbers.
+
+## Sabotage checks of the rejection tests
+
+Measured 2026-11-17 with SolidCash 0.51.1, Node 22, mock network with the production profile. Method: in a copy of
+the repository, remove one contract check, recompile and run `npx solidhat test test/JaminEscrow.reject.test.ts
+test/JaminTokenEscrow.reject.test.ts` (22 tests). The unchanged contracts pass all 22. Not committed: the copies were
+deleted after each run.
+
+| Check removed | Where | Tests that failed |
+|---|---|---|
+| `require(tx.time >= sellerCanCancelAfter, TooEarly())` | both `sellerCancel` | 2: BCH and token "... before the waiting time (TooEarly)" |
+| `require(status == Funded, AlreadyMarkedPaid())` | both `sellerCancel` | 2: BCH and token "... after mark as paid ... (AlreadyMarkedPaid)" |
+| `onlyArbitrator(s)` | both `resolveDispute` | 6: BCH and token "... signed by the buyer / seller / outsider (NotArbitrator)" |
+| `require(status == Paid or Disputed, NotPaid())` | `EscrowBase.recordDispute` | 2: BCH and token "... before the buyer marked it paid (NotPaid)" |
+| `require(msg.value == disputeFee, WrongDisputeFee())` | `EscrowBase.recordDispute` | 2: BCH and token "... wrong dispute fee (WrongDisputeFee)" |
+| both `require(!...PaidDispute, AlreadyPaidDispute())` | `EscrowBase.recordDispute` | 2: BCH and token "... same side (AlreadyPaidDispute)" |
+| `require(status == Funded or Paid, NotOpen())` | `EscrowBase.whenOpen` | 4: BCH and token "release / buyer cancel once disputed (NotOpen)" |
+
+In each run every other test passed. In the `onlyArbitrator` run the failure was "promise resolved ... instead of
+rejecting": the outsider's call went through.

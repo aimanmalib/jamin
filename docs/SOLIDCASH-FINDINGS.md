@@ -74,3 +74,15 @@ Upstream status was checked against open issues and pull requests on 2026-11-17.
 - Workaround in this project: the caller names the payment by hand, `.transfer(lock, amount)` for BCH and
   `.tokenContainerTransfer(category, lock, amount)` for tokens (`test/JaminEscrow.test.ts`,
   `test/JaminTokenEscrow.test.ts`, seller cancel cases).
+
+## F7: the custom error of a `require(tx.time >= ...)` is not reported
+
+- Repro: `JaminEscrow.sellerCancel` before `sellerCanCancelAfter`, sent with `.setLocktime(t)` for a `t` before the
+  waiting time ends. The call is rejected, but the message is the VM's "Program called an OP_CHECKLOCKTIMEVERIFY
+  operation that requires a locktime greater than the transaction's locktime ... required locktime: <n>", not
+  `TooEarly`. Other `require` checks with a custom error report the error name (for example `AlreadyMarkedPaid`).
+- Cause: a `tx.time` comparison compiles to `OP_CHECKLOCKTIMEVERIFY`, which fails the script before any error branch
+  runs. This is how BCH time locks work; only the reporting differs from the other checks.
+- Workaround in this project: the tests match either `TooEarly` or the required locktime equal to the escrow's own
+  `sellerCanCancelAfter` (`tooEarly` in `test/helpers/escrow.ts`).
+- Upstream: not reported; it is a debugging aid, not a correctness issue.

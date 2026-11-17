@@ -1,4 +1,4 @@
-// BCH escrow lifecycle on the production-profile mock network. Rejection cases are in the *.reject tests.
+// BCH escrow lifecycle on the production-profile mock network. Rejections are in JaminEscrow.reject.test.ts.
 import { describe, expect, it } from 'vitest';
 import {
   TERMS, Status, deploy, entry, lockOf, lockTimeNow, roleParams, satsAt, statusOf, world, type World,

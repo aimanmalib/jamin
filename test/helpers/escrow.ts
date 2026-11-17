@@ -106,3 +106,12 @@ export function lockOf(address: string): Uint8Array {
 export async function lockTimeNow(w: World): Promise<number> {
   return await w.provider.getMedianTimePast() - 1;
 }
+
+/**
+ * The rejection of a seller cancel before the waiting time. `require(tx.time >= ...)` compiles to
+ * OP_CHECKLOCKTIMEVERIFY, so the VM reports the escrow's sellerCanCancelAfter as the required locktime rather than
+ * the TooEarly error (docs/SOLIDCASH-FINDINGS.md, F7).
+ */
+export function tooEarly(w: World): RegExp {
+  return new RegExp(`TooEarly|required locktime: ${w.cancelAfter}\\b`);
+}
