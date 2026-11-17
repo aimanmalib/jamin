@@ -42,3 +42,43 @@ Other observations from the same runs:
 - A payable constructor that checks `msg.value` against the deposit could not be deployed with `initialBalance` (F3);
   the shape B fixture leaves that check out.
 - Mock network results are not a real-node result. The regtest section will hold the BCHN numbers.
+
+## Escrow contract sizes
+
+Measured 2026-11-17 with SolidCash 0.51.1, Node 22, mock network with the production profile. Command:
+`npx solidhat compile && npx tsx scripts/measure-escrow.ts`. Sources: `contracts/`. Escrow amount 200,000 sats, fee
+30 basis points (600 sats), dispute fee 5,000 sats; token escrow 200 base units, fee raised to the one-unit floor.
+
+| Artifact | Redeem script bytes | ABI entries |
+|---|---|---|
+| JaminEscrow | 5,053 | 8 |
+| JaminTokenEscrow | 6,457 | 8 |
+
+| Contract | Step | Tx bytes | Inputs | Largest unlocking script |
+|---|---|---|---|---|
+| JaminEscrow | deploy (reserve 1,000 sats) | 760 | 1 | 100 / 10,000 |
+| JaminEscrow | fund | 6,745 | 5 | 5,289 / 10,000 |
+| JaminEscrow | markAsPaid | 6,039 | 3 | 5,289 / 10,000 |
+| JaminEscrow | release | 7,098 | 7 | 5,289 / 10,000 |
+| JaminEscrow | buyerCancel | 6,920 | 6 | 5,289 / 10,000 |
+| JaminEscrow | sellerCancel | 6,920 | 6 | 5,289 / 10,000 |
+| JaminEscrow | openDispute | 7,108 | 6 | 5,290 / 10,000 |
+| JaminEscrow | resolveDispute | 7,458 | 8 | 5,290 / 10,000 |
+| JaminTokenEscrow | deploy | 754 | 1 | 100 / 10,000 |
+| JaminTokenEscrow | deposit | 8,291 | 6 | 6,759 / 10,000 |
+| JaminTokenEscrow | markAsPaid | 7,509 | 3 | 6,759 / 10,000 |
+| JaminTokenEscrow | openDispute | 8,542 | 6 | 6,727 / 10,000 |
+| JaminTokenEscrow | resolveDispute | 9,633 | 11 | 6,760 / 10,000 |
+
+Notes from the same runs:
+
+- No artifact and no unlocking script exceeds the 10,000 byte input limit; no feature was cut for size.
+- Every call carries the whole redeem script in one input, so a call is 6 to 10 KB. At 1 sat per byte that is
+  roughly 6,000 to 10,000 sats of miner fee per call, paid by the caller.
+- The first version read `this.balance` in `markAsPaid` to check the deposit; it always read 0 (F5). The deposit is
+  now checked by `msg.value` in `fund`.
+- Without `pragma satoshicontainer single`, each dispute fee opened its own container coin and `resolveDispute`
+  failed: "Total transfer amount (210600) exceeds satoshi container balance (200600)". The SDK spends one container
+  coin per call. With the pragma all deposits go into one coin.
+- Seller cancel needs its payment named by hand (F6).
+- Mock network results are not a real-node result; the regtest section will hold the BCHN numbers.
