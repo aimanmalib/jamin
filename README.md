@@ -20,7 +20,7 @@ Work in progress. This section is updated as each part is built and measured.
 | Escrow contracts and SolidHat tests (lifecycle, rejections, payout checks) | done |
 | Regtest run with real consensus limits (stock BCHN node, five branches) | done, see `docs/MEASURED.md` |
 | Mainnet lifecycle run | not started |
-| Web app (English and Bahasa Melayu) | not started |
+| Web app (English and Bahasa Melayu): in-browser simulator, recorded runs, contract view | built, not yet deployed; see `docs/MEASURED.md` |
 
 Claims about mainnet runs, script sizes and test counts appear here only after they are recorded in `docs/MEASURED.md`.
 
@@ -56,6 +56,18 @@ dispute and resolution) on a throwaway Bitcoin Cash Node in Docker with stock li
 bash scripts/regtest-node.sh start
 npm run lifecycle -- --network regtest
 bash scripts/regtest-node.sh stop
+```
+
+### Web app
+
+The app in `web/` (Vite, React) has four tabs: a home page, **Try it** (the compiled contracts running on the
+SolidCash mock network inside the browser, where you act as seller, buyer, arbitrator or someone else and see each
+transaction or the contract's named error), **Lifecycle** (the state machine and every recorded run from
+`examples/`), and **Contract** (the sources with the feature table of `docs/FEATURES.md`).
+
+```sh
+npm run build        # compile the contracts, then build the static site into dist/
+npm run e2e          # Playwright: Chromium desktop and WebKit iPhone 13 against vite preview
 ```
 
 ### Test wallet

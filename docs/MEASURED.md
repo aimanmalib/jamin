@@ -183,3 +183,16 @@ Notes from the same run:
 
 `npx solidhat test` on 2026-11-17: 8 files, 71 tests (BCH 11 lifecycle, 11 rejections, 13 state rules, 8 payout
 checks; CashToken 6 lifecycle, 11 rejections, 6 payout checks; 5 end-to-end branches).
+
+## Web app end-to-end tests
+
+`npm run build && npx playwright test` on 2026-11-17 18:05 UTC, Playwright 1.65.1, against `vite preview`: 22 tests
+passed (11 specs, each on Chromium desktop and WebKit with the iPhone 13 profile). The specs cover the five lifecycle
+branches played in the browser simulator on the compiled artifacts (A BCH release with a NotBuyer rejection first,
+B token release, C buyer cancel, D seller cancel rejected with TooEarly and accepted after the waiting time, E
+dispute with a NotArbitrator rejection then the arbitrator's decision), the first screen (one primary button in view,
+banner, no console errors), the language toggle, axe WCAG 2 A/AA with no serious or critical violation on any tab,
+the recorded regtest txids, a feature reference opening its source line, and no horizontal overflow at 320 px wide.
+
+The same engine runs in Node in `tests/sim-engine.test.ts` (five branches and named rejections).
+
