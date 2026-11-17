@@ -22,19 +22,19 @@ describe('env file', () => {
 
   it('writes a new value with mode 0600 and keeps other lines', () => {
     const file = join(dir, '.env');
-    writeFileSync(file, 'OTHER=x\nSECRET_PHRASE=\n');
-    writeEnvValueOnce(file, 'SECRET_PHRASE', 'value one');
-    expect(readEnvValue(file, 'SECRET_PHRASE')).toBe('value one');
+    writeFileSync(file, 'OTHER=x\nWALLET_VALUE=\n');
+    writeEnvValueOnce(file, 'WALLET_VALUE', 'value one');
+    expect(readEnvValue(file, 'WALLET_VALUE')).toBe('value one');
     expect(readEnvValue(file, 'OTHER')).toBe('x');
     expect(statSync(file).mode & 0o777).toBe(0o600);
-    expect(readFileSync(file, 'utf8').match(/SECRET_PHRASE=/g)).toHaveLength(1);
+    expect(readFileSync(file, 'utf8').match(/WALLET_VALUE=/g)).toHaveLength(1);
   });
 
   it('refuses to replace an existing value', () => {
     const file = join(dir, '.env');
-    writeEnvValueOnce(file, 'SECRET_PHRASE', 'first');
-    expect(() => writeEnvValueOnce(file, 'SECRET_PHRASE', 'second')).toThrowError(/refusing to replace/);
-    expect(readEnvValue(file, 'SECRET_PHRASE')).toBe('first');
+    writeEnvValueOnce(file, 'WALLET_VALUE', 'first');
+    expect(() => writeEnvValueOnce(file, 'WALLET_VALUE', 'second')).toThrowError(/refusing to replace/);
+    expect(readEnvValue(file, 'WALLET_VALUE')).toBe('first');
   });
 
   it('treats a missing file as unset', () => {
