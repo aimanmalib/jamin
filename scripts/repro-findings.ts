@@ -62,6 +62,23 @@ async function constructorValue(): Promise<void> {
   }
 }
 
+async function balanceRead(): Promise<void> {
+  const art = artifact('BalanceRead');
+  const layouts = art.abi.filter((f) => f.name === 'atLeast' || f.name === 'isEmpty').map((f) => {
+    const slots = (f as unknown as { blockLayout?: { slots: Array<{ kind: string }> } }).blockLayout?.slots ?? [];
+    return `${f.name}: [${slots.map((x) => x.kind).join(', ')}]`;
+  });
+  console.log(`F5 block layouts (no satoshiContainer slot): ${layouts.join('; ')}`);
+  const { sc, key } = await deploy(art, [], 50_000n);
+  for (const fn of ['atLeast', 'isEmpty']) {
+    try {
+      await entry(sc, fn, key).send();
+      console.log(`F5 container holds 50000 sats, ${fn}: sent`);
+    } catch (e) { console.log(`F5 container holds 50000 sats, ${fn}: ${firstLine(e)}`); }
+  }
+}
+
 await framedLockingBytecode();
 await transferOrder();
 await constructorValue();
+await balanceRead();

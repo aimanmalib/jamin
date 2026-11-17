@@ -35,8 +35,8 @@ Upstream status was checked against open issues and pull requests on 2026-11-17.
   unwritten state variables, not at the value.
 - It is unclear whether this is intended (the documentation describes `msg.value` for a child created with
   `new C{value: v}()`, not for a top-level deployment). At minimum the error message is misleading.
-- Workaround in this project: the escrow does not check the deposit in the constructor; the buyer checks the
-  container balance on chain before paying.
+- Workaround in this project: the escrow does not take the deposit in the constructor; the seller pays it in a
+  payable `fund` call that checks `msg.value` (see F5 for why `this.balance` is not used).
 - Upstream: no matching open issue or pull request.
 
 ## F4: `MockNetworkProvider` is not assignable to `NetworkProvider` under `exactOptionalPropertyTypes`
@@ -46,3 +46,31 @@ Upstream status was checked against open issues and pull requests on 2026-11-17.
   the mock and an optional `string` on the `NetworkProvider` interface.
 - Workaround in this project: `asProvider()` in `src/sdk/mock.ts`.
 - Upstream: no matching open issue or pull request. Typing only; runtime behaviour is unaffected.
+
+## F5: `this.balance` reads 0 in a function that pays nothing, so a balance check can pass on a funded contract
+
+- Repro: `test/fixtures/findings/BalanceRead.scash`, case F5 in `scripts/repro-findings.ts`. The contract is
+  deployed with 50,000 sats in its satoshi container. `atLeast` (`require(this.balance >= 1000)`) fails preflight;
+  `isEmpty` (`require(this.balance == 0)`) is sent. The compiled block layout of both functions has no
+  `satoshiContainer` slot, so the container input is not part of the call and `this.balance` sums nothing.
+- Why it matters: the documentation describes `this.balance` as the satoshi container's value in the transaction's
+  inputs, and a contract that reads it in a function without a payment gets 0 without a warning. A guard written as
+  "only when empty" or "only below a cap" passes on a funded contract.
+- `msg.value` in a payable function is not affected: `require(msg.value == 5000)` passes with `.withValue(5000n)` and
+  fails with `.withValue(0n)`.
+- Workaround in this project: the BCH escrow takes its deposit in a payable `fund` call that requires
+  `msg.value == amount + fee`, and nothing reads `this.balance`.
+- Upstream: no matching open issue or pull request (issues #2, #3 and pull requests #1, #4 to #7 checked on
+  2026-11-17).
+
+## F6: a call that checks `tx.time` and pays from a container is not derived once a locktime is set
+
+- Repro: `JaminEscrow.sellerCancel` (`require(tx.time >= ...)`, then `this.transfer(...)`). Without
+  `.setLocktime()` the SDK stops at `OP_CHECKLOCKTIMEVERIFY` with "incompatible locktime type". With
+  `.setLocktime(t)` it fails with `VM failed at ip 9 ... OP_VERIFY; input 0`. A minimal contract with only the
+  `tx.time` check (no payment) is sent with `.setLocktime(t)`; adding one `this.transfer` brings the failure back.
+- Upstream: this is the case open pull request #6 describes and fixes ("derive auto transfers again when the
+  re-derive adds the locktime"). Not reported again.
+- Workaround in this project: the caller names the payment by hand, `.transfer(lock, amount)` for BCH and
+  `.tokenContainerTransfer(category, lock, amount)` for tokens (`test/JaminEscrow.test.ts`,
+  `test/JaminTokenEscrow.test.ts`, seller cancel cases).

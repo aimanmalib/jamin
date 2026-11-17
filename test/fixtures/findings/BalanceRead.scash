@@ -1,0 +1,18 @@
+pragma solidcash ^0.51.0;
+
+// F5: a function that reads this.balance but pays nothing does not include the satoshi container.
+contract BalanceRead(pubkey owner) {
+    int public n;
+
+    function atLeast(sig s) public {
+        require(checkSig(s, owner));
+        require(this.balance >= 1000);
+        this.n = 1;
+    }
+
+    function isEmpty(sig s) public {
+        require(checkSig(s, owner));
+        require(this.balance == 0);
+        this.n = 2;
+    }
+}
