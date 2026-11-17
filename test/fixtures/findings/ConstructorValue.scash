@@ -1,0 +1,9 @@
+pragma solidcash ^0.51.0;
+contract ConstructorValue(pubkey owner) {
+    int public amount;
+    constructor(int a) payable {
+        require(msg.value == a, "wrong deposit");
+        this.amount = a;
+    }
+    function bump(sig s) public { require(checkSig(s, owner)); this.amount += 1; }
+}

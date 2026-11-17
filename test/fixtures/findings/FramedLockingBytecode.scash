@@ -1,0 +1,9 @@
+pragma solidcash ^0.51.0;
+contract FramedLockingBytecode(pubkey owner, bytes20 to) {
+    int public n;
+    function pay(sig s) public {
+        require(checkSig(s, owner));
+        this.n += 1;
+        this.transfer(new LockingBytecodeP2PKH(to), 1000);
+    }
+}

@@ -1,0 +1,10 @@
+pragma solidcash ^0.51.0;
+contract TransferOrder(pubkey owner, bytes20 a, bytes20 b) {
+    int public n;
+    function pay(sig s, int x, int y) public {
+        require(checkSig(s, owner));
+        this.n += 1;
+        this.transfer(new LockingBytecodeP2PKH(a), x);
+        this.transfer(new LockingBytecodeP2PKH(b), y);
+    }
+}
