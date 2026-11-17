@@ -100,3 +100,17 @@ Upstream status was checked against open issues and pull requests on 2026-11-17.
 - Workaround in this project: the tests match the VM failure of the constructor probe (`CONSTRUCTOR_CHECK` in
   `test/JaminEscrow.state.test.ts`); the sabotage table in `docs/MEASURED.md` shows which check each test needs.
 - Upstream: no matching open issue or pull request found on 2026-11-17. A debugging aid, not a correctness issue.
+
+## Fixes prepared for upstream
+
+Two findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
+the change. They are prepared as branches and have not been submitted yet.
+
+| Finding | Branch | Change | Test |
+| --- | --- | --- | --- |
+| F8 | `fix/constructor-require-site` | `sc-derive-deploy-commitments.ts` names the failing constructor `require` with `probeRequireStatement` | `packages/solidcash/test/e2e/ConstructorRequireSite.test.ts` |
+| F4 | `fix/mock-provider-exact-optional` | `NetworkProvider.oraclePoolCategory` declared `?: string \| undefined` | `packages/solidcash/test/unit/MockProviderExactOptionalTypes.test.ts` |
+
+The others are not prepared as fixes: F1, F2 and F5 change how calls are derived or compiled, which is larger than a
+small patch and needs the maintainers' view first; F3 may be intended; F6 is fixed by open pull request #6; F7 is how
+BCH time locks fail.
