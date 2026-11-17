@@ -33,6 +33,8 @@ export interface JaminConfig {
     disputeFeeSats: number;
     sellerWaitingTimeSeconds: number;
     minSellerWaitingTimeSeconds: number;
+    /** Satoshis that open an escrow's single satoshi container at deployment; they stay when it closes. */
+    containerReserveSats: number;
   };
 }
 

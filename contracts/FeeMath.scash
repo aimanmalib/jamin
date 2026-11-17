@@ -1,0 +1,16 @@
+pragma solidcash ^0.51.0;
+
+// Fee rules shared by both escrow contracts.
+library FeeMath {
+    int constant BPS_DENOMINATOR = 10000;
+
+    // The trade fee in basis points of the escrow amount, raised to `floor` when it is smaller.
+    // A BCH escrow passes the P2PKH dust limit as the floor so that the fee output is always relayable.
+    function tradeFee(int amount, int feeBps, int floor) internal returns (int) {
+        int fee = amount * feeBps / BPS_DENOMINATOR;
+        if (fee < floor) {
+            fee = floor;
+        }
+        return fee;
+    }
+}

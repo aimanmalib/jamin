@@ -1,7 +1,0 @@
-pragma solidcash ^0.51.0;
-
-contract Counter() {
-    function increment(int value) {
-        require(value >= 0);
-    }
-}

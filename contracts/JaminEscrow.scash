@@ -1,0 +1,87 @@
+pragma solidcash ^0.51.0;
+// One satoshi container coin: payable calls add to it, so a payout never has to gather several coins.
+// The deployment opens it with a small reserve, which stays when the escrow closes.
+pragma satoshicontainer single;
+
+import "./EscrowBase.scash";
+
+// One BCH escrow. The seller deploys it, then pays amount + fee into the satoshi container with `fund`.
+contract JaminEscrow(pubkey seller, pubkey buyer, pubkey arbitrator, bytes20 feeRecipient)
+    is EscrowBase(seller, buyer, arbitrator, feeRecipient) {
+
+    // P2PKH dust limit: the smallest relayable fee output.
+    int constant DUST_LIMIT = 546;
+
+    constructor(int amount, int feeBps, int disputeFee, int cancelAfter) {
+        setUp(amount, FeeMath.tradeFee(amount, feeBps, DUST_LIMIT), disputeFee, cancelAfter);
+    }
+
+    // The seller pays exactly amount + fee into the satoshi container, once.
+    function fund(sig s) public payable onlySeller(s) {
+        require(msg.value == this.terms.amount + this.terms.fee, WrongDeposit());
+        recordFunded(msg.value);
+    }
+
+    // The buyer confirms the fiat payment; after this the seller can no longer cancel.
+    function markAsPaid(sig s) public onlyBuyer(s) {
+        recordPaid();
+    }
+
+    // The seller confirms receipt of the fiat: amount to the buyer, fee to the fee recipient.
+    function release(sig s) public onlySeller(s) whenOpen() {
+        this.status = Status.Released;
+        this.transfer(new LockingBytecodeP2PKH(feeRecipient), this.terms.fee);
+        this.transfer(new LockingBytecodeP2PKH(hash160(buyer)), this.terms.amount);
+        emit Released(this.terms.amount, this.terms.fee);
+    }
+
+    // The buyer can cancel at any time before release: everything returns to the seller.
+    function buyerCancel(sig s) public onlyBuyer(s) whenOpen() {
+        this.status = Status.CancelledByBuyer;
+        this.transfer(new LockingBytecodeP2PKH(hash160(seller)), this.terms.amount + this.terms.fee);
+        emit CancelledByBuyer(this.terms.amount);
+    }
+
+    // The seller can cancel only after the waiting time and only while the buyer has not marked it paid.
+    function sellerCancel(sig s) public onlySeller(s) {
+        require(this.status == Status.Funded, AlreadyMarkedPaid());
+        require(tx.time >= this.terms.sellerCanCancelAfter, TooEarly());
+        this.status = Status.CancelledBySeller;
+        this.transfer(new LockingBytecodeP2PKH(hash160(seller)), this.terms.amount + this.terms.fee);
+        emit CancelledBySeller(this.terms.amount);
+    }
+
+    // Buyer or seller opens a dispute after the buyer marked it paid, paying the dispute fee in BCH.
+    function openDispute(sig s, bool byBuyer) public payable {
+        recordDispute(s, byBuyer);
+    }
+
+    // The arbitrator picks the winner. A buyer win settles like a release, a seller win like a cancel.
+    // The winner's dispute fee is returned; the loser's goes to the fee recipient.
+    function resolveDispute(sig s, bool buyerWins) public onlyArbitrator(s) {
+        require(this.status == Status.Disputed, NoDispute());
+        int toWinner = this.terms.amount;
+        int toFees = 0;
+        if (buyerWins) {
+            toFees = this.terms.fee;
+        } else {
+            toWinner = toWinner + this.terms.fee;
+        }
+        if (winnerPaid(buyerWins)) {
+            toWinner = toWinner + this.terms.disputeFee;
+        }
+        if (loserPaid(buyerWins)) {
+            toFees = toFees + this.terms.disputeFee;
+        }
+        this.status = Status.Resolved;
+        if (toFees > 0) {
+            this.transfer(new LockingBytecodeP2PKH(feeRecipient), toFees);
+        }
+        if (buyerWins) {
+            this.transfer(new LockingBytecodeP2PKH(hash160(buyer)), toWinner);
+        } else {
+            this.transfer(new LockingBytecodeP2PKH(hash160(seller)), toWinner);
+        }
+        emit DisputeResolved(buyerWins);
+    }
+}

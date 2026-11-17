@@ -15,7 +15,18 @@ export default defineConfig({
   },
   accounts: { count: 4, satoshis: 100_000_000n },
   networks: {
-    mock: { type: 'mock' },
+    // Real BCH limits (10,000 byte inputs, 128 byte commitments, dust), so compiled artifacts and tests do not
+    // depend on the relaxed mock defaults.
+    mock: {
+      type: 'mock',
+      policy: { enforceDust: true },
+      consensus: {
+        maximumInputBytes: 10_000,
+        maximumStackItemBytes: 10_000,
+        maximumTransactionBytes: 100_000,
+        maximumNftCommitmentBytes: 128,
+      },
+    },
     regtest: {
       type: 'regtest',
       rpc: {

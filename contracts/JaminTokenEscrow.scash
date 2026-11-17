@@ -1,0 +1,91 @@
+pragma solidcash ^0.51.0;
+// One satoshi container coin: payable calls add to it, so a payout never has to gather several coins.
+// The deployment opens it with a small reserve, which stays when the escrow closes.
+pragma satoshicontainer single;
+
+import "./EscrowBase.scash";
+
+// One CashToken escrow (for example PUSD). The trade amount and the fee are fungible tokens of one category held
+// in the contract's token container; dispute fees are paid in BCH into the satoshi container.
+contract JaminTokenEscrow(pubkey seller, pubkey buyer, pubkey arbitrator, bytes20 feeRecipient, bytes32 token)
+    is EscrowBase(seller, buyer, arbitrator, feeRecipient) {
+
+    // An ordinary call cannot empty a fungible-only token container, so one base unit stays behind for good.
+    int constant RESERVE_UNITS = 1;
+
+    error WrongToken();
+
+    // A token container must be indexed by a direct bytes32 parameter; this binds it to the escrowed category.
+    modifier onlyToken(bytes32 category) {
+        require(category == token, WrongToken());
+        _;
+    }
+
+    constructor(int amount, int feeBps, int disputeFee, int cancelAfter) {
+        setUp(amount, FeeMath.tradeFee(amount, feeBps, 1), disputeFee, cancelAfter);
+    }
+
+    // The seller moves amount + fee + the reserve unit into the token container, once.
+    function deposit(sig s, bytes32 category) public onlySeller(s) onlyToken(category) {
+        require(this.tokens[category].tokenAmount == 0, AlreadyFunded());
+        int needed = this.terms.amount + this.terms.fee + RESERVE_UNITS;
+        require(this.outState.tokens[category].tokenAmount == needed, WrongDeposit());
+        recordFunded(needed);
+    }
+
+    // The buyer confirms the fiat payment; after this the seller can no longer cancel.
+    function markAsPaid(sig s, bytes32 category) public onlyBuyer(s) onlyToken(category) {
+        recordPaid();
+    }
+
+    function release(sig s, bytes32 category) public onlySeller(s) onlyToken(category) whenOpen() {
+        this.status = Status.Released;
+        this.tokens[category].transfer(new LockingBytecodeP2PKH(feeRecipient), this.terms.fee);
+        this.tokens[category].transfer(new LockingBytecodeP2PKH(hash160(buyer)), this.terms.amount);
+        emit Released(this.terms.amount, this.terms.fee);
+    }
+
+    function buyerCancel(sig s, bytes32 category) public onlyBuyer(s) onlyToken(category) whenOpen() {
+        this.status = Status.CancelledByBuyer;
+        this.tokens[category].transfer(new LockingBytecodeP2PKH(hash160(seller)), this.terms.amount + this.terms.fee);
+        emit CancelledByBuyer(this.terms.amount);
+    }
+
+    function sellerCancel(sig s, bytes32 category) public onlySeller(s) onlyToken(category) {
+        require(this.status == Status.Funded, AlreadyMarkedPaid());
+        require(tx.time >= this.terms.sellerCanCancelAfter, TooEarly());
+        this.status = Status.CancelledBySeller;
+        this.tokens[category].transfer(new LockingBytecodeP2PKH(hash160(seller)), this.terms.amount + this.terms.fee);
+        emit CancelledBySeller(this.terms.amount);
+    }
+
+    function openDispute(sig s, bool byBuyer) public payable {
+        recordDispute(s, byBuyer);
+    }
+
+    // Tokens go as in the BCH escrow; the BCH dispute fees go back to a paying winner and from a paying loser to
+    // the fee recipient.
+    function resolveDispute(sig s, bytes32 category, bool buyerWins) public onlyArbitrator(s) onlyToken(category) {
+        require(this.status == Status.Disputed, NoDispute());
+        int tokensToWinner = this.terms.amount;
+        if (!buyerWins) {
+            tokensToWinner = tokensToWinner + this.terms.fee;
+        }
+        bytes winner = new LockingBytecodeP2PKH(hash160(seller));
+        if (buyerWins) {
+            winner = new LockingBytecodeP2PKH(hash160(buyer));
+        }
+        this.status = Status.Resolved;
+        if (buyerWins) {
+            this.tokens[category].transfer(new LockingBytecodeP2PKH(feeRecipient), this.terms.fee);
+        }
+        this.tokens[category].transfer(winner, tokensToWinner);
+        if (loserPaid(buyerWins)) {
+            this.transfer(new LockingBytecodeP2PKH(feeRecipient), this.terms.disputeFee);
+        }
+        if (winnerPaid(buyerWins)) {
+            this.transfer(winner, this.terms.disputeFee);
+        }
+        emit DisputeResolved(buyerWins);
+    }
+}

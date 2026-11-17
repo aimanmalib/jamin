@@ -1,0 +1,127 @@
+pragma solidcash ^0.51.0;
+
+import "./FeeMath.scash";
+
+// Shared state machine of one escrow, ported from OpenPeerEscrow (see NOTICE and docs/PORTING.md).
+// Every role is a public key checked with checkSig; msg.sender is never used for authorisation.
+abstract contract EscrowBase(pubkey seller, pubkey buyer, pubkey arbitrator, bytes20 feeRecipient) {
+    enum Status { Created, Funded, Paid, Disputed, Released, CancelledByBuyer, CancelledBySeller, Resolved }
+
+    struct Terms {
+        int amount;
+        int fee;
+        int disputeFee;
+        int sellerCanCancelAfter;
+    }
+
+    // Values below this are block heights for tx.time; the waiting time must be a timestamp.
+    int constant LOCKTIME_THRESHOLD = 500000000;
+
+    Status public status;
+    Terms public terms;
+    bool public buyerPaidDispute;
+    bool public sellerPaidDispute;
+
+    event EscrowCreated(int amount, int fee, int sellerCanCancelAfter);
+    event Funded(int deposit);
+    event SellerCancelDisabled();
+    event Released(int amount, int fee);
+    event CancelledByBuyer(int amount);
+    event CancelledBySeller(int amount);
+    event DisputeOpened(bool byBuyer);
+    event DisputeResolved(bool buyerWins);
+
+    error InvalidAmount();
+    error InvalidDisputeFee();
+    error InvalidCancelTime();
+    error NotSeller();
+    error NotBuyer();
+    error NotArbitrator();
+    error NotFunded();
+    error AlreadyFunded();
+    error WrongDeposit();
+    error NotOpen();
+    error AlreadyMarkedPaid();
+    error TooEarly();
+    error NotPaid();
+    error WrongDisputeFee();
+    error AlreadyPaidDispute();
+    error NoDispute();
+
+    modifier onlySeller(sig s) {
+        require(checkSig(s, seller), NotSeller());
+        _;
+    }
+
+    modifier onlyBuyer(sig s) {
+        require(checkSig(s, buyer), NotBuyer());
+        _;
+    }
+
+    modifier onlyArbitrator(sig s) {
+        require(checkSig(s, arbitrator), NotArbitrator());
+        _;
+    }
+
+    // Open means the coins can still be released or cancelled without the arbitrator.
+    modifier whenOpen() {
+        require(this.status == Status.Funded || this.status == Status.Paid, NotOpen());
+        _;
+    }
+
+    function setUp(int amount, int fee, int disputeFee, int cancelAfter) internal {
+        require(amount > 0, InvalidAmount());
+        require(disputeFee > 0, InvalidDisputeFee());
+        require(cancelAfter >= LOCKTIME_THRESHOLD, InvalidCancelTime());
+        this.terms = Terms(amount, fee, disputeFee, cancelAfter);
+        emit EscrowCreated(amount, fee, cancelAfter);
+    }
+
+    // The deposit is taken by a call after deployment, where the contract can check it (docs/SOLIDCASH-FINDINGS.md).
+    function recordFunded(int deposit) internal {
+        require(this.status == Status.Created, AlreadyFunded());
+        this.status = Status.Funded;
+        emit Funded(deposit);
+    }
+
+    // OpenPeer markAsPaid: after this the seller can no longer cancel.
+    function recordPaid() internal {
+        require(this.status != Status.Created, NotFunded());
+        require(this.status == Status.Funded, AlreadyMarkedPaid());
+        this.status = Status.Paid;
+        emit SellerCancelDisabled();
+    }
+
+    // Records one side's dispute fee; the BCH itself arrives through the payable entry point.
+    function recordDispute(sig s, bool byBuyer) internal {
+        require(this.status == Status.Paid || this.status == Status.Disputed, NotPaid());
+        require(msg.value == this.terms.disputeFee, WrongDisputeFee());
+        if (byBuyer) {
+            require(checkSig(s, buyer), NotBuyer());
+            require(!this.buyerPaidDispute, AlreadyPaidDispute());
+            this.buyerPaidDispute = true;
+        } else {
+            require(checkSig(s, seller), NotSeller());
+            require(!this.sellerPaidDispute, AlreadyPaidDispute());
+            this.sellerPaidDispute = true;
+        }
+        this.status = Status.Disputed;
+        emit DisputeOpened(byBuyer);
+    }
+
+    // Did the winning side pay a dispute fee? The winner gets it back.
+    function winnerPaid(bool buyerWins) internal view returns (bool) {
+        if (buyerWins) {
+            return this.buyerPaidDispute;
+        }
+        return this.sellerPaidDispute;
+    }
+
+    // Did the losing side pay a dispute fee? It goes to the fee recipient.
+    function loserPaid(bool buyerWins) internal view returns (bool) {
+        if (buyerWins) {
+            return this.sellerPaidDispute;
+        }
+        return this.buyerPaidDispute;
+    }
+}

@@ -53,7 +53,8 @@
     "feeBps": 30,
     "disputeFeeSats": 5000,
     "sellerWaitingTimeSeconds": 3600,
-    "minSellerWaitingTimeSeconds": 900
+    "minSellerWaitingTimeSeconds": 900,
+    "containerReserveSats": 1000
   },
   "banner": {
     "event": "BCH BLAZE 2026",
