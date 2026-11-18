@@ -282,9 +282,8 @@ showed each request in its "Sign transaction" dialog and signed it. Driver: `scr
 
 Escrow `bitcoincash:pd2ale5ne76cyn4x3agmaqpkf9k2gm8lglaz3kmzu9mqacc7k255jtdupjdr6`, amount 5,000 sats
 (`walletTrade.amountSats`); the third-party wallet's address is `bitcoincash:qz4e6systwqz7ecevc4xlu3f42rj4fllqg0mwf944p`
-and the trade name `wallet-1795037853`. The seller key in the escrow,
-`03fd1ce0d2ac809fa33f2861820cc4dc016531ece6f1673020ba6f7b3484218d0e`, is derived from Cashonize's signature over the
-role key request; Cashonize also signed that request again when the page reconnected, and the key came out the same.
+and the trade name `wallet-1795037853`. The seller's public key in the escrow (readable from the
+creation transaction) is derived from Cashonize's signature over the role key request; Cashonize also signed that request again when the page reconnected, and the key came out the same.
 
 - Funding, through the spending gate: `d85b5f6acdd9e8862aa6106e0b977f109af1e3c91fd240beec6261e78cb22b53` sent 30,000
   sats to the wallet as output 0 (360 sats fee); `c89e9682a46fbdd8fe96bd198ecfaef8da63a9e5ff8a988b8042e2a1cab5bab9`
