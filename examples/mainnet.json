@@ -188,25 +188,82 @@
           "step": "createEscrow",
           "txid": "6e2dd9b0522b54433f2136b35471101b8d6754db334f5bf380a306958b964559",
           "txBytes": 750,
-          "feeSats": 1750
+          "feeSats": 1750,
+          "height": 977901
         },
         {
           "step": "deposit",
           "txid": "d46f258decb247ac12c11e8326745b75e9a8e1244a7772f4ba4f6fb24dfe284d",
           "txBytes": 8416,
-          "feeSats": 8606
+          "feeSats": 8606,
+          "height": 977901
         },
         {
           "step": "markAsPaid",
           "txid": "3fc946b3b9fc261b6d4c993e95f74d9babcb0558fb849908c1b07cc494332c8c",
           "txBytes": 7638,
-          "feeSats": 7828
+          "feeSats": 7828,
+          "height": 977901
         },
         {
           "step": "release",
           "txid": "f4c15c7f19a2feea5cc58f87bf805f6e0a4b5ea93c0c8d0a992c756b741e7327",
           "txBytes": 8744,
-          "feeSats": 8934
+          "feeSats": 8934,
+          "height": 977901
+        }
+      ]
+    },
+    {
+      "branch": "R",
+      "asset": "BCH",
+      "address": "bitcoincash:pwkpp64jclgq6wfzr87cam9ucqsyfy7we9zxuxy5ajdst2ml5sveyyzrpal8v",
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "dcf5d2fa07115df148469d7213a12b98d2446e5441025e7df1668ffc49552f15",
+          "txBytes": 758,
+          "feeSats": 1758,
+          "height": 977918
+        },
+        {
+          "step": "fund",
+          "txid": "4c8bed17e9c7157899f4981f4f504545243a1a69813de80c2f767c2e4bc9ad8b",
+          "txBytes": 7013,
+          "feeSats": 7062,
+          "height": 977918
+        },
+        {
+          "step": "sellerCancel",
+          "refused": true,
+          "by": "seller",
+          "expected": "TooEarly",
+          "rawTxHash": "91f3e47a89864913ba141e974e423d465aea12ecacf0aa57c4d0dd5712ca1aec",
+          "serverError": "the transaction was rejected by network rules.\n\nnon-mandatory-script-verify-flag (Locktime requirement not satisfied) (code 64)\n",
+          "at": "2026-11-18T17:47:23.769Z"
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "d6b197c644e0498cc0dc9e19c89d1c54094fd036fb6812ff4783119dc05ae3f1",
+          "txBytes": 6168,
+          "feeSats": 6358,
+          "height": 977918
+        },
+        {
+          "step": "release",
+          "refused": true,
+          "by": "buyer",
+          "expected": "NotSeller",
+          "rawTxHash": "ff5c1eb27af74d6a756c4e119dc36ad6b5e761fa5ab211918c78388084e686d1",
+          "serverError": "the transaction was rejected by network rules.\n\nmandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation) (code 16)\n",
+          "at": "2026-11-18T17:47:42.853Z"
+        },
+        {
+          "step": "release",
+          "txid": "b236ec3afc94fa41e116973314fd23f7b5feeadc7efc3180f13a0fc56e6f9ed3",
+          "txBytes": 7225,
+          "feeSats": 7415,
+          "height": 977918
         }
       ]
     }

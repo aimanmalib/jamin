@@ -439,3 +439,45 @@ Wallet at 15:31 UTC: the six addresses held 108,167 sats (seller 30,507; buyer 4
 four miner fees (27,118), and 14,351 sats that did not return to wallet addresses: the escrow's contract coins and
 the satoshis of the token coins that went into it.
 
+
+### Refused on mainnet
+
+Measured 2026-11-18 17:47 UTC through `bch.imaginary.cash`, same contracts and wallet, with the method of the regtest
+run above (decision 0015): each forbidden call was built by the SDK as a valid call, changed and signed again, and
+sent as raw bytes, so the network judged it and not the SDK. The seller address held 30,507 sats, below branch R's
+floor, so `npm run wallet -- gather` first moved spare coins of the other wallet addresses to the seller in one
+payment (decision 0016; txid `4a508bc4df40c267ecdbd746b771bb595e7c5393804927048175fd7d7f86044d`, miner fee 1,099
+sats; seller 30,507 to 64,668 sats). No new funding was used.
+
+```
+npm run wallet -- gather                                     # 17:46 UTC
+npm run lifecycle -- --network mainnet --branches R          # 17:47 UTC
+```
+
+Escrow: `bitcoincash:pwkpp64jclgq6wfzr87cam9ucqsyfy7we9zxuxy5ajdst2ml5sveyyzrpal8v`. The server's text below is
+verbatim; Fulcrum puts its own first line in front of the node's reason.
+
+| Step | Signed by | Contract rule | Server's rejection text | Raw transaction hash |
+|---|---|---|---|---|
+| `sellerCancel`, locktime one second behind the median time past | seller | `TooEarly` | `the transaction was rejected by network rules.` / `non-mandatory-script-verify-flag (Locktime requirement not satisfied) (code 64)` | `91f3e47a89864913ba141e974e423d465aea12ecacf0aa57c4d0dd5712ca1aec` |
+| `release` | buyer | `NotSeller` | `the transaction was rejected by network rules.` / `mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation) (code 16)` | `ff5c1eb27af74d6a756c4e119dc36ad6b5e761fa5ab211918c78388084e686d1` |
+
+After each refusal the run read the escrow's coins back and every coin the refused transaction spent was still
+unspent. At 17:50 UTC the server answered `No such mempool or blockchain transaction` for both raw hashes. The
+reasons are the same as on the regtest node. Two invalid broadcasts in the run; the spending gate recorded each as
+an attempt of 0 sats.
+
+| Branch | Step | Txid | Size (B) | Miner fee (sat) | Block |
+| --- | --- | --- | --- | --- | --- |
+| R | createEscrow | `dcf5d2fa07115df148469d7213a12b98d2446e5441025e7df1668ffc49552f15` | 758 | 1,758 | 977918 |
+| R | fund | `4c8bed17e9c7157899f4981f4f504545243a1a69813de80c2f767c2e4bc9ad8b` | 7,013 | 7,062 | 977918 |
+| R | markAsPaid | `d6b197c644e0498cc0dc9e19c89d1c54094fd036fb6812ff4783119dc05ae3f1` | 6,168 | 6,358 | 977918 |
+| R | release (seller, valid) | `b236ec3afc94fa41e116973314fd23f7b5feeadc7efc3180f13a0fc56e6f9ed3` | 7,225 | 7,415 | 977918 |
+
+Miner fees for the four calls: 22,593 sats, the same per call as branch A. The spending gate's ledger stood at
+388,704 of 2,000,000 sats after the run.
+
+Wallet at 17:50 UTC: the six addresses held 68,359 sats (seller 15,371; buyer 32,442 and 10 PUSD units; arbitrator
+20,000; fee recipient 546 and 1 PUSD unit), down 39,808 from 108,167. That is the gather fee (1,099), the four miner
+fees (22,593), and 16,116 sats for the seller's genesis-coin payment fee and the coins the escrow keeps at its
+contract addresses, not split further here.

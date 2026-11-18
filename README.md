@@ -30,6 +30,10 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   Cauldron pool, ran on Bitcoin Cash mainnet from the project's test wallet: 24 escrow transactions, the dispute
   decided by two of the three panel members (`docs/MEASURED.md`, "Mainnet"; `examples/mainnet.json`; the Lifecycle
   tab links each txid to an explorer).
+- **Refused by the network:** in branch R on mainnet, a seller cancel sent before its time and a release signed by
+  the buyer were sent as raw transactions past the SDK's own checks, and the network refused both; the server's text
+  is recorded verbatim, the escrow's coins stayed unspent, and the seller's valid release followed (4 more escrow
+  transactions; `docs/MEASURED.md`, "Refused on mainnet").
 - **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Upstream:** three fixes found while building this are open as pull requests to SolidCash (#8, #9, #10;
   "Upstream contributions").
@@ -110,6 +114,7 @@ keeps its references honest.
 | Five branches on stock BCHN 29.0.0 regtest, 20 txids | `docs/MEASURED.md`, `examples/regtest.json` |
 | Web app end-to-end tests on Chromium and WebKit (iPhone 13), and on the public URL | `e2e/`, `docs/MEASURED.md` |
 | Mainnet run: branches A to E and W, 24 escrow txids, PUSD bought from a Cauldron pool | `docs/MEASURED.md` "Mainnet", `examples/mainnet.json` |
+| Mainnet branch R: two forbidden calls the network refused (server text, raw hashes), then a valid release | `docs/MEASURED.md` "Refused on mainnet", `examples/mainnet.json` |
 
 ## Size and cost
 
@@ -160,7 +165,7 @@ The reasons the other seven are not are in the same file.
 
 ## Known limits
 
-- **Mainnet:** the BCH escrow ran on mainnet (branches A, C, D, E, W); the token escrow ran branch B (release) with
+- **Mainnet:** the BCH escrow ran on mainnet (branches A, C, D, E, W, R); the token escrow ran branch B (release) with
   0.10 PUSD, a smaller amount than the 2.00 of the regtest run, as 0.01 PUSD costs about 4,800 sats (decision 0012).
   The token escrow's cancel and dispute paths ran on regtest or the mock network only.
 - **Coins left behind:** a single satoshi container cannot be emptied by a call, so each escrow keeps the reserve
