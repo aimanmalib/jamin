@@ -4,6 +4,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { noHorizontalOverflow, watchErrors } from './helpers.js';
 import regtest from '../examples/regtest.json' with { type: 'json' };
+import mainnet from '../examples/mainnet.json' with { type: 'json' };
 import config from '../config/jamin.json' with { type: 'json' };
 
 const TABS = ['/#/', '/#/try', '/#/lifecycle', '/#/contract'];
@@ -39,9 +40,13 @@ test('no serious accessibility violations on any tab', async ({ page }) => {
   }
 });
 
-test('lifecycle: says plainly that mainnet has not run yet and lists the regtest run', async ({ page }) => {
+test('lifecycle: lists every mainnet escrow with its txids, and the regtest run', async ({ page }) => {
   await page.goto('/#/lifecycle');
-  await expect(page.getByTestId('mainnet-empty')).toBeVisible();
+  if (mainnet.escrows.length === 0) await expect(page.getByTestId('mainnet-empty')).toBeVisible();
+  else await expect(page.getByTestId('mainnet-lede')).toBeVisible();
+  for (const e of mainnet.escrows) {
+    for (const s of e.steps) await expect(page.getByRole('link', { name: s.txid, exact: true })).toHaveCount(1);
+  }
   for (const tx of regtest.transactions) await expect(page.getByText(tx.txid)).toHaveCount(1);
 });
 

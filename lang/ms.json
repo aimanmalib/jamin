@@ -203,6 +203,7 @@
     "diagramTitle": "Keadaan dan siapa menggerakkannya",
     "mainnetTitle": "Mainnet",
     "mainnetEmpty": "Belum dijalankan di mainnet. Dompet ujian projek belum diisi dana. Larian di bawah memakai Bitcoin Cash Node stok dengan peraturan mainnet.",
+    "mainnetLede": "Setiap escrow di bawah dibuka di mainnet Bitcoin Cash oleh dompet ujian projek. Setiap bayaran kembali ke alamat dompet yang sama.",
     "regtestTitle": "Regtest dengan had konsensus sebenar",
     "regtestNote": "{node}, binaan stok, peraturan standard dihidupkan, {date}. {count} transaksi, semuanya diterima dan dilombong. Transaksi regtest hanya wujud pada rantaian pakai buang itu, jadi tiada pautan penjelajah.",
     "branchTitle": "{branch}: {name}",
@@ -211,7 +212,8 @@
       "B": "lepas, token",
       "C": "pembeli membatal",
       "D": "penjual membatal selepas tempoh menunggu",
-      "E": "pertikaian, penimbang tara memutuskan"
+      "E": "pertikaian, penimbang tara memutuskan",
+      "W": "lepas, penjual berdagang dari dompet"
     },
     "colStep": "Langkah",
     "colTx": "Txid",
@@ -219,7 +221,10 @@
     "colUnlock": "Skrip buka terbesar / had",
     "reading": "membaca syiling...",
     "readFailed": "tidak dapat mencapai pelayan Electrum",
-    "coins": "{count} syiling, {sats} sat sekarang"
+    "coins": "{count} syiling, {sats} sat sekarang",
+    "block": "blok {height}",
+    "mempool": "belum dalam blok",
+    "walletSigned": "ditandatangani dompet penjual"
   },
   "contract": {
     "title": "Kontrak",

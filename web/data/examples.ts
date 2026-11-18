@@ -1,5 +1,5 @@
 // Recorded runs on real networks: examples/regtest.json (stock BCHN regtest) and examples/mainnet.json (filled by the
-// mainnet run; empty until then).
+// mainnet run).
 import regtestRaw from '../../examples/regtest.json' with { type: 'json' };
 import mainnetRaw from '../../examples/mainnet.json' with { type: 'json' };
 
@@ -9,7 +9,7 @@ export interface RegtestTx {
 }
 export interface RegtestRun { node: string; measuredAt: string; unlockLimitBytes: number; transactions: RegtestTx[] }
 
-export interface MainnetStep { step: string; txid: string; height?: number }
+export interface MainnetStep { step: string; txid: string; height?: number; signer?: 'wallet' }
 export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: MainnetStep[] }
 export interface MainnetRun { escrows: MainnetEscrow[] }
 

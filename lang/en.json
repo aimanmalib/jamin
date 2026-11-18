@@ -203,6 +203,7 @@
     "diagramTitle": "States and who moves them",
     "mainnetTitle": "Mainnet",
     "mainnetEmpty": "Not yet run on mainnet. The project's test wallet has not been funded yet. The run below used a stock Bitcoin Cash Node with mainnet rules.",
+    "mainnetLede": "Every escrow below was opened on Bitcoin Cash mainnet by the project's test wallet. Each payout went back to an address of the same wallet.",
     "regtestTitle": "Regtest with real consensus limits",
     "regtestNote": "{node}, stock build, standardness rules on, {date}. {count} transactions, all accepted and mined. Regtest transactions exist only on that throwaway chain, so they have no explorer link.",
     "branchTitle": "{branch}: {name}",
@@ -211,7 +212,8 @@
       "B": "release, token",
       "C": "buyer cancels",
       "D": "seller cancels after the waiting time",
-      "E": "dispute, arbitrator decides"
+      "E": "dispute, arbitrator decides",
+      "W": "release, seller trades from a wallet"
     },
     "colStep": "Step",
     "colTx": "Txid",
@@ -219,7 +221,10 @@
     "colUnlock": "Largest unlocking script / limit",
     "reading": "reading coins...",
     "readFailed": "could not reach the Electrum server",
-    "coins": "{count} coins, {sats} sats now"
+    "coins": "{count} coins, {sats} sats now",
+    "block": "block {height}",
+    "mempool": "not yet in a block",
+    "walletSigned": "signed by the seller's wallet"
   },
   "contract": {
     "title": "The contract",

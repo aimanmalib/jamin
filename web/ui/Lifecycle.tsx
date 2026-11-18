@@ -1,5 +1,6 @@
 // "Lifecycle": every escrow recorded on a real network. Mainnet escrows come from examples/mainnet.json with their
-// coins read live from Electrum; until that file has entries the page says so and shows the regtest run.
+// coins read live from Electrum, block height and which steps the seller's wallet signed; until that file has
+// entries the page says so. The regtest run follows.
 import { useEffect, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { byBranch, mainnet, regtest, type MainnetEscrow } from '../data/examples.js';
@@ -28,7 +29,9 @@ function MainnetEscrowCard({ e }: { e: MainnetEscrow }): ReactNode {
       <ol>
         {e.steps.map((s) => (
           <li key={s.txid}>{t(`log.step.${s.step}`)}{' '}
-            <a className="txid" href={explorerLink(config.explorer.mainnetTx, s.txid)}>{s.txid}</a></li>
+            <a className="txid" href={explorerLink(config.explorer.mainnetTx, s.txid)}>{s.txid}</a>{' '}
+            <span className="muted small">{s.height === undefined ? t('lifecycle.mempool')
+              : t('lifecycle.block', { height: s.height })}{s.signer === 'wallet' ? `, ${t('lifecycle.walletSigned')}` : ''}</span></li>
         ))}
       </ol>
     </article>
@@ -47,7 +50,10 @@ export function Lifecycle(): ReactNode {
         <h2 id="mainnet-h">{t('lifecycle.mainnetTitle')}</h2>
         {mainnet.escrows.length === 0
           ? <p className="notice" data-testid="mainnet-empty">{t('lifecycle.mainnetEmpty')}</p>
-          : <div className="steps3">{mainnet.escrows.map((e) => <MainnetEscrowCard key={e.branch} e={e} />)}</div>}
+          : <>
+            <p className="muted" data-testid="mainnet-lede">{t('lifecycle.mainnetLede')}</p>
+            <div className="steps3">{mainnet.escrows.map((e) => <MainnetEscrowCard key={e.address ?? e.branch} e={e} />)}</div>
+          </>}
       </section>
       <section aria-labelledby="regtest-h">
         <h2 id="regtest-h">{t('lifecycle.regtestTitle')}</h2>
