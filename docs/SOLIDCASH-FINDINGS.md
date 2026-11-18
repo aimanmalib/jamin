@@ -1,7 +1,8 @@
 # SolidCash findings
 
 Issues met while building this project. Versions: `@solidcash/solidc` and `@solidcash/solidcash` 0.51.1, upstream
-`master` at `eda85a88d`. Reproductions: `npx tsx scripts/repro-findings.ts` (sources in `test/fixtures/findings/`).
+`master` at `eda85a88d`. Reproductions: `npx tsx scripts/repro-findings.ts` (sources in `test/fixtures/findings/`); F11 to F13:
+`npx tsx scripts/repro-close.ts`.
 Upstream status was checked against open issues and pull requests on 2026-11-17 and again on 2026-11-18 (pull
 requests #1 and #4 to #7, issues #2 and #3).
 
@@ -137,6 +138,44 @@ requests #1 and #4 to #7, issues #2 and #3).
   in 0.51.1, see the wallet test above) and pull request #1 (the covered bytecode sent for a dispatched function of
   a plain contract). A fix needs an asynchronous signing step between the final build and the broadcast, which is
   larger than a small patch; not prepared as a fix.
+
+## F11: a destination-pinned `selfdestruct` cannot relay once the contract's unlocking script passes about 2,000 bytes
+
+- Repro: `npx tsx scripts/repro-close.ts`, which compiles a copy of the escrow contracts with
+  `close(sig s)` ending in `selfdestruct(new LockingBytecodeP2PKH(hash160(seller)))` (decision 0013) and closes a
+  released BCH escrow on the production-profile mock. With the event records left out and the fee taken from the
+  transaction size: "Destroy transaction has no funds to reclaim after fees. Total inputs: 5800, fee: 7052." With a
+  fee of 1,999 sats: "min relay fee not met".
+- Cause: the statement form's covenant requires `sum(inputs) - outputs[0].value < 2000` (`language/selfdestruct.md`).
+  The closing transaction carries the contract's unlocking script, about 7,000 bytes for this escrow, and the relay
+  minimum is 1 sat per byte. No fee satisfies both. The documentation states the cap but not that it bounds the
+  size of a contract that can use the statement form.
+- Effect in this project: the contracts have no `close` function (decision 0013). The 41,800 sats in master, state
+  and container coins of the seven mainnet escrows stay where they are, and so would about 5,800 sats of each new
+  escrow: at this contract size a close would cost more in fees than it returns.
+- Upstream: a documentation point, or a fee cap derived from the transaction size; not prepared as a fix.
+
+## F12: the destroy helper spends event records whose relative lock has not passed
+
+- Repro: `npx tsx scripts/repro-close.ts`, first case: `StatefulContract.selfdestructTo` on an escrow released in
+  the same block fails with "non-BIP68-final".
+- Cause: `sc-destroy.js` adds every event record at the event addresses as an input with the 144-block sequence,
+  whether or not 144 blocks have passed. `language/selfdestruct.md` says unexpired event NFTs do not block master
+  destruction. A finished escrow's last call always emits an event, so a close right after it always fails.
+- Effect in this project: none beyond F11; the repro leaves the event records out through a provider that hides
+  them.
+- Upstream: a small fix (skip records whose lock has not passed, or document the wait); not prepared as a fix.
+
+## F13: the destroy helper refuses to burn the tokens of a named token container
+
+- Repro: `npx tsx scripts/repro-close.ts`, last case: closing a released token escrow with its token container in
+  `tokenContainerCategoryIds` fails with "Implicit burning of fungible tokens for category ... is not allowed (input
+  amount: 1, output amount: 0). If this is intended, set allowImplicitFungibleTokenBurn to true."
+- Cause: `sc-destroy.js` builds its transaction with `allowImplicitNftBurn: true` but not
+  `allowImplicitFungibleTokenBurn`, while `sdk/stateful-contracts.md` says CashTokens still in a named container are
+  burned. The options of `selfdestructTo` offer no way to allow it.
+- Effect in this project: none beyond F11; it would have stopped the token escrow's close (decision 0013).
+- Upstream: a small fix (pass the option, or document that the container must be empty); not prepared as a fix.
 
 ## Fixes submitted upstream
 
