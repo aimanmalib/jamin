@@ -45,30 +45,36 @@ Other observations from the same runs:
 
 ## Escrow contract sizes
 
-Measured 2026-11-17 with SolidCash 0.51.1, Node 22, mock network with the production profile. Command:
-`npx solidhat compile && npx tsx scripts/measure-escrow.ts`. Sources: `contracts/`. Escrow amount 200,000 sats, fee
-30 basis points (600 sats), dispute fee 5,000 sats; token escrow 200 base units, fee raised to the one-unit floor.
+Measured 2026-11-18 with SolidCash 0.51.1, Node 22, mock network with the production profile, on the contracts with
+the 2-of-3 arbitration panel (docs/decisions/0008). Command: `npx solidhat compile && npx tsx scripts/measure-escrow.ts`.
+Sources: `contracts/`. Escrow amount 200,000 sats, fee 30 basis points (600 sats), dispute fee 5,000 sats; token
+escrow 200 base units, fee raised to the one-unit floor. `resolveDispute` carries two ECDSA panel signatures.
 
 | Artifact | Redeem script bytes | ABI entries |
 |---|---|---|
-| JaminEscrow | 5,053 | 8 |
-| JaminTokenEscrow | 6,457 | 8 |
+| JaminEscrow | 5,114 | 8 |
+| JaminTokenEscrow | 6,518 | 8 |
 
 | Contract | Step | Tx bytes | Inputs | Largest unlocking script |
 |---|---|---|---|---|
 | JaminEscrow | deploy (reserve 1,000 sats) | 760 | 1 | 100 / 10,000 |
-| JaminEscrow | fund | 6,745 | 5 | 5,289 / 10,000 |
-| JaminEscrow | markAsPaid | 6,039 | 3 | 5,289 / 10,000 |
-| JaminEscrow | release | 7,098 | 7 | 5,289 / 10,000 |
-| JaminEscrow | buyerCancel | 6,920 | 6 | 5,289 / 10,000 |
-| JaminEscrow | sellerCancel | 6,920 | 6 | 5,289 / 10,000 |
-| JaminEscrow | openDispute | 7,108 | 6 | 5,290 / 10,000 |
-| JaminEscrow | resolveDispute | 7,458 | 8 | 5,290 / 10,000 |
+| JaminEscrow | fund | 6,874 | 5 | 5,418 / 10,000 |
+| JaminEscrow | markAsPaid | 6,168 | 3 | 5,418 / 10,000 |
+| JaminEscrow | release | 7,227 | 7 | 5,418 / 10,000 |
+| JaminEscrow | buyerCancel | 7,049 | 6 | 5,418 / 10,000 |
+| JaminEscrow | sellerCancel | 7,049 | 6 | 5,418 / 10,000 |
+| JaminEscrow | openDispute | 7,237 | 6 | 5,419 / 10,000 |
+| JaminEscrow | resolveDispute | 7,667 | 8 | 5,499 / 10,000 |
 | JaminTokenEscrow | deploy | 754 | 1 | 100 / 10,000 |
-| JaminTokenEscrow | deposit | 8,291 | 6 | 6,759 / 10,000 |
-| JaminTokenEscrow | markAsPaid | 7,509 | 3 | 6,759 / 10,000 |
-| JaminTokenEscrow | openDispute | 8,542 | 6 | 6,727 / 10,000 |
-| JaminTokenEscrow | resolveDispute | 9,633 | 11 | 6,760 / 10,000 |
+| JaminTokenEscrow | deposit | 8,420 | 6 | 6,888 / 10,000 |
+| JaminTokenEscrow | markAsPaid | 7,638 | 3 | 6,888 / 10,000 |
+| JaminTokenEscrow | openDispute | 8,671 | 6 | 6,856 / 10,000 |
+| JaminTokenEscrow | resolveDispute | 9,840 | 11 | 6,967 / 10,000 |
+
+Before the panel (single arbitrator, measured 2026-11-17 the same way): redeem scripts 5,053 and 6,457 bytes,
+largest unlocking script of `resolveDispute` 5,290 (BCH) and 6,760 (token) bytes. The panel adds 61 bytes to each
+redeem script (two more keys and the multisig check) and 209 (BCH) and 207 (token) bytes to the largest unlocking
+script of a resolution; every other call grows by 129 bytes, as each call carries the whole redeem script.
 
 Notes from the same runs:
 
@@ -121,6 +127,21 @@ state runs used `test/JaminEscrow.state.test.ts` (13 tests). The payout checks a
 
 When the three state runs were started in parallel on the shared host, each also failed two or three slow tests by
 timeout (126 s to 364 s against the 120 s limit). Run one after another, each failed only the test listed.
+
+## Sabotage checks of the arbitration panel tests
+
+Measured 2026-11-18 with SolidCash 0.51.1, Node 22, mock network with the production profile. Method as above: in
+a copy of the repository, change one panel check, recompile and run `test/JaminEscrow.panel.test.ts` (18 tests;
+the unchanged contracts pass all 18, and all 89 tests of `npx solidhat test`). Not committed; the copies were deleted.
+
+| Change | Where | Tests that failed |
+|---|---|---|
+| `onlyPanel(first, second)` removed | both `resolveDispute` | 7 of 7 refusal tests run: one panel signature with an outsider (BCH and token), the same signature twice, a trading party as second signer, out of key order, Schnorr signatures, a non-member of a single-arbitrator escrow |
+| threshold lowered to one: `checkMultiSig([first], [arbiterA, arbiterB, arbiterC])` | `EscrowBase.onlyPanel` | 5 of 18: one panel signature with an outsider (BCH and token), the same signature twice, a trading party as second signer, out of key order |
+| the three `PartyOnPanel` checks removed | `EscrowBase.setUp` | 6 of 6 run: seller or buyer in panel slot A, B or C |
+
+In the threshold run the Schnorr test and the single-arbitrator refusal still failed for their own reason (a Schnorr
+signature or a key outside the panel in the first slot), and the three valid pairs passed, as they should.
 
 ## Regtest (real consensus limits)
 
@@ -181,8 +202,9 @@ Notes from the same run:
 
 ## Test count
 
-`npx solidhat test` on 2026-11-17: 8 files, 71 tests (BCH 11 lifecycle, 11 rejections, 13 state rules, 8 payout
-checks; CashToken 6 lifecycle, 11 rejections, 6 payout checks; 5 end-to-end branches).
+`npx solidhat test` on 2026-11-18: 9 files, 89 tests, all passing (BCH 11 lifecycle, 11 rejections, 13 state rules,
+8 payout checks; CashToken 6 lifecycle, 11 rejections, 6 payout checks; 5 end-to-end branches; 18 arbitration panel
+tests in `test/JaminEscrow.panel.test.ts`, 16 BCH and 2 token). On 2026-11-17, before the panel: 8 files, 71 tests.
 
 ## Web app end-to-end tests
 

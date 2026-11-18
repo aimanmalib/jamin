@@ -19,16 +19,16 @@ never used, because SolidCash does not verify it under the `direct` composition.
 
 | OpenPeerEscrow | Jamin | Notes |
 |---|---|---|
-| `initialize(...)` | contract parameters + `constructor` | Seller, buyer, arbitrator and fee recipient are contract parameters; amount, fee rate, dispute fee and cancel time are constructor arguments. |
+| `initialize(...)` | contract parameters + `constructor` | Seller, buyer, the three arbitration panel keys and fee recipient are contract parameters; amount, fee rate, dispute fee and cancel time are constructor arguments. |
 | `createNativeEscrow` | deploying `JaminEscrow`, then `fund` | A constructor cannot check a deposit (docs/SOLIDCASH-FINDINGS.md, F3) and `this.balance` reads 0 in a call without a payment (F5), so the seller pays amount + fee in a payable `fund` call that requires `msg.value` to match. |
 | `createERC20Escrow` | deploying `JaminTokenEscrow`, then `deposit` | Token containers cannot be touched in a constructor, so the seller deposits in a separate call that pins the exact token amount. |
-| `create` (internal) | `EscrowBase.setUp` | Same checks: positive amount. Added: positive dispute fee, cancel time must be a timestamp. Buyer and seller being different keys is not checked on chain. |
+| `create` (internal) | `EscrowBase.setUp` | Same checks: positive amount. Added: positive dispute fee, cancel time must be a timestamp. Buyer and seller being different keys is not checked on chain. Added: no panel slot may hold the seller's or the buyer's key (`PartyOnPanel`). |
 | `markAsPaid` | `markAsPaid` | Buyer only, only after the deposit. Fails instead of returning `false` when already paid (`AlreadyMarkedPaid`). |
 | `release` | `release` | Seller only. Amount to the buyer, fee to the fee recipient. Not allowed once a dispute is open (see below). |
 | `buyerCancel` | `buyerCancel` | Buyer only. Amount and fee back to the seller. Not allowed once a dispute is open. |
 | `sellerCancel` | `sellerCancel` | Seller only, only while not marked paid and only after `sellerCanCancelAfter` (`tx.time`). Fails instead of returning `false`. |
 | `openDispute` | `openDispute(sig, byBuyer)` | Payable; `msg.value` must equal the dispute fee. Each side can pay once. |
-| `resolveDispute` | `resolveDispute(sig, buyerWins)` | Arbitrator only. Buyer win: amount to buyer, fee to fee recipient. Seller win: amount and fee to seller. The winner's dispute fee is returned if it paid one; the loser's paid fee goes to the fee recipient. |
+| `resolveDispute` | `resolveDispute(sig, sig, buyerWins)` | Changed: OpenPeer has one arbitrator; Jamin needs two of a three-key panel (`checkMultiSig`, docs/decisions/0008). A single arbitrator is the panel with one key in all three slots. Buyer win: amount to buyer, fee to fee recipient. Seller win: amount and fee to seller. The winner's dispute fee is returned if it paid one; the loser's paid fee goes to the fee recipient. |
 | `transferEscrowAndFees` (private) | inline `this.transfer` / `this.tokens[c].transfer` | Each payout is a covenant output: recipient script and amount are fixed by the contract. |
 | `withdraw` (private) | dropped | Payouts are covenant outputs; there is no separate pull step. |
 | `openPeerFee`, `sellerFee` | `FeeMath.tradeFee` | Basis points of the amount, with a floor (see below). |
@@ -51,7 +51,7 @@ never used, because SolidCash does not verify it under the `direct` composition.
 
 ## Modifiers
 
-`onlySeller` and `onlyArbitrator` become signature checks. `onlyBuyer` is new (the original checked
+`onlySeller` becomes a signature check. `onlyArbitrator` becomes `onlyPanel`, a 2-of-3 `checkMultiSig` over the panel keys. `onlyBuyer` is new (the original checked
 `_msgSender() == _buyer` inline). `whenOpen` is new and holds the shared release and cancel precondition.
 
 ## Dropped, with reasons
@@ -65,7 +65,7 @@ never used, because SolidCash does not verify it under the `direct` composition.
   nothing to initialise after deployment.
 - **Automatic escrow (seller balance pool).** It relies on shared storage across escrows (see above).
 - **Release or cancel during a dispute.** In the original, `release` and `buyerCancel` stay callable while a dispute
-  is open and refund the dispute fees. Here an open dispute is settled only by the arbitrator, which keeps every
+  is open and refund the dispute fees. Here an open dispute is settled only by the arbitration panel, which keeps every
   payout path to a fixed set of outputs.
 
 ## Changed, with reasons

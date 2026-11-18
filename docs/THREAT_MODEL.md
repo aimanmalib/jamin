@@ -11,12 +11,13 @@ check they cover is removed from a copy of the contract. The rules themselves ar
 |---|---|---|
 | Seller | sending the coins in the first place | releasing honestly, or at all |
 | Buyer | nothing | marking paid only after paying fiat |
-| Arbitrator | deciding a dispute fairly | anything outside an open dispute |
+| Arbitration panel (three keys, any two decide) | two of three members deciding a dispute fairly | anything outside an open dispute; any single member |
 | Fee recipient | nothing (receives only) | |
 | Anyone else (including whoever builds or relays the transaction) | nothing | |
 
-The arbitrator is the one trusted third party, as in the original OpenPeer escrow. The contract limits the arbitrator
-to choosing between two fixed payouts of an open dispute.
+The original OpenPeer escrow trusts one arbitrator. Jamin replaces it with a panel of three keys, any two of which must
+sign (`checkMultiSig`, docs/decisions/0008); one arbitrator can still be used by putting its key in all three slots.
+The contract limits the panel to choosing between two fixed payouts of an open dispute.
 
 ## Attacks and the tests that run them
 
@@ -47,6 +48,10 @@ to choosing between two fixed payouts of an open dispute.
 | 23 | any party | spend a closed escrow again | rejected (final status) | BCH state "cannot be spent again once released", "... once cancelled by the buyer", "... once the dispute is resolved" |
 | 24 | any party | call the token escrow with another token category | `WrongToken` | token "rejects a call naming another token category (WrongToken)" |
 | 25 | seller | create an escrow with a zero amount, no dispute fee, or a block-height waiting time | `InvalidAmount` / `InvalidDisputeFee` / `InvalidCancelTime` | BCH state "refuses to create an escrow with a zero amount (InvalidAmount)", "... without a dispute fee (InvalidDisputeFee)", "refuses a waiting time given as a block height (InvalidCancelTime)" |
+| 26 | one panel member, alone or with an outsider or a trading party | resolve a dispute with one valid panel signature | rejected | panel "refuses one panel signature with an outsider signature" (BCH and token), "refuses a trading party as the second signer" |
+| 27 | one panel member | count its own signature twice | rejected | panel "refuses the same panel signature given twice", "refuses a panel member of a single-arbitrator escrow who is not that arbitrator" |
+| 28 | seller or buyer | sit on the panel of its own escrow | `PartyOnPanel` | panel "refuses to create an escrow with the seller / buyer in panel slot A / B / C (PartyOnPanel)" |
+| 29 | anyone building a resolution | give the two panel signatures out of key order, or as Schnorr signatures | rejected | panel "refuses two panel signatures out of panel key order", "refuses Schnorr signatures, which OP_CHECKMULTISIG does not accept here" |
 
 The payout rules of a dispute (winner's fee returned, loser's fee to the fee recipient) are checked by BCH "resolves
 a two-sided dispute for the buyer" and "... for the seller", BCH "pays the seller back in full when the buyer alone
@@ -57,15 +62,16 @@ dispute for the seller: tokens and fee back, BCH dispute fees settled".
 
 These are properties of the design, not covered by a test that makes them fail:
 
-- **The arbitrator decides.** A dishonest or compromised arbitrator can give an open dispute to the wrong side. It
-  cannot act before a dispute opens (attack 7) or pay anyone but the buyer, the seller and the fee recipient.
+- **The panel decides.** Two dishonest or compromised panel members can give an open dispute to the wrong side; one
+  cannot (attacks 26 to 28). An escrow set up with a single arbitrator in all three slots trusts that one key. The
+  panel cannot act before a dispute opens (attack 7) or pay anyone but the buyer, the seller and the fee recipient.
 - **A false "paid".** A buyer can mark paid without paying. The seller then cannot cancel (attack 9) and has to open
   a dispute and pay the dispute fee to get the coins back through the arbitrator. This is the same in the original
   OpenPeer escrow.
 - **No answer from the seller.** If the seller never releases after a real payment, the buyer opens a dispute.
   There is no automatic release to the buyer after a time.
 - **Checking the contract before paying fiat.** The contract enforces the terms it was deployed with. The buyer must
-  check the parameters (seller, buyer key, arbitrator, fee recipient), the terms and the `Funded` status of the
+  check the parameters (seller, buyer key, the three panel keys, fee recipient), the terms and the `Funded` status of the
   escrow address before sending fiat; the contract cannot know which address the two agreed on.
 - **Time.** `sellerCancel` uses `tx.time`, which Bitcoin Cash checks against the median time of past blocks. It can
   lag real time by about an hour, so a seller cancel becomes possible roughly an hour after `cancelAfter` by the

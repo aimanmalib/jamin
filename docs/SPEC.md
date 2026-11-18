@@ -23,7 +23,7 @@ Contract parameters, fixed in the contract's address:
 |---|---|---|
 | `seller` | `pubkey` | locks the coins, releases them, may cancel after the waiting time |
 | `buyer` | `pubkey` | pays fiat off chain, marks the trade paid, may cancel |
-| `arbitrator` | `pubkey` | decides an open dispute, nothing else |
+| `arbiterA`, `arbiterB`, `arbiterC` | `pubkey` | the arbitration panel: any two decide an open dispute, nothing else; none may be the seller or the buyer; a single arbitrator fills all three slots (docs/decisions/0008) |
 | `feeRecipient` | `bytes20` | public key hash that receives the trade fee and a losing side's dispute fee |
 | `token` | `bytes32` | token escrow only: the escrowed token category |
 
@@ -68,7 +68,7 @@ stateDiagram-v2
     Funded --> CancelledBySeller: sellerCancel (seller, after cancelAfter)
     Paid --> Disputed: openDispute (buyer or seller, pays dispute fee)
     Disputed --> Disputed: openDispute (the other side)
-    Disputed --> Resolved: resolveDispute (arbitrator)
+    Disputed --> Resolved: resolveDispute (2 of 3 panel)
 ```
 
 ## Functions
@@ -85,13 +85,14 @@ Token escrow functions marked "(token)" also take the category and require it to
 | `buyerCancel(s[, c])` | buyer | status `Funded` or `Paid` | none | amount + fee to seller | `CancelledByBuyer` | `CancelledByBuyer` |
 | `sellerCancel(s[, c])` | seller | status `Funded`; `tx.time >= cancelAfter` | none | amount + fee to seller | `CancelledBySeller` | `CancelledBySeller` |
 | `openDispute(s, byBuyer)` | buyer if `byBuyer`, else seller | status `Paid` or `Disputed`; `msg.value == disputeFee`; that side has not paid yet | dispute fee sats | none | `Disputed` | `DisputeOpened` |
-| `resolveDispute(s[, c], buyerWins)` | arbitrator | status `Disputed` | none | see below | `Resolved` | `DisputeResolved` |
+| `resolveDispute(s1, s2[, c], buyerWins)` | two panel members, ECDSA signatures in panel key order (`checkMultiSig`) | status `Disputed` | none | see below | `Resolved` | `DisputeResolved` |
 
 Errors, in the order the checks run where it matters:
 
 | Situation | Error |
 |---|---|
-| wrong signer for the role | `NotSeller`, `NotBuyer`, `NotArbitrator` |
+| wrong signer for the role (for a resolution: fewer than two distinct panel signatures in key order) | `NotSeller`, `NotBuyer`, `NotArbitrator` |
+| seller or buyer key in a panel slot at deployment | `PartyOnPanel` |
 | token category other than `token` | `WrongToken` |
 | second deposit | `AlreadyFunded` |
 | deposit of the wrong size | `WrongDeposit` |
@@ -127,5 +128,5 @@ out of the escrow fails the contract (see `test/JaminEscrow.covenant.test.ts` an
 ## Off-chain duties
 
 The contract cannot see fiat. Before paying, the buyer checks that the contract's parameters name the agreed seller,
-buyer key, arbitrator and fee recipient, that `terms` match the trade and `cancelAfter` leaves enough time, and that
+buyer key, the three panel keys and fee recipient, that `terms` match the trade and `cancelAfter` leaves enough time, and that
 `status` is `Funded`. `docs/THREAT_MODEL.md` lists what each role can and cannot do.

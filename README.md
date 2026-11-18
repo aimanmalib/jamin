@@ -4,7 +4,7 @@ Peer-to-peer trade escrow for Bitcoin Cash, written in SolidCash.
 
 A seller locks BCH (or a CashToken such as PUSD) in a contract. The buyer pays in fiat off chain (bank transfer, e-wallet)
 and marks the trade as paid. The seller then releases the coins to the buyer. If the two disagree, either side can open a
-dispute by posting a dispute fee, and a named arbitrator decides who receives the coins. Nobody holds the funds in the middle:
+dispute by posting a dispute fee, and two of three named arbitrators decide who receives the coins. Nobody holds the funds in the middle:
 the contract only lets each role do what the trade rules allow, checked by signature.
 
 Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**. It is a port of the MIT-licensed
@@ -13,17 +13,17 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 ## For judges: one minute
 
 - **Try it:** https://jamin.sasateguh.com, tab **Try it**. The compiled contracts run on the SolidCash mock network
-  in your browser. Play seller, buyer, arbitrator or an outsider through all five branches and see each transaction
+  in your browser. Play seller, buyer, arbitrator (co-signed by a second panel member) or an outsider through all five branches and see each transaction
   or the contract's named error. English and Bahasa Melayu.
 - **Contracts:** `contracts/` (four files, native SolidCash): `EscrowBase.scash`, `JaminEscrow.scash` (BCH),
   `JaminTokenEscrow.scash` (CashTokens such as PUSD), `FeeMath.scash`. Rules: `docs/SPEC.md`.
-- **Tests:** `npm ci && npm run solidhat:test`: 71 SolidHat tests in 8 files on the mock network with the production
+- **Tests:** `npm ci && npm run solidhat:test`: 89 SolidHat tests in 9 files on the mock network with the production
   profile (count in `docs/MEASURED.md`). Every attack in `docs/THREAT_MODEL.md` names the test that runs it.
 - **Real consensus limits:** all five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with
   standardness rules on: 20 transactions mined, largest unlocking script 6,759 of 10,000 bytes
   (`docs/MEASURED.md`, "Regtest").
 - **Mainnet:** not run yet (see "Known limits").
-- **SolidCash features used:** 20, each with the test that exercises it, in `docs/FEATURES.md`.
+- **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Port:** every OpenPeerEscrow function, event and modifier and what became of it, in `docs/PORTING.md`.
 
 ## Who it is for
@@ -31,7 +31,7 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 Two people who do not know each other want to trade BCH or a dollar token such as PUSD for local money (bank
 transfer, e-wallet). Today one of them has to send first, or both have to trust an exchange that holds the coins.
 With Jamin the seller's coins sit in a contract that pays out only along the trade rules: to the buyer when the
-seller confirms the fiat arrived, back to the seller when the buyer cancels or never pays, and by an arbitrator's
+seller confirms the fiat arrived, back to the seller when the buyer cancels or never pays, and by the arbitration panel's
 decision only when one side opens a dispute and pays the dispute fee.
 
 ## Lifecycle
@@ -48,10 +48,10 @@ stateDiagram-v2
     Funded --> CancelledBySeller: sellerCancel (seller, after the waiting time)
     Paid --> Disputed: openDispute (either side, pays the dispute fee)
     Disputed --> Disputed: openDispute (the other side)
-    Disputed --> Resolved: resolveDispute (arbitrator)
+    Disputed --> Resolved: resolveDispute (2 of 3 panel)
 ```
 
-1. **Deploy** with the seller, buyer, arbitrator and fee recipient as contract parameters and the amount, fee rate,
+1. **Deploy** with the seller, buyer, three arbitration panel keys and fee recipient as contract parameters and the amount, fee rate,
    dispute fee and waiting time as constructor arguments.
 2. **`fund`** (BCH) or **`deposit`** (token): the seller pays exactly amount + fee into the contract.
 3. **`markAsPaid`**: the buyer confirms the fiat payment. From here the seller can no longer cancel.
@@ -60,7 +60,7 @@ stateDiagram-v2
 5. **`buyerCancel`**: the buyer can cancel before release; amount and fee return to the seller.
 6. **`sellerCancel`**: the seller can cancel only after the waiting time and only if the buyer has not marked paid.
 7. **`openDispute`**: after the buyer marked paid, either side opens a dispute by paying the dispute fee.
-8. **`resolveDispute`**: the arbitrator picks the winner. The winner's dispute fee is returned; the loser's goes to the
+8. **`resolveDispute`**: two of the three panel arbitrators sign (`checkMultiSig`) and pick the winner. The winner's dispute fee is returned; the loser's goes to the
    fee recipient.
 
 Every payout is a covenant output: the contract fixes who receives what, so nobody building the transaction can
@@ -73,8 +73,9 @@ redirect it. Roles prove themselves with `checkSig` against the keys in the cont
 | Native stateful contract, one instance per escrow | `contracts/EscrowBase.scash` |
 | Abstract base contract, inheritance, imports, a library | `EscrowBase`, `JaminEscrow`, `JaminTokenEscrow`, `FeeMath` |
 | `enum`, `struct`, `constant`, constructor arguments | `contracts/EscrowBase.scash` |
-| Modifiers with parameters, stacked; `checkSig` roles | `onlySeller`, `onlyBuyer`, `onlyArbitrator`, `onlyToken`, `whenOpen` |
-| Named custom errors and events | 17 errors, 8 events in `EscrowBase` and `JaminTokenEscrow` |
+| Modifiers with parameters, stacked; `checkSig` roles | `onlySeller`, `onlyBuyer`, `onlyToken`, `whenOpen` |
+| `checkMultiSig` 2-of-3 arbitration panel (ECDSA) | `onlyPanel` on `resolveDispute` |
+| Named custom errors and events | 18 errors, 8 events in `EscrowBase` and `JaminTokenEscrow` |
 | `payable` and `msg.value`; `pragma satoshicontainer single` | `fund`, `openDispute` |
 | Satoshi and token container payouts as covenant outputs | `this.transfer`, `this.tokens[c].transfer` |
 | Token deposit checked through `this.outState.tokens[c]` | `JaminTokenEscrow.deposit` |
@@ -86,7 +87,7 @@ The full table, with file and line and the test for each row, is `docs/FEATURES.
 
 | What | Where |
 | --- | --- |
-| SolidHat tests (71, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
+| SolidHat tests (89, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
 | Sabotage: a check removed from a copy of a contract makes its named test fail | `docs/MEASURED.md` |
 | Script and transaction sizes of every function | `docs/MEASURED.md` |
 | Five branches on stock BCHN 29.0.0 regtest, 20 txids | `docs/MEASURED.md`, `examples/regtest.json` |
@@ -108,10 +109,13 @@ yet. The reasons the other six are not are in the same file.
   (`npm run lifecycle -- --network mainnet`, `docs/decisions/0007-mainnet-run.md`) is tested on the mock network
   behind the spending gate. The same branches ran on a stock BCHN regtest node with mainnet relay rules
   (`docs/MEASURED.md`).
+- **Contract version of the regtest run:** the regtest txids were made with the earlier single-arbitrator contract.
+  The 2-of-3 panel (`docs/decisions/0008-arbitration-panel.md`) is tested on the mock network; its regtest run is
+  not recorded yet.
 - **Reserve left behind:** a single satoshi container cannot be emptied by a call, so each escrow keeps the reserve
   it was opened with (1,000 sats). A token escrow also keeps one base unit (0.01 PUSD) and its token container's
   satoshis.
-- **No release or cancel during a dispute:** once a dispute is open only the arbitrator settles it. The original
+- **No release or cancel during a dispute:** once a dispute is open only the arbitration panel settles it. The original
   OpenPeer escrow still allowed release and buyer cancel then.
 - **Absolute waiting time:** the seller passes `cancelAfter` as a timestamp, because a SolidCash constructor cannot
   read the clock. A seller cancel becomes possible about an hour after it, as Bitcoin Cash compares against the
@@ -164,7 +168,7 @@ rolling back to the previous image if that fails (`--rollback`, `--status`). See
 
 ### Test wallet
 
-The lifecycle scripts use a test wallet of their own. Every role (seller, buyer, arbitrator, fee recipient) is a different
+The lifecycle scripts use a test wallet of their own. Every role (seller, buyer, the three panel arbitrators, fee recipient) is a different
 HD path of the same phrase, so funds stay inside the test wallet.
 
 ```sh
