@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { binToHex } from '@bitauth/libauth';
 import { ElectrumNetworkProvider } from '@solidcash/solidcash/network/electrum';
 import { Network, type NetworkProvider } from '@solidcash/solidcash';
-import { loadConfig, repoRoot, type Role } from '../src/config.js';
+import { loadConfig, repoRoot, type JaminConfig, type Role } from '../src/config.js';
 import { gateProvider } from '../src/budget/gate.js';
 import { readLedger, totalSpent } from '../src/budget/ledger.js';
 import { lockOf, satsAt, type PartyName, type Terms } from '../src/lifecycle/context.js';
@@ -36,6 +36,12 @@ async function heightOf(electrum: ElectrumNetworkProvider, txid: string, tip: nu
   }
 }
 
+/** The seller balance a run must start with: a run of branch B alone pays fees and reserves only (decision 0012). */
+export function fundingFloor(m: Pick<JaminConfig['mainnet'], 'minFundingSats' | 'tokenRunMinFundingSats'>,
+  wanted: string[]): number {
+  return wanted.length > 0 && wanted.every((b) => b === 'B') ? m.tokenRunMinFundingSats : m.minFundingSats;
+}
+
 export async function mainnetRun(wanted: string[]): Promise<number> {
   const cfg = loadConfig();
   const server = cfg.electrum.mainnet;
@@ -56,8 +62,9 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
   try {
     const held = await satsAt(raw, derived.seller.address);
     console.log(`seller ${derived.seller.address} holds ${held} sat (${server.hostname})`);
-    if (held < BigInt(cfg.mainnet.minFundingSats) && !loadPending(join(repoRoot, cfg.mainnet.pendingFile))) {
-      console.log(`not funded: needs at least ${cfg.mainnet.minFundingSats} sat; nothing broadcast`);
+    const floor = fundingFloor(cfg.mainnet, wanted);
+    if (held < BigInt(floor) && !loadPending(join(repoRoot, cfg.mainnet.pendingFile))) {
+      console.log(`not funded: needs at least ${floor} sat; nothing broadcast`);
       return 3;
     }
     const ledgerFile = join(repoRoot, cfg.mainnet.ledgerFile);

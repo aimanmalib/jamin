@@ -232,6 +232,7 @@ HD path of the same phrase, so funds stay inside the test wallet.
 ```sh
 npm run wallet -- init      # create .env with a new phrase (mode 0600); refuses if .env already has one
 npm run wallet -- address   # print the receive address and its balance
+npx tsx scripts/buy-token.ts          # quote the PUSD branch B needs from Cauldron pools; --send buys it
 ```
 
 The scripts never print the phrase or any private key. Every mainnet broadcast goes through a spending budget

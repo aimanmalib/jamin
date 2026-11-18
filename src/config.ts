@@ -42,6 +42,17 @@ export interface JaminConfig {
     partyFloatSats: number;
     /** Token units traded in branch B (PUSD has two decimals: 100 = 1.00 PUSD). */
     tokenAmount: number;
+    /** Funding floor of a run of branch B alone: it needs fees and container reserves, not the BCH escrows. */
+    tokenRunMinFundingSats: number;
+    /** Buying the branch B token from Cauldron pools (docs/decisions/0012). */
+    tokenPurchase: {
+      /** Active pool list of a token; {category} is replaced. The answer is checked against the chain. */
+      indexerUrl: string;
+      /** Most token units one purchase may buy (PUSD: 200 = 2.00). */
+      maxUnits: number;
+      /** Refuse a purchase when the pools ask more satoshis than this, trade fee included. */
+      maxSupplySats: number;
+    };
     /** An escrow waiting for its seller-cancel time between runs. */
     pendingFile: string;
     outputDir: string;

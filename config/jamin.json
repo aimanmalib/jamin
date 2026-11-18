@@ -56,7 +56,13 @@
     "feeRateSatsPerByte": 1,
     "genesisCoinSats": 50000,
     "partyFloatSats": 40000,
-    "tokenAmount": 100,
+    "tokenAmount": 10,
+    "tokenRunMinFundingSats": 40000,
+    "tokenPurchase": {
+      "indexerUrl": "https://indexer.cauldron.quest/cauldron/pool/active?token={category}",
+      "maxUnits": 200,
+      "maxSupplySats": 80000
+    },
     "pendingFile": "state/mainnet/pending.json",
     "outputDir": "state/mainnet"
   },
