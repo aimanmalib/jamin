@@ -30,6 +30,8 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 - **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Upstream:** three fixes found while building this are open as pull requests to SolidCash (#8, #9, #10;
   "Upstream contributions").
+- **Slides:** https://jamin.sasateguh.com/deck.pdf, eight slides printed from `tools/deck/slides.json`
+  (`npx tsx tools/deck/build.ts`); every number on them cites its section of `docs/MEASURED.md` or the findings.
 - **Port:** every OpenPeerEscrow function, event and modifier and what became of it, in `docs/PORTING.md`.
 
 ## Who it is for

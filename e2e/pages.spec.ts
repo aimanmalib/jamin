@@ -16,6 +16,7 @@ test('home: one sentence, one primary button, the banner, no console errors', as
   await expect(page.locator('.btn-primary')).toBeInViewport();
   await expect(page.getByLabel(config.banner.prizeAddress)).toBeVisible();
   await expect(page.getByRole('link', { name: 'Source code' }).first()).toHaveAttribute('href', config.banner.repoUrl);
+  await expect(page.getByRole('link', { name: 'Slides' })).toHaveAttribute('href', config.banner.deckUrl);
   expect(errors).toEqual([]);
 });
 
