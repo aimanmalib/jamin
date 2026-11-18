@@ -3,7 +3,8 @@
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json package-lock.json ./
-# The libauth fork that SolidCash and mem-cash need is a tarball in vendor/ (docs/decisions/0010), so npm ci needs no git.
+# The libauth fork that SolidCash and mem-cash need is a tarball in vendor/ (docs/decisions/0010): copy it before
+# installing, so the install needs no git.
 COPY vendor/ ./vendor/
 RUN npm ci --no-audit --no-fund --ignore-scripts
 COPY . .
