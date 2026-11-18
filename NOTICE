@@ -50,3 +50,15 @@ This project ships a third-party package in vendor/:
 The tarball is the package as npm builds it from that commit, unmodified.
 SolidCash and mem-cash depend on it; vendor/README.md records how it was
 built and its sha512. The MIT License text above applies to it as well.
+
+The web app bundles two packages under the GNU Lesser General Public
+License, version 3.0 or later, used unmodified from npm:
+
+@wizardconnect/core 0.2.10 and @wizardconnect/dapp 0.2.8
+  Source:  https://gitlab.com/riftenlabs/lib/wizardconnect
+  License: LGPL-3.0-or-later (LICENSE.txt in that repository)
+  Use:     the dapp side of the WizardConnect protocol on the "Wallet" tab
+           (docs/decisions/0014). The source of both packages is available
+           from the repository above and from the npm registry; a user may
+           replace them by rebuilding the app from this repository with
+           other versions in package.json.
