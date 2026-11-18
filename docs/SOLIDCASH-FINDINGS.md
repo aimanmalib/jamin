@@ -118,6 +118,26 @@ requests #1 and #4 to #7, issues #2 and #3).
 - Upstream: a documentation point (which methods a provider wrapper must cover), not a correctness issue; not
   prepared as a fix.
 
+## F10: a wallet cannot sign a contract signature argument of a stateful call
+
+- Repro: `test/JaminEscrow.wallet.test.ts`, "F10: the SDK refuses a call whose seller signature is a placeholder
+  for the wallet to fill". A `release(sig s)` call whose `s` is what a BCH WalletConnect dapp sends for the wallet
+  to fill (64 zero bytes and the sighash type) is refused before broadcast: "messageBus: BCH-2026 preflight failed at
+  input 0: Program failed a signature verification with a non-null signature (violating the "NULLFAIL" rule)",
+  failing require `NotSeller`. With the role key's real signature the same call passes.
+- Cause: the stateful call path evaluates every contract input in the BCH-2026 preflight before it broadcasts, and
+  takes a contract signature from `SignatureTemplate.generateSignature`, which is synchronous and was called 11 times
+  for one `fund` call on the mock network while the fee converged. `Signer.external` (`external-signing.ts`) signs
+  only a wallet's P2PKH inputs, and sends every other input to the wallet empty. So a key that a wallet holds behind
+  `bch_signTransaction` can pay for a stateful call but cannot be the key a `checkSig` in the contract checks,
+  although `placeholderSignature()` in `@solidcash/solidcash/walletconnect` exists for that case.
+- Effect in this project: a seller trading from a wallet authorises with a role key derived from a message the
+  wallet signs, and the wallet pays and signs its own inputs (`docs/decisions/0009-wallet-connection.md`).
+- Upstream: related but not the same: issue #3 (the wallet's P2PKH placeholder in stateful calls, 0.50.1; it works
+  in 0.51.1, see the wallet test above) and pull request #1 (the covered bytecode sent for a dispatched function of
+  a plain contract). A fix needs an asynchronous signing step between the final build and the broadcast, which is
+  larger than a small patch; not prepared as a fix.
+
 ## Fixes prepared for upstream
 
 Three findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
@@ -135,4 +155,4 @@ compile; a framed payment to a P2PKH output was not run on a network in this pro
 
 The others are not prepared as fixes: F2 and F5 change how calls are derived or compiled, which is larger than a
 small patch and needs the maintainers' view first; F3 may be intended; F6 is fixed by open pull request #6; F7 is how
-BCH time locks fail; F9 is a documentation point.
+BCH time locks fail; F9 is a documentation point; F10 needs an asynchronous signing step in the SDK.

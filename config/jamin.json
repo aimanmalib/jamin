@@ -150,5 +150,8 @@
       ]
     },
     "assetMaxAgeSeconds": 31536000
+  },
+  "walletSigning": {
+    "roleKeyMessage": "Jamin role key\nSite: {site}\nRole: {role}\nTrade: {trade}"
   }
 }

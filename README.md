@@ -121,7 +121,12 @@ yet. The reasons the other six are not are in the same file.
   `TooEarly` (F7), and a failing constructor check is not reported by name (F8).
 - **Dropped from the original:** meta transactions, the fee discount NFT and partner split, the proxy deployer and
   the seller balance pool (reasons in `docs/PORTING.md`).
-- **Wallets:** the web app runs the contracts in a simulator; it does not connect a real wallet.
+- **Wallets:** a seller can trade from a wallet that signs over the BCH WalletConnect methods: the wallet pays and
+  signs its own inputs, and the seller's escrow key is derived from a message the wallet signs
+  (`docs/decisions/0009-wallet-connection.md`; a wallet cannot sign the contract's own signature check through the
+  SDK, F10). This is tested on the mock network with a protocol-level test wallet. The web app does not open a
+  WalletConnect session, which needs a relay project id. Payments back to such a seller go to the escrow key's
+  address.
 
 ## Development
 

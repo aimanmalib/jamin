@@ -52,6 +52,7 @@ The contract limits the panel to choosing between two fixed payouts of an open d
 | 27 | one panel member | count its own signature twice | rejected | panel "refuses the same panel signature given twice", "refuses a panel member of a single-arbitrator escrow who is not that arbitrator" |
 | 28 | seller or buyer | sit on the panel of its own escrow | `PartyOnPanel` | panel "refuses to create an escrow with the seller / buyer in panel slot A / B / C (PartyOnPanel)" |
 | 29 | anyone building a resolution | give the two panel signatures out of key order, or as Schnorr signatures | rejected | panel "refuses two panel signatures out of panel key order", "refuses Schnorr signatures, which OP_CHECKMULTISIG does not accept here" |
+| 30 | a wallet user (seller through a wallet, 0009) | release with the wallet key in place of the role key the escrow names | `NotSeller` | wallet "refuses a release signed with the wallet key instead of the role key" |
 
 The payout rules of a dispute (winner's fee returned, loser's fee to the fee recipient) are checked by BCH "resolves
 a two-sided dispute for the buyer" and "... for the seller", BCH "pays the seller back in full when the buyer alone
@@ -68,6 +69,10 @@ These are properties of the design, not covered by a test that makes them fail:
 - **A false "paid".** A buyer can mark paid without paying. The seller then cannot cancel (attack 9) and has to open
   a dispute and pay the dispute fee to get the coins back through the arbitrator. This is the same in the original
   OpenPeer escrow.
+- **A phished role key.** A seller who trades from a wallet authorises with a role key derived from the wallet's
+  signature over a fixed message (0009). A site that gets the wallet to sign that exact message, site and trade name
+  included, can derive the key. Wallets show the message before they sign it, and the page checks that the
+  signature recovers to the connected wallet before using it; it does not stop a user who signs the message elsewhere.
 - **No answer from the seller.** If the seller never releases after a real payment, the buyer opens a dispute.
   There is no automatic release to the buyer after a time.
 - **Checking the contract before paying fiat.** The contract enforces the terms it was deployed with. The buyer must

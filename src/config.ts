@@ -21,6 +21,11 @@ export interface JaminConfig {
     roles: Record<Role, number>;
     receiveIndex: number;
   };
+  /** Signing with a connected wallet (docs/decisions/0009). */
+  walletSigning: {
+    /** The message a wallet signs for a role key; fields {site}, {role} and {trade}. */
+    roleKeyMessage: string;
+  };
   mainnet: {
     budgetSats: number;
     ledgerFile: string;
