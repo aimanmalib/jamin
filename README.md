@@ -96,10 +96,11 @@ The full table, with file and line and the test for each row, is `docs/FEATURES.
 ## Upstream contributions
 
 Building Jamin turned up nine issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
-`docs/SOLIDCASH-FINDINGS.md`. Two have a small fix with a regression test that fails on upstream `master` and passes
-with the change: a constructor `require` that fails is reported as missing state writes (F8), and
-`MockNetworkProvider` does not type-check under `exactOptionalPropertyTypes` (F4). Both are prepared as branches
-and have not been submitted as pull requests yet. The reasons the other seven are not are in the same file.
+`docs/SOLIDCASH-FINDINGS.md`. Three have a small fix with a regression test that fails on upstream `master` and
+passes with the change: a constructor `require` that fails is reported as missing state writes (F8),
+`MockNetworkProvider` does not type-check under `exactOptionalPropertyTypes` (F4), and a framed contract cannot pay to
+`new LockingBytecodeP2PKH(...)` (F1). All three are prepared as branches and have not been submitted as pull requests
+yet. The reasons the other six are not are in the same file.
 
 ## Known limits
 

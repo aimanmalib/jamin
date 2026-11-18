@@ -2,7 +2,8 @@
 
 Issues met while building this project. Versions: `@solidcash/solidc` and `@solidcash/solidcash` 0.51.1, upstream
 `master` at `eda85a88d`. Reproductions: `npx tsx scripts/repro-findings.ts` (sources in `test/fixtures/findings/`).
-Upstream status was checked against open issues and pull requests on 2026-11-17.
+Upstream status was checked against open issues and pull requests on 2026-11-17 and again on 2026-11-18 (pull
+requests #1 and #4 to #7, issues #2 and #3).
 
 ## F1: framed composition refuses `new LockingBytecodeP2PKH(...)` as if it created a child contract
 
@@ -12,7 +13,9 @@ Upstream status was checked against open issues and pull requests on 2026-11-17.
   from the creator's nonce, which a framed master does not hold; create the child with a salt`. So a framed contract
   cannot pay a P2PKH output this way.
 - Cause (reading the source): the framed create-address lowering treats every instantiation node as `new C()`,
-  including the built-in locking bytecode constructors.
+  including the built-in locking bytecode constructors. The optional-lowering survey also counts them as contract
+  instantiations, so with the first refusal removed the framed shape check refuses the same contract for the missing
+  `CREATE` frame. `new LockingBytecodeP2SH20(...)` is refused the same way.
 - Workaround in this project: `direct` composition with `checkSig` authorisation (decision 0002).
 - Upstream: no matching open issue or pull request.
 
@@ -117,14 +120,19 @@ Upstream status was checked against open issues and pull requests on 2026-11-17.
 
 ## Fixes prepared for upstream
 
-Two findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
+Three findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
 the change. They are prepared as branches and have not been submitted yet.
 
 | Finding | Branch | Change | Test |
 | --- | --- | --- | --- |
 | F8 | `fix/constructor-require-site` | `sc-derive-deploy-commitments.ts` names the failing constructor `require` with `probeRequireStatement` | `packages/solidcash/test/e2e/ConstructorRequireSite.test.ts` |
 | F4 | `fix/mock-provider-exact-optional` | `NetworkProvider.oraclePoolCategory` declared `?: string \| undefined` | `packages/solidcash/test/unit/MockProviderExactOptionalTypes.test.ts` |
+| F1 | `fix/framed-locking-bytecode-instantiation` | `LowerFramedCreate2Address` and the optional-lowering survey skip the built-in locking bytecode classes | `packages/solidc/test/framed/master/locking-bytecode-instantiation.test.ts` |
 
-The others are not prepared as fixes: F1, F2 and F5 change how calls are derived or compiled, which is larger than a
+For F1 the direct composition is unchanged: the bytecode and ABI of the 11 upstream contract files and examples that
+use a built-in locking bytecode class hash the same before and after the change. The fix lets the framed contract
+compile; a framed payment to a P2PKH output was not run on a network in this project.
+
+The others are not prepared as fixes: F2 and F5 change how calls are derived or compiled, which is larger than a
 small patch and needs the maintainers' view first; F3 may be intended; F6 is fixed by open pull request #6; F7 is how
 BCH time locks fail; F9 is a documentation point.
