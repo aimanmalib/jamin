@@ -305,3 +305,13 @@ deployment before it is sent and the seller's balance is unchanged; branch D sto
 before the time still waits, and a run after it cancels the escrow attached from its address; a 500-unit token coin is
 split for branch B. With the gate on `sendRawTransaction` only, the branch A test failed: the ledger was empty because
 the SDK broadcast through `sendPreparedTransaction` (F9).
+
+## Mainnet funding
+
+- Funding: 0.00382954 BCH received from a shared test wallet, txid
+  4bb58a351e756ca280ac5953149ee5be1edee441494ac37d12706535807cabd9, for the mainnet lifecycle run (branches A, C, D,
+  E). 1,000,000 sats were requested; the shared wallet keeps a reserve and could release 382,954.
+- 2026-11-18 13:24 UTC, `npx tsx scripts/wallet.ts address` against `bch.imaginary.cash`: the seller address
+  `bitcoincash:qqjjt27z8wc44lkdd9x8jm3e2az8a5xleu92s5nusl` holds 382,954 sats confirmed, 0 unconfirmed. This is below
+  `mainnet.minFundingSats` (1,000,000) in `config/jamin.json`, so `npm run lifecycle -- --network mainnet` still
+  broadcasts nothing. No mainnet contract transaction has been sent.
