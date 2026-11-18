@@ -14,7 +14,7 @@ import { lockOf, satsAt, type PartyName, type Terms } from '../src/lifecycle/con
 import { measure } from '../src/lifecycle/inspect.js';
 import { walletContext } from '../src/lifecycle/mainnet.js';
 import { runBranches } from '../src/lifecycle/mainnet-run.js';
-import { addSteps, loadPending, readRecord, writeRecord } from '../src/lifecycle/record.js';
+import { addSteps, loadPending, readRecord, unmined, withHeights, writeRecord } from '../src/lifecycle/record.js';
 import { childPath, deriveKey } from '../src/wallet/keys.js';
 import { readEnvValue } from '../src/wallet/env-file.js';
 
@@ -86,7 +86,14 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
       console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
     }
     const recordFile = join(repoRoot, cfg.mainnetExamples);
-    writeRecord(recordFile, addSteps(readRecord(recordFile), measured));
+    const record = addSteps(readRecord(recordFile), measured);
+    // Steps an earlier run left in the mempool get their block height now.
+    const heights = new Map<string, number>();
+    for (const txid of unmined(record)) {
+      const h = await heightOf(electrum, txid, tip);
+      if (h !== undefined) heights.set(txid, h);
+    }
+    writeRecord(recordFile, withHeights(record, heights));
     const spent = totalSpent(readLedger(ledgerFile));
     const at = new Date().toISOString();
     const dir = join(repoRoot, cfg.mainnet.outputDir);

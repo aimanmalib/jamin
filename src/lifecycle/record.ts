@@ -28,7 +28,9 @@ export function clearPending(file: string): void {
   rmSync(file, { force: true });
 }
 
-export interface MainnetStep { step: string; txid: string; height?: number; signer?: 'wallet' }
+export interface MainnetStep {
+  step: string; txid: string; height?: number; signer?: 'wallet'; txBytes?: number; feeSats?: number;
+}
 export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: MainnetStep[] }
 export interface MainnetRecord { network: 'mainnet'; escrows: MainnetEscrow[] }
 
@@ -39,14 +41,17 @@ export const BRANCH_ASSET: Record<string, string> = { A: 'BCH', B: 'PUSD', C: 'B
  * Adds the steps of one escrow to the record. A branch's steps start a new escrow at `createEscrow`; steps without
  * one (D finished in a later run) join the latest escrow of that branch. A txid already recorded is not repeated.
  */
-export function addSteps(record: MainnetRecord, steps: Array<Step & { height?: number }>): MainnetRecord {
+export function addSteps(record: MainnetRecord,
+  steps: Array<Step & { height?: number; txBytes?: number; feeSats?: number }>): MainnetRecord {
   const escrows = record.escrows.map((e) => ({ ...e, steps: [...e.steps] }));
   const known = new Set(escrows.flatMap((e) => e.steps.map((s) => s.txid)));
   for (const s of steps) {
     if (known.has(s.txid)) continue;
     known.add(s.txid);
     const row: MainnetStep = { step: s.step, txid: s.txid, ...(s.height === undefined ? {} : { height: s.height }),
-      ...(s.signer === undefined ? {} : { signer: s.signer }) };
+      ...(s.signer === undefined ? {} : { signer: s.signer }),
+      ...(s.txBytes === undefined ? {} : { txBytes: s.txBytes }),
+      ...(s.feeSats === undefined ? {} : { feeSats: s.feeSats }) };
     const latest = [...escrows].reverse().find((e) => e.branch === s.branch);
     if (s.step === 'createEscrow' || !latest) {
       escrows.push({ branch: s.branch, asset: BRANCH_ASSET[s.branch] ?? 'BCH',
@@ -56,6 +61,19 @@ export function addSteps(record: MainnetRecord, steps: Array<Step & { height?: n
     }
   }
   return { network: 'mainnet', escrows };
+}
+
+/** Txids recorded without a block height (still in the mempool when their run wrote them). */
+export function unmined(record: MainnetRecord): string[] {
+  return record.escrows.flatMap((e) => e.steps.filter((s) => s.height === undefined).map((s) => s.txid));
+}
+
+/** Sets the block height of recorded steps that have none, from `heights` (txid to height). */
+export function withHeights(record: MainnetRecord, heights: Map<string, number>): MainnetRecord {
+  return { ...record, escrows: record.escrows.map((e) => ({ ...e, steps: e.steps.map((s) => {
+    const h = heights.get(s.txid);
+    return s.height === undefined && h !== undefined ? { ...s, height: h } : s;
+  }) })) };
 }
 
 export function readRecord(file: string): MainnetRecord {

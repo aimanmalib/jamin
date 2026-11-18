@@ -1,7 +1,7 @@
 // examples/mainnet.json as the mainnet run writes it: one escrow per createEscrow, later steps joining their branch's
 // latest escrow (D finished in a later run), no txid twice.
 import { describe, expect, it } from 'vitest';
-import { addSteps, type MainnetRecord } from '../src/lifecycle/record.js';
+import { addSteps, unmined, withHeights, type MainnetRecord } from '../src/lifecycle/record.js';
 
 const tx = (n: number): string => n.toString(16).padStart(64, '0');
 const EMPTY: MainnetRecord = { network: 'mainnet', escrows: [] };
@@ -32,5 +32,18 @@ describe('mainnet record', () => {
     expect(second.escrows).toHaveLength(1);
     expect(second.escrows[0]?.steps.map((s) => s.step)).toEqual(['createEscrow', 'fund', 'sellerCancel']);
     expect(first.escrows[0]?.steps).toHaveLength(2);
+  });
+
+  it('keeps the size and fee of each step and fills in block heights later', () => {
+    const r = addSteps(EMPTY, [
+      { branch: 'A', step: 'createEscrow', txid: tx(8), escrow: 'bitcoincash:pa', txBytes: 758, feeSats: 1758 },
+      { branch: 'A', step: 'fund', txid: tx(9), height: 900_001 },
+    ]);
+    expect(r.escrows[0]?.steps[0]).toEqual({ step: 'createEscrow', txid: tx(8), txBytes: 758, feeSats: 1758 });
+    expect(unmined(r)).toEqual([tx(8)]);
+    const mined = withHeights(r, new Map([[tx(8), 900_000], [tx(9), 1]]));
+    expect(mined.escrows[0]?.steps.map((s) => s.height)).toEqual([900_000, 900_001]);
+    expect(unmined(mined)).toEqual([]);
+    expect(r.escrows[0]?.steps[0]?.height).toBeUndefined();
   });
 });
