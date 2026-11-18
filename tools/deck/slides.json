@@ -63,7 +63,7 @@
         { "text": "All five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with mainnet relay rules: 20 transactions mined.", "source": "docs/MEASURED.md#Regtest (real consensus limits)" },
         { "text": "Largest unlocking script 6,888 of 10,000 bytes. Miner fees for all 20 transactions: 118,654 sats.", "source": "docs/MEASURED.md#Regtest (real consensus limits)" },
         { "text": "A seller wallet signing over the BCH WalletConnect methods created, funded and released an escrow on the same node.", "source": "docs/MEASURED.md#Wallet signing (branch W)" },
-        { "text": "Mainnet: not run yet. The test wallet is not funded; the mainnet run is built and tested behind a spending limit." }
+        { "text": "On mainnet from the project's test wallet: release, buyer cancel, seller cancel, a dispute decided by two of three panel members, and a release from a seller wallet, 20 transactions.", "source": "docs/MEASURED.md#Mainnet" }
       ]
     },
     {
@@ -71,7 +71,7 @@
       "kind": "list",
       "title": "The Vision for Jamin",
       "items": [
-        { "text": "Run every branch on mainnet, including an escrow of PUSD." },
+        { "text": "Run the token escrow on mainnet with PUSD, as it ran on regtest." },
         { "text": "Let buyer and seller trade from their own phone wallets over WalletConnect." },
         { "text": "A refund to the seller that anyone can trigger after a long deadline, so coins never stay locked." },
         { "text": "A signed payment reference from the buyer that the arbitrators can check in a dispute." }
