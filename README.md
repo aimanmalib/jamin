@@ -26,9 +26,10 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 - **Trading from a wallet:** a seller whose wallet signs over the BCH WalletConnect methods created, funded and
   released an escrow on the same regtest node, every seller input signed by the wallet (branch W, 4 transactions,
   `docs/MEASURED.md`, "Wallet signing"; `docs/decisions/0009-wallet-connection.md`).
-- **Mainnet:** branches A, C, D and E, and branch W from a seller wallet, ran on Bitcoin Cash mainnet from the
-  project's test wallet: 20 transactions, the dispute decided by two of the three panel members (`docs/MEASURED.md`,
-  "Mainnet"; `examples/mainnet.json`; the Lifecycle tab links each txid to an explorer).
+- **Mainnet:** branches A, C, D and E, branch W from a seller wallet, and branch B with 0.10 PUSD bought from a
+  Cauldron pool, ran on Bitcoin Cash mainnet from the project's test wallet: 24 escrow transactions, the dispute
+  decided by two of the three panel members (`docs/MEASURED.md`, "Mainnet"; `examples/mainnet.json`; the Lifecycle
+  tab links each txid to an explorer).
 - **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Upstream:** three fixes found while building this are open as pull requests to SolidCash (#8, #9, #10;
   "Upstream contributions").
@@ -108,7 +109,7 @@ keeps its references honest.
 | Size and miner fee of each call on regtest | "Size and cost" below, `examples/regtest.json` |
 | Five branches on stock BCHN 29.0.0 regtest, 20 txids | `docs/MEASURED.md`, `examples/regtest.json` |
 | Web app end-to-end tests on Chromium and WebKit (iPhone 13), and on the public URL | `e2e/`, `docs/MEASURED.md` |
-| Mainnet run: branches A, C, D, E and W, 20 txids | `docs/MEASURED.md` "Mainnet", `examples/mainnet.json` |
+| Mainnet run: branches A to E and W, 24 escrow txids, PUSD bought from a Cauldron pool | `docs/MEASURED.md` "Mainnet", `examples/mainnet.json` |
 
 ## Size and cost
 
@@ -129,17 +130,17 @@ token branch does not open a dispute. Sources: `docs/MEASURED.md`, sections "Reg
 | JaminEscrow | `sellerCancel` | D | 5,418 | 7,047 | 7,237 | 7,237 |
 | JaminEscrow | `openDispute` | E | 5,419 | 7,236 | 7,426 | 7,426 |
 | JaminEscrow | `resolveDispute` | E | 5,499 | 7,666 | 7,855 | 7,855 |
-| JaminTokenEscrow | `createEscrow` | B | 100 | 754 | 1,754 | not run on mainnet |
-| JaminTokenEscrow | `deposit` | B | 6,888 | 8,420 | 8,610 | not run on mainnet |
-| JaminTokenEscrow | `markAsPaid` | B | 6,888 | 7,638 | 7,828 | not run on mainnet |
-| JaminTokenEscrow | `release` | B | 6,888 | 8,748 | 8,938 | not run on mainnet |
+| JaminTokenEscrow | `createEscrow` | B | 100 | 754 | 1,754 | 1,750 |
+| JaminTokenEscrow | `deposit` | B | 6,888 | 8,420 | 8,610 | 8,606 |
+| JaminTokenEscrow | `markAsPaid` | B | 6,888 | 7,638 | 7,828 | 7,828 |
+| JaminTokenEscrow | `release` | B | 6,888 | 8,748 | 8,938 | 8,934 |
 | JaminTokenEscrow | `openDispute` | mock | 6,856 | 8,671 | not run on regtest | not run on mainnet |
 | JaminTokenEscrow | `resolveDispute` | mock | 6,967 | 9,840 | not run on regtest | not run on mainnet |
 
 The token escrow's `buyerCancel` and `sellerCancel` have tests but no size measurement yet. A contract call pays
 about 1.03 sat per byte. `createEscrow` pays 1,000 sats more than its size, a margin the SDK's
-deployment adds when no fee is given. The mainnet column is the same call in the mainnet run (`examples/mainnet.json`):
-the token escrow has not run on mainnet (see "Known limits").
+deployment adds when no fee is given. The mainnet column is the same call in the mainnet run (`examples/mainnet.json`);
+the token escrow's dispute calls have not run on mainnet.
 Sizes vary by a few bytes between runs (signature length) and by the number of coins the caller's wallet adds.
 
 ## Upstream contributions
@@ -159,8 +160,9 @@ The reasons the other seven are not are in the same file.
 
 ## Known limits
 
-- **Mainnet:** the BCH escrow ran on mainnet (branches A, C, D, E, W). The token escrow (branch B, PUSD) has run on
-  regtest and the mock network only; the test wallet holds no PUSD.
+- **Mainnet:** the BCH escrow ran on mainnet (branches A, C, D, E, W); the token escrow ran branch B (release) with
+  0.10 PUSD, a smaller amount than the 2.00 of the regtest run, as 0.01 PUSD costs about 4,800 sats (decision 0012).
+  The token escrow's cancel and dispute paths ran on regtest or the mock network only.
 - **Coins left behind:** a single satoshi container cannot be emptied by a call, so each escrow keeps the reserve
   it was opened with (1,000 sats). The contract's state lives in token container coins that stay on chain as well:
   on mainnet each escrow left about 11,356 sats in such coins on top of its miner fees (`docs/MEASURED.md`,

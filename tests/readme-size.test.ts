@@ -41,10 +41,9 @@ describe('README size and cost', () => {
     }
   });
 
-  it('takes the mainnet fee of each BCH escrow call from examples/mainnet.json', () => {
+  it('takes the mainnet fee of each escrow call from examples/mainnet.json', () => {
     for (const r of rows) {
-      const step = r.contract === 'JaminEscrow'
-        ? mainnet.escrows.find((e) => e.branch === r.branch)?.steps.find((s) => s.step === r.step) : undefined;
+      const step = mainnet.escrows.find((e) => e.branch === r.branch)?.steps.find((s) => s.step === r.step);
       if (step?.feeSats === undefined) expect(r.mainnetFee, `${r.contract} ${r.step}`).toBe('not run on mainnet');
       else expect(num(r.mainnetFee), `${r.contract} ${r.step}`).toBe(step.feeSats);
     }

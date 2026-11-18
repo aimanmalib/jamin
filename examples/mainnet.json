@@ -94,7 +94,8 @@
           "step": "sellerCancel",
           "txid": "be0141d852260df7e55106f0590260c6f2780f134bc2c5fccfea77892557db5e",
           "txBytes": 7047,
-          "feeSats": 7237
+          "feeSats": 7237,
+          "height": 977896
         }
       ]
     },
@@ -175,6 +176,37 @@
           "txBytes": 7225,
           "feeSats": 7408,
           "height": 977889
+        }
+      ]
+    },
+    {
+      "branch": "B",
+      "asset": "PUSD",
+      "address": "bitcoincash:pvzeftjpt3aujxlz7nc7q6pkn6dwtu63pzr9a5lcr9mljvatt0n3un643e0zg",
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "6e2dd9b0522b54433f2136b35471101b8d6754db334f5bf380a306958b964559",
+          "txBytes": 750,
+          "feeSats": 1750
+        },
+        {
+          "step": "deposit",
+          "txid": "d46f258decb247ac12c11e8326745b75e9a8e1244a7772f4ba4f6fb24dfe284d",
+          "txBytes": 8416,
+          "feeSats": 8606
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "3fc946b3b9fc261b6d4c993e95f74d9babcb0558fb849908c1b07cc494332c8c",
+          "txBytes": 7638,
+          "feeSats": 7828
+        },
+        {
+          "step": "release",
+          "txid": "f4c15c7f19a2feea5cc58f87bf805f6e0a4b5ea93c0c8d0a992c756b741e7327",
+          "txBytes": 8744,
+          "feeSats": 8934
         }
       ]
     }

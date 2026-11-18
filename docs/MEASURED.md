@@ -359,7 +359,7 @@ deposits into escrows and does not credit payouts back, so it overstates).
 | C | buyerCancel | `55aee198c4e943547f40a24e346915973d1a98dbc985fcbcbf0466550d78720f` | 7,047 | 7,237 | 977889 |  |
 | D | createEscrow | `f7dd726c5456786bf48b667b636d2f7f53038fed578222ff3befa014d87bf619` | 758 | 1,758 | 977889 |  |
 | D | fund | `9847ee3724f3ab166d4f04ee111b4ca5c48d1d03ebead3ff61b57b7bce0e0c60` | 6,872 | 7,062 | 977889 |  |
-| D | sellerCancel | `be0141d852260df7e55106f0590260c6f2780f134bc2c5fccfea77892557db5e` | 7,047 | 7,237 | mempool |  |
+| D | sellerCancel | `be0141d852260df7e55106f0590260c6f2780f134bc2c5fccfea77892557db5e` | 7,047 | 7,237 | 977896 |  |
 | E | createEscrow | `544af7b142238b2115792ad6bf6bae6d41d3f4b04df331bf9bb64229639e85d9` | 758 | 1,758 | 977889 |  |
 | E | fund | `309372d30678f74f73e9e55708ca1595f01f5c15f3508ba52006ce8bb10de6b6` | 6,872 | 7,062 | 977889 |  |
 | E | markAsPaid | `8eac9c8bcb988c72478865f33beedc098c5658ecb7d218d9d71e1d2c6b515f67` | 6,168 | 6,358 | 977889 |  |
@@ -381,3 +381,36 @@ spends), and 56,780 sats left in 50 coins at 40 contract addresses. Each deploym
 most of 1,200 sats, besides the satoshi reserve, and each call adds one (for example createEscrow A:
 seven contract outputs; fund and release one new 1,200 sat coin each). The run has no call that spends them, so on
 mainnet each escrow cost about 11,356 sats of locked coins on top of its miner fees.
+
+### Branch B: a PUSD escrow
+
+Measured 2026-11-18 through `bch.imaginary.cash`, same contracts and wallet. The wallet held no PUSD, so the seller
+bought the 12 units branch B deposits (0.10 PUSD traded, a fee of 0.01, and 0.01 that stays in the token container)
+from Cauldron pools (decision 0012):
+
+```
+npx tsx scripts/buy-token.ts --send                          # 15:16 UTC
+npm run lifecycle -- --network mainnet --branches B          # 15:17 UTC
+```
+
+- Pool list: 58 PUSD pools listed by the indexer, 58 matched their output on chain. Quote and trade: 12 units for
+  58,024 sats into the pools (trade fee 173 sats, about 4,835 sats per 0.01 PUSD), miner fee 922 sats, 922 bytes.
+  Txid `f7e275d77c01a5cab5c0b363704e8c6d960a5dd89c87329022ac534a8b7ea320`.
+- The escrow (`bitcoincash:pvzeftjpt3aujxlz7nc7q6pkn6dwtu63pzr9a5lcr9mljvatt0n3un643e0zg`) passed the run's checks:
+  the buyer received 10 units, the fee recipient 1 unit, the token container kept 1 unit.
+
+| Branch | Step | Txid | Size (B) | Miner fee (sat) |
+| --- | --- | --- | --- | --- |
+| B | createEscrow | `6e2dd9b0522b54433f2136b35471101b8d6754db334f5bf380a306958b964559` | 750 | 1,750 |
+| B | deposit | `d46f258decb247ac12c11e8326745b75e9a8e1244a7772f4ba4f6fb24dfe284d` | 8,416 | 8,606 |
+| B | markAsPaid | `3fc946b3b9fc261b6d4c993e95f74d9babcb0558fb849908c1b07cc494332c8c` | 7,638 | 7,828 |
+| B | release | `f4c15c7f19a2feea5cc58f87bf805f6e0a4b5ea93c0c8d0a992c756b741e7327` | 8,744 | 8,934 |
+
+Miner fees for the four calls: 27,118 sats, within 4 bytes and 4 sats of each regtest call. Largest unlocking script
+6,888 of 10,000 bytes, as on regtest. The spending gate's ledger stood at 339,365 of 2,000,000 sats after the run.
+
+Wallet at 15:31 UTC: the six addresses held 108,167 sats (seller 30,507; buyer 44,877 and 10 PUSD units; arbitrator
+29,945; fee recipient 2,838 and 1 PUSD unit), down 100,415 from 208,582. That is the purchase (58,024 + 922), the
+four miner fees (27,118), and 14,351 sats that did not return to wallet addresses: the escrow's contract coins and
+the satoshis of the token coins that went into it.
+
