@@ -168,11 +168,13 @@ The reasons the other seven are not are in the same file.
 - **Mainnet:** the BCH escrow ran on mainnet (branches A, C, D, E, W, R); the token escrow ran branch B (release) with
   0.10 PUSD, a smaller amount than the 2.00 of the regtest run, as 0.01 PUSD costs about 4,800 sats (decision 0012).
   The token escrow's cancel and dispute paths ran on regtest or the mock network only.
-- **Coins left behind:** a single satoshi container cannot be emptied by a call, so each escrow keeps the reserve
-  it was opened with (1,000 sats). The contract's state lives in token container coins that stay on chain as well:
-  on mainnet each escrow left about 11,356 sats in such coins on top of its miner fees (`docs/MEASURED.md`,
-  "Mainnet"). A token escrow also keeps one base unit (0.01 PUSD) and its token container's
-  satoshis.
+- **Coins left behind:** no entry point of these contracts spends a finished escrow's coins: each one checks a status
+  the escrow has left (`docs/MEASURED.md`, "Final state", tried for all seven mainnet escrows). After the claims below,
+  the seven escrows hold 75,976 sats in contract coins. 41,800 of them (the master and state NFTs, the 1,000-sat
+  reserve, and B's token container with 1 unit, 0.01 PUSD) cannot be spent. 33,600 are event records, which anyone
+  may sweep 144 blocks after they were mined. A further 576 sats sit at an address no SDK path names. Each
+  escrow's metadata identity (756 sats) was burned by its owner, which returned 78 sats net after the fee. Every
+  satoshi of the test wallet is accounted for, with 0 unexplained.
 - **No release or cancel during a dispute:** once a dispute is open only the arbitration panel settles it. The original
   OpenPeer escrow still allowed release and buyer cancel then.
 - **Absolute waiting time:** the seller passes `cancelAfter` as a timestamp, because a SolidCash constructor cannot

@@ -481,3 +481,77 @@ Wallet at 17:50 UTC: the six addresses held 68,359 sats (seller 15,371; buyer 32
 20,000; fee recipient 546 and 1 PUSD unit), down 39,808 from 108,167. That is the gather fee (1,099), the four miner
 fees (22,593), and 16,116 sats for the seller's genesis-coin payment fee and the coins the escrow keeps at its
 contract addresses, not split further here.
+
+## Final state
+
+Measured 2026-11-18 19:30 UTC (tip 977927) through `bch.imaginary.cash` with `npx tsx scripts/contract-coins.ts`: every
+coin at every address of the seven mainnet escrows (Electrum `listunspent`), and every transaction in the history of the
+six test wallet addresses (51). Contract builds: `JaminEscrow` `019bda79`, `JaminTokenEscrow` `abe283d5` (first eight
+hex of the SHA-256 of the artifact bytecode); all seven escrows run these builds. Nothing is broadcast without
+`--claim` or `--early`; the entry points are tried on a mirror, a mock network holding exact copies of the contract's
+coins as the chain lists them, plus made-up fee coins for each party.
+
+What each escrow's transactions put into contract coins, took back out, paid miners, and left there. The identity
+burn (below) is counted with the escrow whose coin it spent.
+
+| Escrow | Status | Txs | Deposited | Paid out | Miner fees | Left in contract | Of which event records | Other contract coins |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| A `p0rzhffazzlq` | Released | 5 | 30,702 | 20,102 | 23,271 | 10,600 | 4,800 | 5,800 |
+| C `pv5u2cj7qfs2` | CancelledByBuyer | 5 | 30,702 | 20,102 | 23,093 | 10,600 | 4,800 | 5,800 |
+| D `pvflen00umg0` | CancelledBySeller | 4 | 29,502 | 20,102 | 16,735 | 9,400 | 3,600 | 5,800 |
+| E `pd0htct8fexe` | Resolved | 6 | 36,902 | 25,102 | 31,137 | 11,800 | 6,000 | 5,800 |
+| W `pw3qm4hjgz5x` | Released | 5 | 30,702 | 20,102 | 23,257 | 10,600 | 4,800 | 5,800 |
+| B `pvzeftjpt3au` (PUSD) | Released | 5 | 13,132 | 756 | 27,796 | 12,376 | 4,800 | 7,576 |
+| R `pwkpp64jclgq` | Released | 5 | 30,702 | 20,102 | 23,271 | 10,600 | 4,800 | 5,800 |
+| Total | | 35 | 202,344 | 126,368 | 168,560 | 75,976 | 33,600 | 42,376 |
+
+All amounts in satoshis. "Other contract coins" per BCH escrow: the master NFT (1,200), three state NFTs (3,600) and
+the satoshi container's reserve (1,000). Branch B adds its token container (1,200 sats and 1 unit, 0.01 PUSD) and a
+576-sat output its deposit transaction (`d46f258d…`, output 3) paid to an address that is not one of the contract's
+and that six transactions of other people also pay; no SDK path names that address, so it is counted here and not
+tried.
+
+Ways to spend each kind of coin, tried on the mirror for every escrow (same results for all seven):
+
+| Coin kind | Coins | Sats | Path tried | Result |
+| --- | ---: | ---: | --- | --- |
+| Master, state NFTs, satoshi container, token container | 36 | 41,800 | `fund` / `deposit` as seller | refused: `require failed: AlreadyFunded` |
+| | | | `markAsPaid` as buyer | refused: `require failed: AlreadyMarkedPaid` |
+| | | | `buyerCancel` as buyer | refused: `require failed: NotOpen` |
+| | | | `sellerCancel` as seller | refused: `require failed: AlreadyMarkedPaid` |
+| | | | `openDispute` as buyer | refused: `require failed: NotPaid` |
+| | | | `release` as seller, `resolveDispute` as panel A+B | refused by the SDK before evaluation: `Total transfer amount (2000) exceeds satoshi container balance (1000)` (B: `Total fungible token transfer amount (2) exceeds token container balance (1)`) |
+| Event records (one per call, no capability NFT) | 28 | 33,600 | the event covenant's cleanup spend, sequence 144, to the wallet | accepted on the mirror; on the chain anyone may spend them 144 blocks after they were mined: from block 978033 (A, C, D, E, W), 978045 (B), 978062 (R) |
+| | | | the same spend for A's four records sent at tip 977927 (`--early A`) | refused by the server: `the transaction was rejected by network rules. non-BIP68-final (code 64)` (raw hash `ab5b16a1642b3171a623dca70a5f8f3fb03fc902ea683580ceecc614a5febdfe`, ledger entry of 0 sats) |
+| B's 576-sat output at an address that is not the contract's | 1 | 576 | none: no SDK path names that address | not tried |
+| Identity (the category's metadata authhead, owned by the seller's lock) | 7 | 5,292 | `publishMetadata` with `action: burn` as owner | accepted on the mirror, then claimed on mainnet (below) |
+
+Identity burns sent with `--claim`, each through the spending gate (0 sats counted, the change returns to the seller):
+A `3de44ec82bad880457be207c976ae0685b6d812fe7406ceb6a8d27b6e4d88316`,
+C `6125e42f79a4044647db7b9fb258c385e9f550255858014cc171670f1dc0dd61`,
+D `a06400ccd6c8b4e6b1a1da9516d35ce0ec4982ddff2209848282f74deb438420`,
+E `7feb688df247e1e25da03528e3d27362ac45da82b882f7714580f0889c9486e7`,
+W `15da177e1918f2f644d91846617a6798405f6197da099a324eeff72062f43a8e`,
+B `ee0bb971d84a5c5385b43d05ea917a864edfc55fd87bab79a952dc1c58f38094`,
+R `e75e308e32db0fa0b66863c0af970b15de3ff5312083cc43b627cf309f689f3d`.
+Each spends the 756-sat authhead with a seller coin; the burn's fee is 678 sats, so each returns 78 sats net.
+
+So, of the 75,976 sats left in contract coins: 33,600 (event records) can be swept back by anyone from the blocks
+above; 41,800 cannot be spent by any entry point of these builds, because every entry point checks a status the
+finished escrow has left; and B's 576-sat output has no known path. A function that closes a finished escrow is the remedy for new escrows; it does not reach
+these seven.
+
+The wallet, every satoshi:
+
+| | Sats |
+| --- | ---: |
+| Funding received (txid `4bb58a35…`) | 382,954 |
+| Paid to the Cauldron pools for 12 PUSD units (txid `f7e275d7…`) | 58,024 |
+| Miner fees of every wallet transaction (escrows 168,560; swap, top-ups, gathering and token split 9,089) | 177,649 |
+| Left in contract coins (table above) | 75,976 |
+| Held by the six wallet addresses now (`listunspent`, token coins' satoshis included) | 71,305 |
+| Unexplained (funding minus the four lines above) | 0 |
+
+Total: 382,954 = 58,024 + 177,649 + 75,976 + 71,305. The spending gate's ledger (`state/belanja.json`, 53 entries)
+records 388,704 sats spent: it counts what each broadcast took from the wallet and never credits payouts back, so it
+overstates the true cost (382,954 - 71,305 = 311,649 sats) by 77,055.
