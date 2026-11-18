@@ -1,189 +1,209 @@
 {
   "network": "regtest",
   "node": "Bitcoin Cash Node 29.0.0",
-  "measuredAt": "2026-11-18T05:03:00Z",
+  "measuredAt": "2026-11-18T10:39:00Z",
   "source": "docs/MEASURED.md#regtest-real-consensus-limits",
   "unlockLimitBytes": 10000,
   "transactions": [
     {
       "branch": "A",
       "step": "createEscrow",
-      "txid": "daf5e67e6f09716aaf25ea5f21ae5b6f068276890c61424ae0701f06c6b2da39",
+      "txid": "5d87fe6dace39981953192be84857f45785b88a944e20fe760579911d8b73667",
       "height": 213,
       "txBytes": 758,
       "inputs": 1,
-      "largestUnlockBytes": 100
+      "largestUnlockBytes": 100,
+      "feeSats": 1758
     },
     {
       "branch": "A",
       "step": "fund",
-      "txid": "0dba530cdedb324eae7b92640f5792016d40ab43afa6aa7e87a1f2d152831cbf",
+      "txid": "d9e6704c85a81b9b1633d731cb174e022ebbe0d8ab47c92d7d9ffd777b978338",
       "height": 214,
       "txBytes": 6872,
       "inputs": 5,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 7062
     },
     {
       "branch": "A",
       "step": "markAsPaid",
-      "txid": "8677100bfbea318e63b5cd3c38396ac073f9b57ae03a8b7e49bcedfe5b3221c2",
+      "txid": "e75b21377af29155741875f3f1a35a2977d5a54570049a555a2c9b1cc13c9a48",
       "height": 215,
       "txBytes": 6168,
       "inputs": 3,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 6358
     },
     {
       "branch": "A",
       "step": "release",
-      "txid": "2bd819d0843d542004e25965e746aef597fda58d0f10e2f0ab95f6e4e67eaab7",
+      "txid": "47e49386049db35f0545ff43473dd1b84f9f155b2d49f2ae90164c868cbdfd88",
       "height": 217,
       "txBytes": 7225,
       "inputs": 7,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 7415
     },
     {
       "branch": "B",
       "step": "createEscrow",
-      "txid": "93ce651fc6a6acdb7513dcccbcc10df751d449643fef6bc6ca0615974d2e58e1",
+      "txid": "a902a8bb8203f0263cf113bf4900a35ce17721f85501834dce05f1a479a65a79",
       "height": 223,
       "txBytes": 754,
       "inputs": 1,
-      "largestUnlockBytes": 100
+      "largestUnlockBytes": 100,
+      "feeSats": 1754
     },
     {
       "branch": "B",
       "step": "deposit",
-      "txid": "7d0965c5cae2b3d201696b194448d75547674de7bfcdbb6c36bfdc34876c9800",
+      "txid": "c423dd8390532867d809c41d0e93659cbd98fbf760edf4fc2818e947ac61c599",
       "height": 224,
       "txBytes": 8420,
       "inputs": 6,
-      "largestUnlockBytes": 6888
+      "largestUnlockBytes": 6888,
+      "feeSats": 8610
     },
     {
       "branch": "B",
       "step": "markAsPaid",
-      "txid": "bf445efc2d0c644ea238c4c0d4ca4496501374c054a46aa2f27dc57669b53d6a",
+      "txid": "92d94f112ea6f8fc51ea491ff164ffe690be7d84ad0e7bc72cf0507df643b652",
       "height": 225,
       "txBytes": 7638,
       "inputs": 3,
-      "largestUnlockBytes": 6888
+      "largestUnlockBytes": 6888,
+      "feeSats": 7828
     },
     {
       "branch": "B",
       "step": "release",
-      "txid": "022450893de1faf173526119eb8d9332fa36cfb8c82ec45532732b6c3884f017",
+      "txid": "b91ccf8f5fcc60d581c01dab0af38b8c1ce550fc5829cf3acc6d3da6440aa605",
       "height": 227,
       "txBytes": 8748,
       "inputs": 7,
-      "largestUnlockBytes": 6888
+      "largestUnlockBytes": 6888,
+      "feeSats": 8938
     },
     {
       "branch": "C",
       "step": "createEscrow",
-      "txid": "e5a920039379edf761e54616b28f933c2360eeb95a07fc1651596dcc68b3b3a5",
+      "txid": "66205ef85b3b9d0a1b120888ec671e64753af63bd2f128698fc6d439d172a092",
       "height": 230,
       "txBytes": 758,
       "inputs": 1,
-      "largestUnlockBytes": 100
+      "largestUnlockBytes": 100,
+      "feeSats": 1758
     },
     {
       "branch": "C",
       "step": "fund",
-      "txid": "7a440e8dd9356c9f41daf03b22ba2c294800933899e9643bf1d727f1a25ac2a3",
+      "txid": "746d462ea3f9664201eacfb3b9c4591fe12790dccc28f6eedd439ca673223420",
       "height": 231,
       "txBytes": 6872,
       "inputs": 5,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 7062
     },
     {
       "branch": "C",
       "step": "markAsPaid",
-      "txid": "2894f375e4a610c3fc2275f8cc3d11ceee904319b0b514ec936e918d4195dae7",
+      "txid": "7001e20c0d45a644229029052b5ed9bf9ec897c7ead58a3ad989db919db8deb2",
       "height": 232,
       "txBytes": 6168,
       "inputs": 3,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 6358
     },
     {
       "branch": "C",
       "step": "buyerCancel",
-      "txid": "bbdae62ac7d5e57631b51687def1d56e3f1f2d57986720b66edfa27d3532f1c8",
+      "txid": "9373e266f303803c8d7743a0c846605850fc23d29a23a61aa42dbf3c8154b1a1",
       "height": 233,
       "txBytes": 7047,
       "inputs": 6,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 7237
     },
     {
       "branch": "D",
       "step": "createEscrow",
-      "txid": "34939aeed1b3c40748608987098aa540f87c56ef1c68b2b4e669f9748e6f3738",
+      "txid": "0f8d87cb3853199790f3d9e3e4e086bbff48c667f7cbd198affb112b5f05f47b",
       "height": 236,
       "txBytes": 758,
       "inputs": 1,
-      "largestUnlockBytes": 100
+      "largestUnlockBytes": 100,
+      "feeSats": 1758
     },
     {
       "branch": "D",
       "step": "fund",
-      "txid": "ced5e2311a8ea47ba3f52d51df7975f37a13ac50319d6a22e75d153a4728f3d8",
+      "txid": "02b24911e1a1afe46302c9154167c4767b2ad43763af515bf8fc430c371736ad",
       "height": 237,
       "txBytes": 6872,
       "inputs": 5,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 7062
     },
     {
       "branch": "D",
       "step": "sellerCancel",
-      "txid": "46c51175788a82a6e4d1d64c9acad6b89664ab4f8678fd2c9b5153b11317c2e1",
+      "txid": "1f6e429c3ea3448678d1e637f279de2509d02c04be9cf2b86ebfb0d12e305f4b",
       "height": 248,
       "txBytes": 7047,
       "inputs": 6,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 7237
     },
     {
       "branch": "E",
       "step": "createEscrow",
-      "txid": "3f5eea3a21f6e5743a6d38ec6daf60d82c6c86e9fc7de7545edf6d5767a787ef",
+      "txid": "75402776a15b221865cab1ddd5be00378477816696341970ac75bed5eb13ed37",
       "height": 251,
       "txBytes": 758,
       "inputs": 1,
-      "largestUnlockBytes": 100
+      "largestUnlockBytes": 100,
+      "feeSats": 1758
     },
     {
       "branch": "E",
       "step": "fund",
-      "txid": "7502660553067532041989b0bb67f408798fd06761988a48f787e4b9df807b83",
-      "height": 252,
-      "txBytes": 6872,
-      "inputs": 5,
-      "largestUnlockBytes": 5418
+      "txid": "85ccb5c346bb9d6b8d44b303bb87f3d5fbda3b4cc56aab3edb38e2f9eb0fd8da",
+      "height": 254,
+      "txBytes": 6925,
+      "inputs": 6,
+      "largestUnlockBytes": 5418,
+      "feeSats": 7062
     },
     {
       "branch": "E",
       "step": "markAsPaid",
-      "txid": "d4bd5e0bcaf7c1c5fbe385f392f585f5dec4da0b4c0b549ce9822196f3f7c360",
-      "height": 253,
+      "txid": "7ae33a3cf33dac4a2a1b30d9d5d985860d5fe38f2bcf406917ea8ce2d8ae5b08",
+      "height": 255,
       "txBytes": 6168,
       "inputs": 3,
-      "largestUnlockBytes": 5418
+      "largestUnlockBytes": 5418,
+      "feeSats": 6358
     },
     {
       "branch": "E",
       "step": "openDispute",
-      "txid": "317328965839d344603da7523d5165efe4310e860ee0411c14085220d4249cd4",
-      "height": 254,
+      "txid": "b5ce9843ac77652a7f99f7aa9bf650eef60bc33417ba05e7e2b7bd848ea52bbd",
+      "height": 256,
       "txBytes": 7236,
       "inputs": 6,
-      "largestUnlockBytes": 5419
+      "largestUnlockBytes": 5419,
+      "feeSats": 7426
     },
     {
       "branch": "E",
       "step": "resolveDispute",
-      "txid": "586468ec6c6d09b221fbd76cc813b6f6493f3ab0053e70231b9c9c7ecc691b2f",
-      "height": 256,
-      "txBytes": 7665,
+      "txid": "6101c36f6f5a78f84d231cf39f99f868943b7b214d953add12e6fc151e071224",
+      "height": 258,
+      "txBytes": 7666,
       "inputs": 8,
-      "largestUnlockBytes": 5498
+      "largestUnlockBytes": 5499,
+      "feeSats": 7855
     }
   ]
 }

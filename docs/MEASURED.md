@@ -145,7 +145,7 @@ signature or a key outside the panel in the first slot), and the three valid pai
 
 ## Regtest (real consensus limits)
 
-Measured 2026-11-18 05:03 UTC on the contracts with the 2-of-3 arbitration panel (decision 0008), on a stock Bitcoin
+Measured 2026-11-18 10:39 UTC on the contracts with the 2-of-3 arbitration panel (decision 0008), on a stock Bitcoin
 Cash Node 29.0.0 (`/Bitcoin Cash Node:29.0.0(EB32.0)/`, image `mainnet/bitcoin-cash-node:v29.0.0`), not a relaxed
 build. Commands:
 
@@ -166,38 +166,45 @@ unit, 1 reserve unit).
 
 All five branches passed, and each branch checked on the node what the recipients received and that the escrow
 kept only its reserve. Branch E was decided by two of the three panel members (A and B, two ECDSA signatures checked
-by `checkMultiSig`). Every transaction below was accepted to the mempool and mined at the height shown.
+by `checkMultiSig`). Every transaction below was accepted to the mempool and mined at the height shown. The miner
+fee is the value of the inputs less the value of the outputs, read back from the node by `src/lifecycle/inspect.ts`;
+for all 20 transactions it equals the `fee` the node reports in `getblock <hash> 2`.
 
-| Branch | Step | Txid | Height | Tx bytes | Inputs | Largest unlocking script |
-|---|---|---|---|---|---|---|
-| A | createEscrow | `daf5e67e6f09716aaf25ea5f21ae5b6f068276890c61424ae0701f06c6b2da39` | 213 | 758 | 1 | 100 / 10,000 |
-| A | fund | `0dba530cdedb324eae7b92640f5792016d40ab43afa6aa7e87a1f2d152831cbf` | 214 | 6872 | 5 | 5,418 / 10,000 |
-| A | markAsPaid | `8677100bfbea318e63b5cd3c38396ac073f9b57ae03a8b7e49bcedfe5b3221c2` | 215 | 6168 | 3 | 5,418 / 10,000 |
-| A | release | `2bd819d0843d542004e25965e746aef597fda58d0f10e2f0ab95f6e4e67eaab7` | 217 | 7225 | 7 | 5,418 / 10,000 |
-| B | createEscrow | `93ce651fc6a6acdb7513dcccbcc10df751d449643fef6bc6ca0615974d2e58e1` | 223 | 754 | 1 | 100 / 10,000 |
-| B | deposit | `7d0965c5cae2b3d201696b194448d75547674de7bfcdbb6c36bfdc34876c9800` | 224 | 8420 | 6 | 6,888 / 10,000 |
-| B | markAsPaid | `bf445efc2d0c644ea238c4c0d4ca4496501374c054a46aa2f27dc57669b53d6a` | 225 | 7638 | 3 | 6,888 / 10,000 |
-| B | release | `022450893de1faf173526119eb8d9332fa36cfb8c82ec45532732b6c3884f017` | 227 | 8748 | 7 | 6,888 / 10,000 |
-| C | createEscrow | `e5a920039379edf761e54616b28f933c2360eeb95a07fc1651596dcc68b3b3a5` | 230 | 758 | 1 | 100 / 10,000 |
-| C | fund | `7a440e8dd9356c9f41daf03b22ba2c294800933899e9643bf1d727f1a25ac2a3` | 231 | 6872 | 5 | 5,418 / 10,000 |
-| C | markAsPaid | `2894f375e4a610c3fc2275f8cc3d11ceee904319b0b514ec936e918d4195dae7` | 232 | 6168 | 3 | 5,418 / 10,000 |
-| C | buyerCancel | `bbdae62ac7d5e57631b51687def1d56e3f1f2d57986720b66edfa27d3532f1c8` | 233 | 7047 | 6 | 5,418 / 10,000 |
-| D | createEscrow | `34939aeed1b3c40748608987098aa540f87c56ef1c68b2b4e669f9748e6f3738` | 236 | 758 | 1 | 100 / 10,000 |
-| D | fund | `ced5e2311a8ea47ba3f52d51df7975f37a13ac50319d6a22e75d153a4728f3d8` | 237 | 6872 | 5 | 5,418 / 10,000 |
-| D | sellerCancel | `46c51175788a82a6e4d1d64c9acad6b89664ab4f8678fd2c9b5153b11317c2e1` | 248 | 7047 | 6 | 5,418 / 10,000 |
-| E | createEscrow | `3f5eea3a21f6e5743a6d38ec6daf60d82c6c86e9fc7de7545edf6d5767a787ef` | 251 | 758 | 1 | 100 / 10,000 |
-| E | fund | `7502660553067532041989b0bb67f408798fd06761988a48f787e4b9df807b83` | 252 | 6872 | 5 | 5,418 / 10,000 |
-| E | markAsPaid | `d4bd5e0bcaf7c1c5fbe385f392f585f5dec4da0b4c0b549ce9822196f3f7c360` | 253 | 6168 | 3 | 5,418 / 10,000 |
-| E | openDispute | `317328965839d344603da7523d5165efe4310e860ee0411c14085220d4249cd4` | 254 | 7236 | 6 | 5,419 / 10,000 |
-| E | resolveDispute | `586468ec6c6d09b221fbd76cc813b6f6493f3ab0053e70231b9c9c7ecc691b2f` | 256 | 7665 | 8 | 5,498 / 10,000 |
+| Branch | Step | Txid | Height | Tx bytes | Inputs | Largest unlocking script | Miner fee (sat) |
+|---|---|---|---|---|---|---|---|
+| A | createEscrow | `5d87fe6dace39981953192be84857f45785b88a944e20fe760579911d8b73667` | 213 | 758 | 1 | 100 / 10,000 | 1,758 |
+| A | fund | `d9e6704c85a81b9b1633d731cb174e022ebbe0d8ab47c92d7d9ffd777b978338` | 214 | 6872 | 5 | 5,418 / 10,000 | 7,062 |
+| A | markAsPaid | `e75b21377af29155741875f3f1a35a2977d5a54570049a555a2c9b1cc13c9a48` | 215 | 6168 | 3 | 5,418 / 10,000 | 6,358 |
+| A | release | `47e49386049db35f0545ff43473dd1b84f9f155b2d49f2ae90164c868cbdfd88` | 217 | 7225 | 7 | 5,418 / 10,000 | 7,415 |
+| B | createEscrow | `a902a8bb8203f0263cf113bf4900a35ce17721f85501834dce05f1a479a65a79` | 223 | 754 | 1 | 100 / 10,000 | 1,754 |
+| B | deposit | `c423dd8390532867d809c41d0e93659cbd98fbf760edf4fc2818e947ac61c599` | 224 | 8420 | 6 | 6,888 / 10,000 | 8,610 |
+| B | markAsPaid | `92d94f112ea6f8fc51ea491ff164ffe690be7d84ad0e7bc72cf0507df643b652` | 225 | 7638 | 3 | 6,888 / 10,000 | 7,828 |
+| B | release | `b91ccf8f5fcc60d581c01dab0af38b8c1ce550fc5829cf3acc6d3da6440aa605` | 227 | 8748 | 7 | 6,888 / 10,000 | 8,938 |
+| C | createEscrow | `66205ef85b3b9d0a1b120888ec671e64753af63bd2f128698fc6d439d172a092` | 230 | 758 | 1 | 100 / 10,000 | 1,758 |
+| C | fund | `746d462ea3f9664201eacfb3b9c4591fe12790dccc28f6eedd439ca673223420` | 231 | 6872 | 5 | 5,418 / 10,000 | 7,062 |
+| C | markAsPaid | `7001e20c0d45a644229029052b5ed9bf9ec897c7ead58a3ad989db919db8deb2` | 232 | 6168 | 3 | 5,418 / 10,000 | 6,358 |
+| C | buyerCancel | `9373e266f303803c8d7743a0c846605850fc23d29a23a61aa42dbf3c8154b1a1` | 233 | 7047 | 6 | 5,418 / 10,000 | 7,237 |
+| D | createEscrow | `0f8d87cb3853199790f3d9e3e4e086bbff48c667f7cbd198affb112b5f05f47b` | 236 | 758 | 1 | 100 / 10,000 | 1,758 |
+| D | fund | `02b24911e1a1afe46302c9154167c4767b2ad43763af515bf8fc430c371736ad` | 237 | 6872 | 5 | 5,418 / 10,000 | 7,062 |
+| D | sellerCancel | `1f6e429c3ea3448678d1e637f279de2509d02c04be9cf2b86ebfb0d12e305f4b` | 248 | 7047 | 6 | 5,418 / 10,000 | 7,237 |
+| E | createEscrow | `75402776a15b221865cab1ddd5be00378477816696341970ac75bed5eb13ed37` | 251 | 758 | 1 | 100 / 10,000 | 1,758 |
+| E | fund | `85ccb5c346bb9d6b8d44b303bb87f3d5fbda3b4cc56aab3edb38e2f9eb0fd8da` | 254 | 6925 | 6 | 5,418 / 10,000 | 7,062 |
+| E | markAsPaid | `7ae33a3cf33dac4a2a1b30d9d5d985860d5fe38f2bcf406917ea8ce2d8ae5b08` | 255 | 6168 | 3 | 5,418 / 10,000 | 6,358 |
+| E | openDispute | `b5ce9843ac77652a7f99f7aa9bf650eef60bc33417ba05e7e2b7bd848ea52bbd` | 256 | 7236 | 6 | 5,419 / 10,000 | 7,426 |
+| E | resolveDispute | `6101c36f6f5a78f84d231cf39f99f868943b7b214d953add12e6fc151e071224` | 258 | 7666 | 8 | 5,499 / 10,000 | 7,855 |
 
 Notes from the same run:
 
 - 20 transactions, no rejection by the node. The largest unlocking script is 6,888 bytes (token escrow),
   68% of the 10,000 byte input limit; the largest transaction is 8,748 bytes. No feature was cut for size.
 - Against the single-arbitrator run, every unlocking script grows by 129 bytes (BCH 5,289 to 5,418, token 6,759 to
-  6,888) and `resolveDispute` with two signatures by 208 (5,290 to 5,498), matching the mock network measurements
+  6,888) and `resolveDispute` with two signatures by 209 (5,290 to 5,499), matching the mock network measurements
   above.
+- Miner fees: 118,654 sats for the 20 transactions. Every contract call paid its size plus 137 to 190 sats (1.02 to
+  1.03 sat per byte), from 6,358 sats (`markAsPaid`) to 8,938 sats (token `release`). Each `createEscrow` paid its
+  size plus 1,000 sats (1,754 to 1,758 sats): the SDK's deployment adds a fixed 1,000 sat margin to the
+  transaction size when the caller passes no `fee` (`@solidcash/solidcash` 0.51.1, `dist/stateful/sc-deploy.js`).
+  The funding transactions that give each party its coins are not counted.
 - Transaction sizes differ by a few bytes between runs (signature length) and by the number of coins the caller's
   wallet adds.
 - Branch D waited for the seller's waiting time by advancing the node's mock clock and mining blocks until the
@@ -205,8 +212,11 @@ Notes from the same run:
 - The SDK prints `STB debug() best-effort error: ... NotSeller` and similar lines on calls that then succeed. They
   come from a `console.debug` in its send discovery probe and do not affect the broadcast transaction.
 - The run took about 3 minutes on this host with the node limited to one CPU.
-- The earlier run of 2026-11-17 17:19 UTC (single arbitrator, before decision 0008) passed the same five branches in
-  20 transactions; its transactions are no longer listed because the contract has changed since.
+- Earlier runs passed the same five branches in 20 transactions: 2026-11-17 17:19 UTC (single arbitrator, before
+  decision 0008) and 2026-11-18 05:03 UTC (same contracts as this run, before fees were recorded). Their
+  transactions are no longer listed. Against the 05:03 run, 18 of the 20 transactions have the same size; branch E
+  `fund` is 53 bytes larger here (6,925 against 6,872; 6 inputs against 5, the seller's wallet added a coin) and
+  branch E `resolveDispute` one byte larger (signature length).
 
 ## Wallet signing (branch W)
 

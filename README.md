@@ -101,9 +101,41 @@ keeps its references honest.
 | SolidHat tests (92, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
 | Sabotage: a check removed from a copy of a contract makes its named test fail | `docs/MEASURED.md` |
 | Script and transaction sizes of every function | `docs/MEASURED.md` |
+| Size and miner fee of each call on regtest | "Size and cost" below, `examples/regtest.json` |
 | Five branches on stock BCHN 29.0.0 regtest, 20 txids | `docs/MEASURED.md`, `examples/regtest.json` |
 | Web app end-to-end tests on Chromium and WebKit (iPhone 13), and on the public URL | `e2e/`, `docs/MEASURED.md` |
 | Mainnet run | not yet, see "Known limits" |
+
+## Size and cost
+
+Every call to an escrow carries the whole contract in one input, so the size of a call is set by the contract, not
+by the trade. Redeem scripts: `JaminEscrow` 5,114 bytes, `JaminTokenEscrow` 6,518 bytes. The limit per input is
+10,000 bytes of unlocking script. Each row is one transaction of the stock BCHN 29.0.0 regtest run (branch named,
+txids in `examples/regtest.json`); the two "mock" rows come from the production-profile mock network, as the regtest
+token branch does not open a dispute. Sources: `docs/MEASURED.md`, sections "Regtest (real consensus limits)" and
+"Escrow contract sizes".
+
+| Contract | Function | Branch | Largest unlocking script (B) | Transaction (B) | Miner fee, regtest (sat) | Miner fee, mainnet (sat) |
+| --- | --- | --- | --- | --- | --- | --- |
+| JaminEscrow | `createEscrow` | A | 100 | 758 | 1,758 | not run yet |
+| JaminEscrow | `fund` | A | 5,418 | 6,872 | 7,062 | not run yet |
+| JaminEscrow | `markAsPaid` | A | 5,418 | 6,168 | 6,358 | not run yet |
+| JaminEscrow | `release` | A | 5,418 | 7,225 | 7,415 | not run yet |
+| JaminEscrow | `buyerCancel` | C | 5,418 | 7,047 | 7,237 | not run yet |
+| JaminEscrow | `sellerCancel` | D | 5,418 | 7,047 | 7,237 | not run yet |
+| JaminEscrow | `openDispute` | E | 5,419 | 7,236 | 7,426 | not run yet |
+| JaminEscrow | `resolveDispute` | E | 5,499 | 7,666 | 7,855 | not run yet |
+| JaminTokenEscrow | `createEscrow` | B | 100 | 754 | 1,754 | not run yet |
+| JaminTokenEscrow | `deposit` | B | 6,888 | 8,420 | 8,610 | not run yet |
+| JaminTokenEscrow | `markAsPaid` | B | 6,888 | 7,638 | 7,828 | not run yet |
+| JaminTokenEscrow | `release` | B | 6,888 | 8,748 | 8,938 | not run yet |
+| JaminTokenEscrow | `openDispute` | mock | 6,856 | 8,671 | not run on regtest | not run yet |
+| JaminTokenEscrow | `resolveDispute` | mock | 6,967 | 9,840 | not run on regtest | not run yet |
+
+The token escrow's `buyerCancel` and `sellerCancel` have tests but no size measurement yet. A contract call pays
+about 1.03 sat per byte. `createEscrow` pays 1,000 sats more than its size, a margin the SDK's
+deployment adds when no fee is given. Fees on mainnet are added here after the mainnet run (see "Known limits").
+Sizes vary by a few bytes between runs (signature length) and by the number of coins the caller's wallet adds.
 
 ## Upstream contributions
 
