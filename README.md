@@ -86,8 +86,13 @@ redirect it. Roles prove themselves with `checkSig` against the keys in the cont
 | Satoshi and token container payouts as covenant outputs | `this.transfer`, `this.tokens[c].transfer` |
 | Token deposit checked through `this.outState.tokens[c]` | `JaminTokenEscrow.deposit` |
 | Absolute time lock `tx.time` | `sellerCancel` |
+| SDK: `StatefulContract.deploy`, `connect`, `TransactionBuilder` | `src/lifecycle/` (regtest and mainnet runner) |
+| SDK: `SignatureAlgorithm.ECDSA` signatures for `checkMultiSig` | panel signers in `src/lifecycle/context.ts` |
+| SDK: `Signer.external`, a wallet paying and signing its own inputs | `src/lifecycle/wallet-branch.ts` (branch W) |
+| SDK: `MockNetworkProvider` with the production profile | every SolidHat test |
 
-The full table, with file and line and the test for each row, is `docs/FEATURES.md`.
+The full table, with file and line and the test for each row, is `docs/FEATURES.md`; `tests/features-doc.test.ts`
+keeps its references honest.
 
 ## Proof
 

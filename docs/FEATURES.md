@@ -1,12 +1,16 @@
 # SolidCash features used
 
-Each row names a SolidCash language or SDK feature, where the contracts use it, and a test that runs that code on
-the mock network with the production profile (`npm run solidhat:test`). A feature without such a test is not listed.
+Each row names a SolidCash language or SDK feature, where the code uses it, and a test that runs that code on the
+mock network with the production profile. Rows 1 to 21 are language features, run by `npm run solidhat:test`; rows 22
+to 26 are SDK features, run by the SolidHat tests and, where named, by the `tests/` suite (`npm test`). A feature
+without such a test is not listed. `tests/features-doc.test.ts` checks that every `file:line` below still points at
+the named code and that every quoted test name exists.
 
 Test files: `test/JaminEscrow.test.ts`, `test/JaminEscrow.reject.test.ts`, `test/JaminEscrow.state.test.ts` and
 `test/JaminEscrow.covenant.test.ts` (BCH), `test/JaminTokenEscrow.test.ts`, `test/JaminTokenEscrow.reject.test.ts` and
 `test/JaminTokenEscrow.covenant.test.ts` (CashToken), `test/JaminEscrow.panel.test.ts` (the arbitration panel, both
-contracts), `test/lifecycle.test.ts` (the five branches end to end).
+contracts), `test/lifecycle.test.ts` (the five branches end to end), `test/JaminEscrow.wallet.test.ts` (a seller signing through a
+wallet), `tests/mainnet-context.test.ts` (the mainnet and regtest runner against the mock network).
 
 | # | Feature | Where | Test that exercises it |
 |---|---|---|---|
@@ -31,3 +35,8 @@ contracts), `test/lifecycle.test.ts` (the five branches end to end).
 | 19 | Internal and internal view functions | `contracts/EscrowBase.scash:122` | BCH "resolves a two-sided dispute for the buyer" and "... for the seller" |
 | 20 | Conditional payouts chosen by a parameter | `contracts/JaminEscrow.scash:80` | BCH "resolves a two-sided dispute for the buyer" and "... for the seller" |
 | 21 | `checkMultiSig`: 2-of-3 arbitration panel with ECDSA signatures in key order | `contracts/EscrowBase.scash:66`, used by `resolveDispute` at `contracts/JaminEscrow.scash:61` and `contracts/JaminTokenEscrow.scash:68` | panel "resolves with the signatures of arbitrator and arbiterB" and the two pairs after it; "refuses one panel signature with an outsider signature", "refuses the same panel signature given twice", "refuses two panel signatures out of panel key order", "refuses Schnorr signatures, which OP_CHECKMULTISIG does not accept here", "runs with a single arbitrator who fills all three slots and signs once"; token panel "resolves for the seller with the signatures of panel members B and C"; BCH and token "rejects a dispute resolution signed by the buyer / seller / outsider (NotArbitrator)" |
+| 22 | `StatefulContract.deploy` and `connect(signer)`: one instance per escrow, called by each party | `src/lifecycle/branches.ts:36`, `src/lifecycle/context.ts:82` | lifecycle "A: BCH release pays the buyer and the fee, and leaves only the reserve" and the four branches after it |
+| 23 | `SignatureTemplate` with `SignatureAlgorithm.ECDSA` for the panel's `checkMultiSig` | `src/lifecycle/context.ts:64` | panel "refuses Schnorr signatures, which OP_CHECKMULTISIG does not accept here"; lifecycle "E: a one-sided dispute won by the buyer returns the buyer's dispute fee" |
+| 24 | `Signer.external`: a wallet pays and signs its own inputs (`bch_signTransaction`) | `src/lifecycle/wallet-branch.ts:35` | wallet "creates, funds and releases an escrow with every seller input signed by the wallet"; runner "runs branch W with the seller signing through the wallet, every broadcast gated and recorded" |
+| 25 | `TransactionBuilder` with `unlockP2PKH` and `addBchChangeOutputIfNeeded` | `src/lifecycle/mainnet.ts:54` | runner "runs branch A and records every broadcast in the ledger", "splits a larger token coin for the token branch and refuses without one" |
+| 26 | `MockNetworkProvider` with the `production` profile (consensus and standardness limits) | `test/helpers/escrow.ts:48` | every SolidHat test; e.g. BCH "creates a funded escrow with the basis-point fee" |
