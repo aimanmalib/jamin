@@ -205,5 +205,52 @@
       "largestUnlockBytes": 5499,
       "feeSats": 7855
     }
-  ]
+  ],
+  "refused": {
+    "node": "Bitcoin Cash Node 29.0.0",
+    "measuredAt": "2026-11-18T16:41:00Z",
+    "branch": "R",
+    "asset": "BCH",
+    "address": "bchreg:pw6rv6wtuy4qkqna3pdwvffvh5la0ql8le0ajfredeu5sf7pm528kfdyhjg3l",
+    "steps": [
+      {
+        "step": "createEscrow",
+        "txid": "e6cb24d2b034555ff80ce95ff8b08b40c234cd7fc5875b7162cfab3a3d64aa8a",
+        "height": 346
+      },
+      {
+        "step": "fund",
+        "txid": "f42851632f8075ecb25e3a99ae287c47e3594bd0ec4e265280abc0be0a5622fa",
+        "height": 347
+      },
+      {
+        "step": "sellerCancel",
+        "refused": true,
+        "by": "seller",
+        "expected": "TooEarly",
+        "rawTxHash": "1fee5cb20713c81aece3c99cb54b393c7932a6261475fc93656e2b0804d87ab1",
+        "serverError": "non-mandatory-script-verify-flag (Locktime requirement not satisfied) (code 64)",
+        "at": "2026-11-18T16:41:06.092Z"
+      },
+      {
+        "step": "markAsPaid",
+        "txid": "378219370c8098304770998635a868586896870af07ec08a9e687100dabf0060",
+        "height": 348
+      },
+      {
+        "step": "release",
+        "refused": true,
+        "by": "buyer",
+        "expected": "NotSeller",
+        "rawTxHash": "0609cccd4e29cfb915fd5c4aca06d7df549b9cb79cb70231f230301411a46639",
+        "serverError": "mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation) (code 16)",
+        "at": "2026-11-18T16:41:13.836Z"
+      },
+      {
+        "step": "release",
+        "txid": "6b49d4f86746d0db82b4d4e08c15cd8f1a649706f1e09aaf93ad2b9573d7c0d4",
+        "height": 350
+      }
+    ]
+  }
 }

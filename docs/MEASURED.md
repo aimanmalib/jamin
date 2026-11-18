@@ -218,6 +218,31 @@ Notes from the same run:
   `fund` is 53 bytes larger here (6,925 against 6,872; 6 inputs against 5, the seller's wallet added a coin) and
   branch E `resolveDispute` one byte larger (signature length).
 
+### Refused by the node (branch R)
+
+Measured 2026-11-18 16:41 UTC on the same node (Bitcoin Cash Node 29.0.0, stock build, `-acceptnonstdtxn=0`).
+Command: `npx tsx scripts/lifecycle.ts --network regtest --branches R`, then
+`npx tsx scripts/regtest-example.ts --refused state/regtest/run-<time>.json` (writes the `refused` escrow of
+`examples/regtest.json`). Each forbidden call was built by the SDK as a valid call, then changed and signed again
+(decision 0015) and sent as raw bytes. The node's text is verbatim, after the provider's own retry note.
+
+| Step | Signed by | Contract rule | Node's rejection text | Raw transaction hash |
+|---|---|---|---|---|
+| `sellerCancel`, locktime one second behind the median time past | seller | `TooEarly` | `non-mandatory-script-verify-flag (Locktime requirement not satisfied) (code 64)` | `1fee5cb20713c81aece3c99cb54b393c7932a6261475fc93656e2b0804d87ab1` |
+| `release` | buyer | `NotSeller` | `mandatory-script-verify-flag-failed (Signature must be zero for failed CHECK(MULTI)SIG operation) (code 16)` | `0609cccd4e29cfb915fd5c4aca06d7df549b9cb79cb70231f230301411a46639` |
+
+After each refusal every coin the refused transaction spent was still unspent. The escrow's mined steps:
+`createEscrow` `e6cb24d2b034555ff80ce95ff8b08b40c234cd7fc5875b7162cfab3a3d64aa8a` (block 346), `fund`
+`f42851632f8075ecb25e3a99ae287c47e3594bd0ec4e265280abc0be0a5622fa` (347), `markAsPaid`
+`378219370c8098304770998635a868586896870af07ec08a9e687100dabf0060` (348), and the seller's valid `release`
+`6b49d4f86746d0db82b4d4e08c15cd8f1a649706f1e09aaf93ad2b9573d7c0d4` (350, 7,225 bytes, fee 7,415 sats); the buyer
+received the amount and the fee recipient the fee.
+
+Failed attempts before this run, same day: the SDK's `build()` output had no change output, and the node refused it
+for `absurdly-high-fee, 50060478 > 10000000 (code 256)` before checking any script; a later attempt replaced only the
+P2PKH signatures because the contract signature covers its function body, not the redeem script, so the node refused
+it for the signature instead of the locktime. Both led to decision 0015's capture and covered-bytecode search.
+
 ## Wallet signing (branch W)
 
 Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with
