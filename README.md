@@ -18,7 +18,7 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   WalletConnect requests and signs the seller's coins (decision 0009). English and Bahasa Melayu.
 - **Contracts:** `contracts/` (four files, native SolidCash): `EscrowBase.scash`, `JaminEscrow.scash` (BCH),
   `JaminTokenEscrow.scash` (CashTokens such as PUSD), `FeeMath.scash`. Rules: `docs/SPEC.md`.
-- **Tests:** `npm ci && npm run solidhat:test`: 89 SolidHat tests in 9 files on the mock network with the production
+- **Tests:** `npm ci && npm run solidhat:test`: 92 SolidHat tests in 10 files on the mock network with the production
   profile (count in `docs/MEASURED.md`). Every attack in `docs/THREAT_MODEL.md` names the test that runs it.
 - **Real consensus limits:** all five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with
   standardness rules on, the dispute decided by two of the three panel members: 20 transactions mined, largest
@@ -91,7 +91,7 @@ The full table, with file and line and the test for each row, is `docs/FEATURES.
 
 | What | Where |
 | --- | --- |
-| SolidHat tests (89, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
+| SolidHat tests (92, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
 | Sabotage: a check removed from a copy of a contract makes its named test fail | `docs/MEASURED.md` |
 | Script and transaction sizes of every function | `docs/MEASURED.md` |
 | Five branches on stock BCHN 29.0.0 regtest, 20 txids | `docs/MEASURED.md`, `examples/regtest.json` |

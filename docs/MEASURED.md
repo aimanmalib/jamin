@@ -231,9 +231,12 @@ also signed (`test/JaminEscrow.wallet.test.ts`); that is why a wallet cannot sig
 
 ## Test count
 
-`npx solidhat test` on 2026-11-18: 9 files, 89 tests, all passing (BCH 11 lifecycle, 11 rejections, 13 state rules,
-8 payout checks; CashToken 6 lifecycle, 11 rejections, 6 payout checks; 5 end-to-end branches; 18 arbitration panel
-tests in `test/JaminEscrow.panel.test.ts`, 16 BCH and 2 token). On 2026-11-17, before the panel: 8 files, 71 tests.
+`npm run gate` on Depot CI on 2026-11-18 08:23 UTC (run `nvg2zqcxq3`, commit e2bd231, after `npm ci`): `solidhat test`
+10 files, 92 tests, all passing; vitest 15 files, 66 tests; build passed. The three new SolidHat tests are the
+wallet tests in `test/JaminEscrow.wallet.test.ts` (decision 0009). Before them, on 2026-11-18: 9 files, 89 tests
+(BCH 11 lifecycle, 11 rejections, 13 state rules, 8 payout checks; CashToken 6 lifecycle, 11 rejections, 6 payout
+checks; 5 end-to-end branches; 18 arbitration panel tests in `test/JaminEscrow.panel.test.ts`, 16 BCH and 2 token).
+On 2026-11-17, before the panel: 8 files, 71 tests.
 
 ## Web app end-to-end tests
 
