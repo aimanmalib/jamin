@@ -11,6 +11,12 @@ export type Actor = 'seller' | 'buyer' | 'arbitrator' | 'outsider';
 export type Action = 'markAsPaid' | 'release' | 'buyerCancel' | 'sellerCancel' | 'openDispute' | 'resolveForBuyer'
   | 'resolveForSeller';
 
+/** Who adds the second signature when the arbitrator (panel member A) decides: member B, or nobody (A signs twice). */
+export type Cosign = 'B' | 'none';
+export const COSIGNS: readonly Cosign[] = ['B', 'none'];
+/** The keys behind the two signatures of a decision, as shown in the log. */
+export type SignerName = 'panelA' | 'panelB' | 'seller' | 'buyer' | 'outsider';
+
 export const ACTIONS: readonly Action[] = ['markAsPaid', 'release', 'buyerCancel', 'sellerCancel', 'openDispute',
   'resolveForBuyer', 'resolveForSeller'];
 
@@ -35,6 +41,8 @@ export interface LogEntry {
   txid?: string;
   bytes?: number;
   error?: string;
+  /** The two signatures passed to OP_CHECKMULTISIG, for a dispute decision. */
+  signers?: SignerName[];
   /** The first line of the rejection message, for the curious. */
   detail?: string;
 }
@@ -117,22 +125,26 @@ export class Simulation {
   }
 
   /** Runs `action` signed by `actor`. A rejection is logged with the contract error's name, not thrown. */
-  async act(actor: Actor, action: Action): Promise<LogEntry> {
+  async act(actor: Actor, action: Action, cosign: Cosign = 'B'): Promise<LogEntry> {
     let entry: LogEntry;
+    const decides = action === 'resolveForBuyer' || action === 'resolveForSeller';
+    const signers = decides ? signersOf(actor, cosign) : [];
+    const shown = decides ? { signers } : {};
     try {
       // Call builders are thenable, so they are never returned from an async function.
       const lockTime = await this.provider.getMedianTimePast() - 1;
-      const { txid, hex } = await this.build(actor, action, lockTime).send();
-      entry = { actor, action, ok: true, txid, bytes: hex.length / 2 };
+      const { txid, hex } = await this.build(actor, action, lockTime, signers).send();
+      entry = { actor, action, ok: true, txid, bytes: hex.length / 2, ...shown };
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
-      entry = { actor, action, ok: false, error: rejectionName(message), detail: message.split('\n')[0]?.slice(0, 300) ?? '' };
+      entry = { actor, action, ok: false, error: rejectionName(message), ...shown,
+        detail: message.split('\n')[0]?.slice(0, 300) ?? '' };
     }
     this.log.push(entry);
     return entry;
   }
 
-  private build(actor: Actor, action: Action, lockTime: number): CallBuilder {
+  private build(actor: Actor, action: Action, lockTime: number, signers: SignerName[]): CallBuilder {
     const who = this.people[actor];
     const sc = this.sc.connect(who);
     const sig = new SignatureTemplate(who.privateKey);
@@ -142,7 +154,7 @@ export class Simulation {
         return call(sc, 'openDispute', sig, actor !== 'seller').withValue(this.terms.disputeFee);
       case 'resolveForBuyer':
       case 'resolveForSeller':
-        return call(sc, 'resolveDispute', ...this.panelSigs(who), ...cat, action === 'resolveForBuyer');
+        return call(sc, 'resolveDispute', ...signers.map((n) => this.ecdsa(n)), ...cat, action === 'resolveForBuyer');
       case 'sellerCancel':
         return this.sellerCancel(sc, sig, cat, lockTime);
       default:
@@ -150,10 +162,10 @@ export class Simulation {
     }
   }
 
-  /** Two ECDSA signatures (OP_CHECKMULTISIG): the arbitrator with panel member B; anyone else signs twice alone. */
-  private panelSigs(who: Signer): SignatureTemplate[] {
-    const ecdsa = (s: Signer): SignatureTemplate => new SignatureTemplate(s.privateKey, undefined, SignatureAlgorithm.ECDSA);
-    return who === this.people.arbitrator ? [ecdsa(who), ecdsa(this.panelB)] : [ecdsa(who), ecdsa(who)];
+  /** An ECDSA signature (OP_CHECKMULTISIG takes no Schnorr signatures) by the named key. */
+  private ecdsa(name: SignerName): SignatureTemplate {
+    const key = name === 'panelA' ? this.people.arbitrator : name === 'panelB' ? this.panelB : this.people[name];
+    return new SignatureTemplate(key.privateKey, undefined, SignatureAlgorithm.ECDSA);
   }
 
   /** `lockTime` is a time-type locktime one second behind the median time past; with a locktime set the SDK takes the payment
@@ -165,6 +177,12 @@ export class Simulation {
     return this.category === undefined ? builder.transfer(to, back)
       : builder.tokenContainerTransfer(this.category, to, back);
   }
+}
+
+/** The arbitrator is panel member A and signs with member B, or alone (twice); anyone else signs twice alone. */
+export function signersOf(actor: Actor, cosign: Cosign): SignerName[] {
+  if (actor !== 'arbitrator') return [actor, actor];
+  return cosign === 'B' ? ['panelA', 'panelB'] : ['panelA', 'panelA'];
 }
 
 type CallBuilder = ReturnType<NonNullable<StatefulContract['call'][string]>>;

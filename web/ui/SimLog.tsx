@@ -4,6 +4,14 @@ import { useEffect, useRef, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import type { LogEntry } from '../sim/engine.js';
 
+/** The two signatures of a dispute decision, so the 2-of-3 panel is visible in the log. */
+function Signatures({ entry }: { entry: LogEntry }): ReactNode {
+  const { t } = useLang();
+  if (!entry.signers) return null;
+  const names = entry.signers.map((n) => t(`log.signer.${n}`)).join(', ');
+  return <div className="small" data-testid="signatures">{t('log.signatures', { names })}</div>;
+}
+
 /** The newest entry again, right under the action buttons, so a phone shows the result without scrolling. */
 export function LastResult({ entry }: { entry: LogEntry | undefined }): ReactNode {
   const { t } = useLang();
@@ -31,6 +39,7 @@ export function SimLog({ log }: { log: LogEntry[] }): ReactNode {
           {entry.ok && entry.txid && (
             <div className="txid">{t('log.tx', { bytes: entry.bytes ?? 0 })} {entry.txid}</div>
           )}
+          <Signatures entry={entry} />
           {entry.ok && entry.action === 'wait' && <div className="small muted">{t('log.waited')}</div>}
           {!entry.ok && (
             <div className="small">

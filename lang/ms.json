@@ -87,7 +87,13 @@
     "actorLegend": "Anda ialah",
     "actionsTitle": "Bertindak sebagai {role}",
     "logTitle": "Transaksi",
-    "empty": "Mula dagangan untuk melihat transaksinya di sini."
+    "empty": "Mula dagangan untuk melihat transaksinya di sini.",
+    "panelLegend": "Tandatangan panel",
+    "panelNote": "Pertikaian diputuskan oleh panel tiga kunci. Mana-mana dua daripadanya mesti menandatangani; anda ahli A.",
+    "cosign": {
+      "B": "Ahli A dan ahli B (2 daripada 3)",
+      "none": "Ahli A seorang"
+    }
   },
   "actions": {
     "markAsPaid": {
@@ -112,11 +118,11 @@
     },
     "resolveForBuyer": {
       "label": "Putus untuk pembeli",
-      "who": "penimbang tara"
+      "who": "panel penimbang tara, 2 daripada 3"
     },
     "resolveForSeller": {
       "label": "Putus untuk penjual",
-      "who": "penimbang tara"
+      "who": "panel penimbang tara, 2 daripada 3"
     },
     "wait": {
       "label": "Biarkan tempoh menunggu berlalu",
@@ -141,6 +147,14 @@
       "resolveForBuyer": "putus untuk pembeli",
       "resolveForSeller": "putus untuk penjual",
       "resolveDispute": "putuskan pertikaian"
+    },
+    "signatures": "Tandatangan: {names}",
+    "signer": {
+      "panelA": "ahli panel A",
+      "panelB": "ahli panel B",
+      "seller": "penjual",
+      "buyer": "pembeli",
+      "outsider": "orang lain"
     }
   },
   "errors": {

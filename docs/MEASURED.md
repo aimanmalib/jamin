@@ -145,60 +145,68 @@ signature or a key outside the panel in the first slot), and the three valid pai
 
 ## Regtest (real consensus limits)
 
-Measured 2026-11-17 17:19 UTC on a stock Bitcoin Cash Node 29.0.0 (`/Bitcoin Cash Node:29.0.0(EB32.0)/`, image
-`mainnet/bitcoin-cash-node:v29.0.0`), not a relaxed build. Commands:
+Measured 2026-11-18 05:03 UTC on the contracts with the 2-of-3 arbitration panel (decision 0008), on a stock Bitcoin
+Cash Node 29.0.0 (`/Bitcoin Cash Node:29.0.0(EB32.0)/`, image `mainnet/bitcoin-cash-node:v29.0.0`), not a relaxed
+build. Commands:
 
 ```
 bash scripts/regtest-node.sh start
 npx tsx scripts/lifecycle.ts --network regtest
 bash scripts/regtest-node.sh stop
+npx tsx scripts/regtest-example.ts state/regtest/run-<time>.json   # writes examples/regtest.json
 ```
 
 The node runs with `-acceptnonstdtxn=0`, so relay standardness rules apply as on mainnet (BCHN regtest accepts
 non-standard transactions by default), and with `-upgrade12activationtime=1690000000` so the May 2026 upgrade is
 active from the first block, as it is on mainnet now. The chain is in tmpfs and is discarded on stop
-(decision 0004). Parties are keys of a phrase made for the run and never stored. Terms from `config/jamin.json`:
-BCH escrow 20,000 sats (fee 30 basis points, raised to the 546 sat floor), dispute fee 5,000 sats, waiting time
-3,600 seconds; token branch 200 units of a token minted on this chain (fee 1 unit, 1 reserve unit).
+(decision 0004). Parties, including the three panel members, are keys of a phrase made for the run and never
+stored. Terms from `config/jamin.json`: BCH escrow 20,000 sats (fee 30 basis points, raised to the 546 sat floor),
+dispute fee 5,000 sats, waiting time 3,600 seconds; token branch 200 units of a token minted on this chain (fee 1
+unit, 1 reserve unit).
 
 All five branches passed, and each branch checked on the node what the recipients received and that the escrow
-kept only its reserve. Every transaction below was accepted to the mempool and mined at the height shown.
+kept only its reserve. Branch E was decided by two of the three panel members (A and B, two ECDSA signatures checked
+by `checkMultiSig`). Every transaction below was accepted to the mempool and mined at the height shown.
 
 | Branch | Step | Txid | Height | Tx bytes | Inputs | Largest unlocking script |
 |---|---|---|---|---|---|---|
-| A | createEscrow | `c8188d2888fd43110d856c90df6035aa1f303aff7dbac1c7c2c42c4718a36409` | 213 | 758 | 1 | 100 / 10,000 |
-| A | fund | `0e98117aede2b6f65b6fe2301ae2ac1ddfd16a9ef52f4627d050d8105cfbd1dd` | 214 | 6743 | 5 | 5289 / 10,000 |
-| A | markAsPaid | `aab628a4c2dd6719620f469759425c78e6007d7f94abed8048da3a8c5e08a065` | 215 | 6039 | 3 | 5289 / 10,000 |
-| A | release | `1fcdde184be53988950db71353c0b270f5a725aaafe7311913a4d4112b80812e` | 217 | 7096 | 7 | 5289 / 10,000 |
-| B | createEscrow | `659daf8f932a9920282fbe5565d7aa200ce337b71dabe6d2c5b7211e314e1f4b` | 223 | 754 | 1 | 100 / 10,000 |
-| B | deposit | `f3b7bf4f08fc0999a3399f64214beb4ec64f1cf6ebb5d945e7f40fc9c9bd0088` | 224 | 8291 | 6 | 6759 / 10,000 |
-| B | markAsPaid | `a1cb52810556e0c1bf910f94f9306546679be4dbb167093037b0f4015267f22f` | 225 | 7509 | 3 | 6759 / 10,000 |
-| B | release | `852e7149b148ddfb4486b316c4635e1325ac489353e2c02500e43b7c27f3c92c` | 227 | 8619 | 7 | 6759 / 10,000 |
-| C | createEscrow | `116aa7bdd954d69d62c86c38167735b227d2d19bbe29ef62513263a5965d6973` | 230 | 758 | 1 | 100 / 10,000 |
-| C | fund | `8931b46e200124ca933383ee282cb69224d163d28dc7f8b1c23e3b122a95acf7` | 231 | 6743 | 5 | 5289 / 10,000 |
-| C | markAsPaid | `d299db7d4d2cfb1dc35e53520e75cf1a47dc0b4d9ffaff1d3e6d80e6dafa6578` | 232 | 6039 | 3 | 5289 / 10,000 |
-| C | buyerCancel | `83c878c11ec18b02f1c2b2264b698db0058e32d7a70c783d32cc9ebe9f470bfb` | 233 | 6918 | 6 | 5289 / 10,000 |
-| D | createEscrow | `f16fbabef403ee722458df341ff02810d76a6fa3245a734c180cb41560852e68` | 236 | 758 | 1 | 100 / 10,000 |
-| D | fund | `28f7e346e8047deb676d3912cb61d843a10bac3da75b2b7292e449730ed38a12` | 239 | 6796 | 6 | 5289 / 10,000 |
-| D | sellerCancel | `7beb343dc44ec3b9f5f97dd7bd40e5111471da1ad4ebbcd6eecec8dfdea38eff` | 250 | 6918 | 6 | 5289 / 10,000 |
-| E | createEscrow | `54e0ad33acf8f97890467ceddc8e16d5cc6a9cf334be2f9140e2e0a790a9f026` | 253 | 758 | 1 | 100 / 10,000 |
-| E | fund | `da45a24d5fac97142b1f483996ae517d93703b7ba0dded67f4679be66d90d42a` | 254 | 6743 | 5 | 5289 / 10,000 |
-| E | markAsPaid | `9428b0b92cf60b248592479c86dc61a02b432f0fd71c9d46ddcee5bd4d437bdb` | 255 | 6039 | 3 | 5289 / 10,000 |
-| E | openDispute | `7731186eb633ef77030d1981905f03de7229acc32dcae3e765a900e490e68990` | 256 | 7107 | 6 | 5290 / 10,000 |
-| E | resolveDispute | `97208305e4eeb5929f9e145f8636eb0d15a61dbb564ce270a3404a9e1db89a0c` | 258 | 7457 | 8 | 5290 / 10,000 |
+| A | createEscrow | `daf5e67e6f09716aaf25ea5f21ae5b6f068276890c61424ae0701f06c6b2da39` | 213 | 758 | 1 | 100 / 10,000 |
+| A | fund | `0dba530cdedb324eae7b92640f5792016d40ab43afa6aa7e87a1f2d152831cbf` | 214 | 6872 | 5 | 5,418 / 10,000 |
+| A | markAsPaid | `8677100bfbea318e63b5cd3c38396ac073f9b57ae03a8b7e49bcedfe5b3221c2` | 215 | 6168 | 3 | 5,418 / 10,000 |
+| A | release | `2bd819d0843d542004e25965e746aef597fda58d0f10e2f0ab95f6e4e67eaab7` | 217 | 7225 | 7 | 5,418 / 10,000 |
+| B | createEscrow | `93ce651fc6a6acdb7513dcccbcc10df751d449643fef6bc6ca0615974d2e58e1` | 223 | 754 | 1 | 100 / 10,000 |
+| B | deposit | `7d0965c5cae2b3d201696b194448d75547674de7bfcdbb6c36bfdc34876c9800` | 224 | 8420 | 6 | 6,888 / 10,000 |
+| B | markAsPaid | `bf445efc2d0c644ea238c4c0d4ca4496501374c054a46aa2f27dc57669b53d6a` | 225 | 7638 | 3 | 6,888 / 10,000 |
+| B | release | `022450893de1faf173526119eb8d9332fa36cfb8c82ec45532732b6c3884f017` | 227 | 8748 | 7 | 6,888 / 10,000 |
+| C | createEscrow | `e5a920039379edf761e54616b28f933c2360eeb95a07fc1651596dcc68b3b3a5` | 230 | 758 | 1 | 100 / 10,000 |
+| C | fund | `7a440e8dd9356c9f41daf03b22ba2c294800933899e9643bf1d727f1a25ac2a3` | 231 | 6872 | 5 | 5,418 / 10,000 |
+| C | markAsPaid | `2894f375e4a610c3fc2275f8cc3d11ceee904319b0b514ec936e918d4195dae7` | 232 | 6168 | 3 | 5,418 / 10,000 |
+| C | buyerCancel | `bbdae62ac7d5e57631b51687def1d56e3f1f2d57986720b66edfa27d3532f1c8` | 233 | 7047 | 6 | 5,418 / 10,000 |
+| D | createEscrow | `34939aeed1b3c40748608987098aa540f87c56ef1c68b2b4e669f9748e6f3738` | 236 | 758 | 1 | 100 / 10,000 |
+| D | fund | `ced5e2311a8ea47ba3f52d51df7975f37a13ac50319d6a22e75d153a4728f3d8` | 237 | 6872 | 5 | 5,418 / 10,000 |
+| D | sellerCancel | `46c51175788a82a6e4d1d64c9acad6b89664ab4f8678fd2c9b5153b11317c2e1` | 248 | 7047 | 6 | 5,418 / 10,000 |
+| E | createEscrow | `3f5eea3a21f6e5743a6d38ec6daf60d82c6c86e9fc7de7545edf6d5767a787ef` | 251 | 758 | 1 | 100 / 10,000 |
+| E | fund | `7502660553067532041989b0bb67f408798fd06761988a48f787e4b9df807b83` | 252 | 6872 | 5 | 5,418 / 10,000 |
+| E | markAsPaid | `d4bd5e0bcaf7c1c5fbe385f392f585f5dec4da0b4c0b549ce9822196f3f7c360` | 253 | 6168 | 3 | 5,418 / 10,000 |
+| E | openDispute | `317328965839d344603da7523d5165efe4310e860ee0411c14085220d4249cd4` | 254 | 7236 | 6 | 5,419 / 10,000 |
+| E | resolveDispute | `586468ec6c6d09b221fbd76cc813b6f6493f3ab0053e70231b9c9c7ecc691b2f` | 256 | 7665 | 8 | 5,498 / 10,000 |
 
 Notes from the same run:
 
-- 20 transactions, no rejection by the node. The largest unlocking script of each step is the same as on the mock
-  network above (5,289 / 5,290 / 6,759 bytes). Transaction sizes differ by up to 2 bytes (signature length), and
-  by the number of coins the caller's wallet adds: `fund` with 5 inputs is 6,743 bytes, with 6 inputs 6,796.
-- The largest unlocking script is 6,759 bytes (token escrow), 68% of the 10,000 byte input limit; the largest
-  transaction is 8,619 bytes. No feature was cut for size.
+- 20 transactions, no rejection by the node. The largest unlocking script is 6,888 bytes (token escrow),
+  68% of the 10,000 byte input limit; the largest transaction is 8,748 bytes. No feature was cut for size.
+- Against the single-arbitrator run, every unlocking script grows by 129 bytes (BCH 5,289 to 5,418, token 6,759 to
+  6,888) and `resolveDispute` with two signatures by 208 (5,290 to 5,498), matching the mock network measurements
+  above.
+- Transaction sizes differ by a few bytes between runs (signature length) and by the number of coins the caller's
+  wallet adds.
 - Branch D waited for the seller's waiting time by advancing the node's mock clock and mining blocks until the
-  median time past passed it (heights 239 to 250), then spent with a time-type locktime one second behind it.
+  median time past passed it, then spent with a time-type locktime one second behind it.
 - The SDK prints `STB debug() best-effort error: ... NotSeller` and similar lines on calls that then succeed. They
   come from a `console.debug` in its send discovery probe and do not affect the broadcast transaction.
-- A full run takes 2 to 3 minutes on this host with the node limited to one CPU.
+- The run took about 3 minutes on this host with the node limited to one CPU.
+- The earlier run of 2026-11-17 17:19 UTC (single arbitrator, before decision 0008) passed the same five branches in
+  20 transactions; its transactions are no longer listed because the contract has changed since.
 
 ## Test count
 
@@ -208,15 +216,19 @@ tests in `test/JaminEscrow.panel.test.ts`, 16 BCH and 2 token). On 2026-11-17, b
 
 ## Web app end-to-end tests
 
-`npm run build && npx playwright test` on 2026-11-17 18:05 UTC, Playwright 1.65.1, against `vite preview`: 22 tests
-passed (11 specs, each on Chromium desktop and WebKit with the iPhone 13 profile). The specs cover the five lifecycle
-branches played in the browser simulator on the compiled artifacts (A BCH release with a NotBuyer rejection first,
-B token release, C buyer cancel, D seller cancel rejected with TooEarly and accepted after the waiting time, E
-dispute with a NotArbitrator rejection then the arbitrator's decision), the first screen (one primary button in view,
-banner, no console errors), the language toggle, axe WCAG 2 A/AA with no serious or critical violation on any tab,
-the recorded regtest txids, a feature reference opening its source line, and no horizontal overflow at 320 px wide.
+`npx vite build && npx playwright test e2e/simulator.spec.ts e2e/pages.spec.ts` on 2026-11-18 05:50 UTC, Playwright
+1.65.1, against `vite preview`: 24 tests passed in 7.7 minutes (12 specs, each on Chromium desktop and WebKit with the
+iPhone 13 profile). The specs cover the five lifecycle branches played in the browser simulator on the compiled
+artifacts (A BCH release with a NotBuyer rejection first, B token release, C buyer cancel, D seller cancel rejected
+with TooEarly and accepted after the waiting time, E dispute: the buyer's attempt rejected with NotArbitrator, panel
+member A alone (the same key twice) rejected with NotArbitrator and the trade still in dispute, then members A and B
+decide; the log shows both signatures), the panel choice and signatures in Malay with no horizontal overflow, the
+first screen (one primary button in view, banner, no console errors), the language toggle, axe WCAG 2 A/AA with no
+serious or critical violation on any tab, the recorded regtest txids, a feature reference opening its source line,
+and no horizontal overflow at 320 px wide. On 2026-11-17 18:05 UTC, before the panel UI: 22 tests passed.
 
-The same engine runs in Node in `tests/sim-engine.test.ts` (five branches and named rejections).
+The same engine runs in Node in `tests/sim-engine.test.ts` (five branches, named rejections, and one panel
+signature refused before two decide).
 
 
 ## Public deployment

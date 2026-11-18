@@ -53,9 +53,23 @@ describe('simulator engine', { timeout: 120_000 }, () => {
     await sim.act('buyer', 'markAsPaid');
     expect((await sim.act('buyer', 'openDispute')).ok).toBe(true);
     expect(await sim.status()).toBe('disputed');
-    expect(await sim.act('buyer', 'resolveForBuyer')).toMatchObject({ ok: false, error: 'NotArbitrator' });
-    expect((await sim.act('arbitrator', 'resolveForBuyer')).ok).toBe(true);
+    expect(await sim.act('buyer', 'resolveForBuyer')).toMatchObject({ ok: false, error: 'NotArbitrator',
+      signers: ['buyer', 'buyer'] });
+    expect(await sim.act('arbitrator', 'resolveForBuyer')).toMatchObject({ ok: true, signers: ['panelA', 'panelB'] });
     expect(await sim.status()).toBe('resolved');
+  });
+
+  it('E: one panel signature is not enough; two of the three decide', async () => {
+    const sim = await Simulation.start(artifacts, 'bch', BCH);
+    await sim.act('buyer', 'markAsPaid');
+    await sim.act('seller', 'openDispute');
+    expect(await sim.act('arbitrator', 'resolveForSeller', 'none')).toMatchObject({ ok: false,
+      error: 'NotArbitrator', signers: ['panelA', 'panelA'] });
+    expect(await sim.status()).toBe('disputed');
+    expect(await sim.act('arbitrator', 'resolveForSeller', 'B')).toMatchObject({ ok: true,
+      signers: ['panelA', 'panelB'] });
+    expect(await sim.status()).toBe('resolved');
+    expect(sim.log.filter((l) => l.action !== 'resolveForSeller').every((l) => l.signers === undefined)).toBe(true);
   });
 });
 

@@ -2,7 +2,7 @@
 // wrong role or a wrong moment comes back as the contract's own error name.
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
-import { ACTIONS, type Action, type Actor, type Asset, type LogEntry, type Simulation, type StatusName }
+import { ACTIONS, COSIGNS, type Action, type Cosign, type Actor, type Asset, type LogEntry, type Simulation, type StatusName }
   from '../sim/engine.js';
 import { startSimulation } from '../sim/load.js';
 import { StateDiagram } from './StateDiagram.js';
@@ -18,6 +18,7 @@ export function TryIt(): ReactNode {
   const { t } = useLang();
   const [asset, setAsset] = useState<Asset>('bch');
   const [actor, setActor] = useState<Actor>('buyer');
+  const [cosign, setCosign] = useState<Cosign>('B');
   const [sim, setSim] = useState<Simulation | null>(null);
   const [view, setView] = useState<View | null>(null);
   const [busy, setBusy] = useState(false);
@@ -40,7 +41,7 @@ export function TryIt(): ReactNode {
       await refresh(s);
     });
   };
-  const act = (a: Action): void => { if (sim) void run(async () => { await sim.act(actor, a); await refresh(sim); }); };
+  const act = (a: Action): void => { if (sim) void run(async () => { await sim.act(actor, a, cosign); await refresh(sim); }); };
   const wait = (): void => { if (sim) void run(async () => { await sim.passTime(); await refresh(sim); }); };
 
   useEffect(() => { setSim(null); setView(null); }, [asset]);
@@ -80,6 +81,18 @@ export function TryIt(): ReactNode {
                   </label>
                 ))}
               </fieldset>
+              {actor === 'arbitrator' && (
+                <fieldset className="seg">
+                  <legend>{t('try.panelLegend')}</legend>
+                  <p className="small muted">{t('try.panelNote')}</p>
+                  {COSIGNS.map((c) => (
+                    <label key={c}>
+                      <input type="radio" name="cosign" value={c} checked={cosign === c} onChange={() => setCosign(c)} />
+                      <span>{t(`try.cosign.${c}`)}</span>
+                    </label>
+                  ))}
+                </fieldset>
+              )}
               <h2 className="h3">{t('try.actionsTitle', { role: t(`roles.${actor}`) })}</h2>
               <div className="actions">
                 {ACTIONS.map((a) => (

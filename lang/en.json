@@ -87,7 +87,13 @@
     "actorLegend": "You are",
     "actionsTitle": "Act as {role}",
     "logTitle": "Transactions",
-    "empty": "Start a trade to see its transactions here."
+    "empty": "Start a trade to see its transactions here.",
+    "panelLegend": "Panel signatures",
+    "panelNote": "Disputes are decided by a panel of three keys. Any two of them must sign; you are member A.",
+    "cosign": {
+      "B": "Member A and member B (2 of 3)",
+      "none": "Member A alone"
+    }
   },
   "actions": {
     "markAsPaid": {
@@ -112,11 +118,11 @@
     },
     "resolveForBuyer": {
       "label": "Decide for buyer",
-      "who": "arbitrator"
+      "who": "arbitration panel, 2 of 3"
     },
     "resolveForSeller": {
       "label": "Decide for seller",
-      "who": "arbitrator"
+      "who": "arbitration panel, 2 of 3"
     },
     "wait": {
       "label": "Let the waiting time pass",
@@ -141,6 +147,14 @@
       "resolveForBuyer": "decide for buyer",
       "resolveForSeller": "decide for seller",
       "resolveDispute": "resolve dispute"
+    },
+    "signatures": "Signatures: {names}",
+    "signer": {
+      "panelA": "panel member A",
+      "panelB": "panel member B",
+      "seller": "seller",
+      "buyer": "buyer",
+      "outsider": "someone else"
     }
   },
   "errors": {

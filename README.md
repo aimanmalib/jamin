@@ -13,15 +13,15 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 ## For judges: one minute
 
 - **Try it:** https://jamin.sasateguh.com, tab **Try it**. The compiled contracts run on the SolidCash mock network
-  in your browser. Play seller, buyer, arbitrator (co-signed by a second panel member) or an outsider through all five branches and see each transaction
+  in your browser. Play seller, buyer, arbitrator (panel member A, signing with member B or alone, which the contract refuses) or an outsider through all five branches and see each transaction
   or the contract's named error. English and Bahasa Melayu.
 - **Contracts:** `contracts/` (four files, native SolidCash): `EscrowBase.scash`, `JaminEscrow.scash` (BCH),
   `JaminTokenEscrow.scash` (CashTokens such as PUSD), `FeeMath.scash`. Rules: `docs/SPEC.md`.
 - **Tests:** `npm ci && npm run solidhat:test`: 89 SolidHat tests in 9 files on the mock network with the production
   profile (count in `docs/MEASURED.md`). Every attack in `docs/THREAT_MODEL.md` names the test that runs it.
 - **Real consensus limits:** all five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with
-  standardness rules on: 20 transactions mined, largest unlocking script 6,759 of 10,000 bytes
-  (`docs/MEASURED.md`, "Regtest").
+  standardness rules on, the dispute decided by two of the three panel members: 20 transactions mined, largest
+  unlocking script 6,888 of 10,000 bytes (`docs/MEASURED.md`, "Regtest").
 - **Mainnet:** not run yet (see "Known limits").
 - **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Port:** every OpenPeerEscrow function, event and modifier and what became of it, in `docs/PORTING.md`.
@@ -109,9 +109,6 @@ yet. The reasons the other six are not are in the same file.
   (`npm run lifecycle -- --network mainnet`, `docs/decisions/0007-mainnet-run.md`) is tested on the mock network
   behind the spending gate. The same branches ran on a stock BCHN regtest node with mainnet relay rules
   (`docs/MEASURED.md`).
-- **Contract version of the regtest run:** the regtest txids were made with the earlier single-arbitrator contract.
-  The 2-of-3 panel (`docs/decisions/0008-arbitration-panel.md`) is tested on the mock network; its regtest run is
-  not recorded yet.
 - **Reserve left behind:** a single satoshi container cannot be emptied by a call, so each escrow keeps the reserve
   it was opened with (1,000 sats). A token escrow also keeps one base unit (0.01 PUSD) and its token container's
   satoshis.
@@ -148,6 +145,7 @@ dispute and resolution) on a throwaway Bitcoin Cash Node in Docker with stock li
 bash scripts/regtest-node.sh start
 npm run lifecycle -- --network regtest
 bash scripts/regtest-node.sh stop
+npx tsx scripts/regtest-example.ts state/regtest/run-<time>.json   # refresh examples/regtest.json
 ```
 
 ### Web app
