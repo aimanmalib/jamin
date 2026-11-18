@@ -161,7 +161,7 @@ passes with the change, and each is open as a pull request:
 - [solidcash/solidcash#10](https://github.com/solidcash/solidcash/pull/10): `MockNetworkProvider` does not
   type-check under `exactOptionalPropertyTypes` (F4).
 
-The reasons the other seven are not are in the same file.
+The reasons the other ten are not are in the same file.
 
 ## Known limits
 
