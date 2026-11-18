@@ -59,8 +59,13 @@ test('lifecycle: calls the network refused show the rejection text verbatim, in 
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto('/#/lifecycle');
   await expect(page.getByTestId('refused-step')).toHaveCount(refused.length);
+  // One node's reason can be part of a server's longer text (mainnet adds Fulcrum's first line): count every text
+  // that contains it.
+  const texts = (refused as Array<{ serverError: string }>).map((s) => s.serverError.replace(/\s+/g, ' ').trim());
   for (const s of refused as Array<{ serverError: string; rawTxHash: string }>) {
-    await expect(page.getByTestId('server-error').filter({ hasText: s.serverError })).toHaveCount(1);
+    const text = s.serverError.replace(/\s+/g, ' ').trim();
+    await expect(page.getByTestId('server-error').filter({ hasText: text }))
+      .toHaveCount(texts.filter((t) => t.includes(text)).length);
     await expect(page.getByText(s.rawTxHash, { exact: true })).toHaveCount(1);
   }
   await page.getByTestId('regtest-refused').scrollIntoViewIfNeeded();
