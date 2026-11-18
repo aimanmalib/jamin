@@ -35,6 +35,6 @@ stop before the contract is evaluated, and a call that passed would be broadcast
   total. The gate's ledger overstates the true cost, because it never credits payouts back; both figures are shown.
 - Burning an identity ends the category's metadata record. These escrows publish no registry, so nothing is lost; the
   burn returns 78 sats net per escrow.
-- 41,800 sats in master, state and container coins have no path with these contract builds. A close function helps
-  new escrows only.
+- 41,800 sats in master, state and container coins have no path with these contract builds. A close function would help
+  new escrows only; decision 0013 measured one and left it out.
 - Undo: the script is read only without `--claim` or `--early`; deleting it changes nothing on chain.

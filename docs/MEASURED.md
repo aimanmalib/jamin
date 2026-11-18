@@ -538,8 +538,8 @@ Each spends the 756-sat authhead with a seller coin; the burn's fee is 678 sats,
 
 So, of the 75,976 sats left in contract coins: 33,600 (event records) can be swept back by anyone from the blocks
 above; 41,800 cannot be spent by any entry point of these builds, because every entry point checks a status the
-finished escrow has left; and B's 576-sat output has no known path. A function that closes a finished escrow is the remedy for new escrows; it does not reach
-these seven.
+finished escrow has left; and B's 576-sat output has no known path. A function that closes a finished escrow would not reach these seven; for
+new escrows it was measured and left out (see "Closing an escrow" below).
 
 The wallet, every satoshi:
 
@@ -555,3 +555,27 @@ The wallet, every satoshi:
 Total: 382,954 = 58,024 + 177,649 + 75,976 + 71,305. The spending gate's ledger (`state/belanja.json`, 53 entries)
 records 388,704 sats spent: it counts what each broadcast took from the wallet and never credits payouts back, so it
 overstates the true cost (382,954 - 71,305 = 311,649 sats) by 77,055.
+
+## Closing an escrow
+
+Measured 2026-11-18 with SolidCash 0.51.1 on the production-profile mock network. Command: `npx tsx
+scripts/repro-close.ts`, which compiles a temporary copy of both escrow contracts with `close(sig s)`:
+`onlySeller(s)`, `require(isFinished(), NotFinished())` (status `Released`, `CancelledByBuyer`, `CancelledBySeller`
+or `Resolved`), then `selfdestruct(new LockingBytecodeP2PKH(hash160(seller)))`. Both copies compile. Each case closes
+an escrow released in the previous block, with `StatefulContract.selfdestructTo` and the seller as recipient.
+Decision: `docs/decisions/0013-closing-an-escrow.md`.
+
+| Case | Result (verbatim) |
+|---|---|
+| BCH escrow, SDK defaults | `non-BIP68-final` (the helper adds the event records, still under their 144-block lock; F12) |
+| BCH escrow, event records left out, fee from the transaction size | `Destroy transaction has no funds to reclaim after fees. Total inputs: 5800, fee: 7052.` (F11) |
+| BCH escrow, event records left out, fee 1,999 sats (the covenant's ceiling) | `min relay fee not met` (F11) |
+| Token escrow, event records left out, token container named, fee 1,999 sats | `Implicit burning of fungible tokens for category ... is not allowed (input amount: 1, output amount: 0). If this is intended, set allowImplicitFungibleTokenBurn to true.` (F13) |
+
+The closing transaction spends 5,800 sats of contract coins (the master and three state coins of 1,200 sats and the
+1,000-sat reserve) and is about 7,052 bytes, nearly all of it the contract's unlocking script. At the relay minimum of
+1 sat per byte it needs a fee above both the statement form's ceiling (under 2,000 sats) and the coins it would
+return. Earlier attempts in the same session, with `close` in the contracts and the SDK's default fee: "Transaction
+fee of 7500 is higher than max fee of 2000" (released), 7388 (cancelled by the buyer, cancelled by the seller, open),
+7612 (resolved).
+

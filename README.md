@@ -150,7 +150,7 @@ Sizes vary by a few bytes between runs (signature length) and by the number of c
 
 ## Upstream contributions
 
-Building Jamin turned up ten issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
+Building Jamin turned up thirteen issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
 `docs/SOLIDCASH-FINDINGS.md`. Three have a small fix with a regression test that fails on upstream `master` and
 passes with the change, and each is open as a pull request:
 
@@ -175,6 +175,11 @@ The reasons the other seven are not are in the same file.
   may sweep 144 blocks after they were mined. A further 576 sats sit at an address no SDK path names. Each
   escrow's metadata identity (756 sats) was burned by its owner, which returned 78 sats net after the fee. Every
   satoshi of the test wallet is accounted for, with 0 unexplained.
+- **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
+  and left out (`docs/decisions/0013-closing-an-escrow.md`). Its covenant caps the miner fee below 2,000 sats, but
+  the closing transaction is about 7,000 bytes, under the relay minimum of 1 sat per byte; and at that size a close
+  would cost more than the about 5,800 sats it returns (SolidCash findings F11 to F13). New escrows therefore also
+  keep their master, state and container coins.
 - **No release or cancel during a dispute:** once a dispute is open only the arbitration panel settles it. The original
   OpenPeer escrow still allowed release and buyer cancel then.
 - **Absolute waiting time:** the seller passes `cancelAfter` as a timestamp, because a SolidCash constructor cannot
