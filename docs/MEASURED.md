@@ -245,6 +245,15 @@ content-security-policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval
 cache-control: no-cache, no-transform
 ```
 
+Redeploy with the arbitration panel UI, `deploy/deploy.sh` on 2026-11-18 06:01 UTC, image `b73dfcb-202611180601`:
+public `/healthz` 200, then 22 of 26 Playwright tests passed against the public URL in 21 minutes. The four failures
+were the Chromium simulator specs B, C, D and E, each a 60 second wait for a simulated transaction while the host's
+load average was 64 (every WebKit iPhone 13 test, both panel specs included, passed later in the same run as the
+load fell). The automatic rollback did not start: the script re-ran itself as `deploy/deploy.sh` after changing into
+`deploy/`, a path that does not exist from there (fixed, with `tests/deploy-script.test.ts`, which fails on the old
+script). The image stayed live and healthy; at 06:36 UTC, load average 18, the six Chromium simulator specs passed
+against the public URL in 2.7 minutes.
+
 ## Mainnet run before funding
 
 2026-11-17 22:58 UTC, `npm run lifecycle -- --network mainnet` against `bch.imaginary.cash`: the seller address
