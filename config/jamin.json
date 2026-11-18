@@ -49,7 +49,7 @@
       "pusd": "2.00"
     },
     "escrowAmountSats": 20000,
-    "minFundingSats": 1000000,
+    "minFundingSats": 300000,
     "broadcastHosts": [
       "bch.imaginary.cash"
     ],
