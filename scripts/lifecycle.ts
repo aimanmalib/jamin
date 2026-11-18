@@ -1,10 +1,12 @@
-// Runs the five escrow lifecycle branches on a real network and writes every transaction with its sizes.
-//   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E]
-//   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E]   (test wallet, spending gate; see below)
+// Runs the five escrow lifecycle branches on a real network and writes every transaction with its sizes. Branch W
+// (branch A with the seller signing through a wallet, docs/decisions/0009) runs when named.
+//   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E,W]
+//   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E,W]   (test wallet, spending gate; see below)
 // Regtest needs a node: bash scripts/regtest-node.sh start (and stop afterwards). Mainnet: scripts/lifecycle-mainnet.ts.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { loadConfig, repoRoot } from '../src/config.js';
 import { branchA, branchB, branchC, branchE, finishD, startD } from '../src/lifecycle/branches.js';
+import { branchW } from '../src/lifecycle/wallet-branch.js';
 import type { Ctx, Terms } from '../src/lifecycle/context.js';
 import { measure } from '../src/lifecycle/inspect.js';
 import { regtestContext } from '../src/lifecycle/regtest.js';
@@ -19,7 +21,7 @@ const network = arg('network', '');
 const wanted = new Set(arg('branches', 'A,B,C,D,E').split(','));
 if (network === 'mainnet') process.exit(await mainnetRun([...wanted]));
 if (network !== 'regtest') {
-  console.error('usage: tsx scripts/lifecycle.ts --network regtest|mainnet [--branches A,B,C,D,E]');
+  console.error('usage: tsx scripts/lifecycle.ts --network regtest|mainnet [--branches A,B,C,D,E,W]');
   process.exit(2);
 }
 
@@ -34,7 +36,7 @@ const { ctx, steps, rpc } = await regtestContext(terms);
 const node = await rpc('getnetworkinfo') as { subversion: string };
 const runs: Array<[string, (c: Ctx) => Promise<void>]> = [
   ['A', branchA], ['B', branchB], ['C', branchC],
-  ['D', async (c) => finishD(c, await startD(c))], ['E', branchE],
+  ['D', async (c) => finishD(c, await startD(c))], ['E', branchE], ['W', (c) => branchW(c)],
 ];
 const failures: string[] = [];
 for (const [name, body] of runs) {

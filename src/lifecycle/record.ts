@@ -28,12 +28,12 @@ export function clearPending(file: string): void {
   rmSync(file, { force: true });
 }
 
-export interface MainnetStep { step: string; txid: string; height?: number }
+export interface MainnetStep { step: string; txid: string; height?: number; signer?: 'wallet' }
 export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: MainnetStep[] }
 export interface MainnetRecord { network: 'mainnet'; escrows: MainnetEscrow[] }
 
 /** The asset each branch trades. */
-export const BRANCH_ASSET: Record<string, string> = { A: 'BCH', B: 'PUSD', C: 'BCH', D: 'BCH', E: 'BCH' };
+export const BRANCH_ASSET: Record<string, string> = { A: 'BCH', B: 'PUSD', C: 'BCH', D: 'BCH', E: 'BCH', W: 'BCH' };
 
 /**
  * Adds the steps of one escrow to the record. A branch's steps start a new escrow at `createEscrow`; steps without
@@ -45,7 +45,8 @@ export function addSteps(record: MainnetRecord, steps: Array<Step & { height?: n
   for (const s of steps) {
     if (known.has(s.txid)) continue;
     known.add(s.txid);
-    const row: MainnetStep = { step: s.step, txid: s.txid, ...(s.height === undefined ? {} : { height: s.height }) };
+    const row: MainnetStep = { step: s.step, txid: s.txid, ...(s.height === undefined ? {} : { height: s.height }),
+      ...(s.signer === undefined ? {} : { signer: s.signer }) };
     const latest = [...escrows].reverse().find((e) => e.branch === s.branch);
     if (s.step === 'createEscrow' || !latest) {
       escrows.push({ branch: s.branch, asset: BRANCH_ASSET[s.branch] ?? 'BCH',

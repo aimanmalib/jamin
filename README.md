@@ -22,6 +22,9 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 - **Real consensus limits:** all five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with
   standardness rules on, the dispute decided by two of the three panel members: 20 transactions mined, largest
   unlocking script 6,888 of 10,000 bytes (`docs/MEASURED.md`, "Regtest").
+- **Trading from a wallet:** a seller whose wallet signs over the BCH WalletConnect methods created, funded and
+  released an escrow on the same regtest node, every seller input signed by the wallet (branch W, 4 transactions,
+  `docs/MEASURED.md`, "Wallet signing"; `docs/decisions/0009-wallet-connection.md`).
 - **Mainnet:** not run yet (see "Known limits").
 - **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Port:** every OpenPeerEscrow function, event and modifier and what became of it, in `docs/PORTING.md`.

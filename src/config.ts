@@ -12,6 +12,7 @@ export interface ElectrumServer {
 export type Role = 'seller' | 'buyer' | 'arbitrator' | 'arbiterB' | 'arbiterC' | 'feeRecipient';
 
 export interface JaminConfig {
+  site: { url: string; defaultLanguage: string; languages: string[] };
   electrum: { mainnet: ElectrumServer };
   explorer: { mainnetTx: string; mainnetAddress: string };
   wallet: {

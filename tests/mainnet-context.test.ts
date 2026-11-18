@@ -13,7 +13,8 @@ import { branchA, branchB } from '../src/lifecycle/branches.js';
 import { lockOf, satsAt, type PartyName, type Terms } from '../src/lifecycle/context.js';
 import { NoTokenError, walletContext, type WalletOptions } from '../src/lifecycle/mainnet.js';
 import { runBranches } from '../src/lifecycle/mainnet-run.js';
-import { loadPending } from '../src/lifecycle/record.js';
+import { addSteps, loadPending } from '../src/lifecycle/record.js';
+import { branchW } from '../src/lifecycle/wallet-branch.js';
 import { asProvider } from '../src/sdk/mock.js';
 
 const TERMS: Terms = { amount: 20_000n, tokenAmount: 100n, feeBps: 30n, disputeFee: 5_000n, waitSeconds: 3_600n,
@@ -96,5 +97,17 @@ describe('mainnet context behind the spending gate', { timeout: 180_000 }, () =>
     const { ctx, steps } = await walletContext({ ...opts, tokenCategory: minted.categoryId });
     await branchB(ctx);
     expect(steps.map((s) => s.step)).toEqual(['createEscrow', 'deposit', 'markAsPaid', 'release']);
+  });
+  it('runs branch W with the seller signing through the wallet, every broadcast gated and recorded', async () => {
+    const { opts, gate } = await setup(2_000_000);
+    const { ctx, steps } = await walletContext(opts);
+    await branchW(ctx, { template: 'Role {role} at {site} for {trade}', site: 'jamin.example', trade: 'test-W' });
+    expect(steps.map((s) => [s.step, s.signer])).toEqual([['createEscrow', 'wallet'], ['fund', 'wallet'],
+      ['markAsPaid', undefined], ['release', 'wallet']]);
+    const recorded = new Set(readLedger(gate.ledgerFile).entries.map((e) => e.txid));
+    for (const s of steps) expect(recorded.has(s.txid)).toBe(true);
+    const record = addSteps({ network: 'mainnet', escrows: [] }, steps);
+    expect(record.escrows).toHaveLength(1);
+    expect(record.escrows[0]?.steps.filter((s) => s.signer === 'wallet')).toHaveLength(3);
   });
 });

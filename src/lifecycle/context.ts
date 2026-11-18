@@ -40,6 +40,8 @@ export interface Step {
   txid: string;
   /** The escrow's address, on the step that created it. */
   escrow?: string;
+  /** Set when a wallet signed the transaction's seller inputs over `bch_signTransaction` (branch W, 0009). */
+  signer?: 'wallet';
 }
 
 export interface Ctx {

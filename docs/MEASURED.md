@@ -208,6 +208,27 @@ Notes from the same run:
 - The earlier run of 2026-11-17 17:19 UTC (single arbitrator, before decision 0008) passed the same five branches in
   20 transactions; its transactions are no longer listed because the contract has changed since.
 
+## Wallet signing (branch W)
+
+Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with
+`npx tsx scripts/lifecycle.ts --network regtest --branches W` (decision 0009). Branch W is branch A with the seller
+trading from a wallet: the protocol test wallet (`src/wallet/protocol-wallet.ts`) holds the seller's key and signs
+the seller's P2PKH inputs over `bch_signTransaction`; the escrow names a role key derived from the wallet's
+`bch_signMessage` signature, which signs the contract's seller check. All four transactions were mined; the
+release paid the buyer the amount. The run file is `state/regtest/run-2026-11-18T07-21-15-354Z.json` (not tracked).
+
+| Step | Signed by the wallet | Txid | Size (B) | Inputs | Largest unlock (B) | Height |
+| --- | --- | --- | --- | --- | --- | --- |
+| createEscrow | yes | `f6d9936926f076f207768592ae913cae2dfa3677feb09b24d40bf8aef57c89eb` | 758 | 1 | 100 | 213 |
+| fund | yes | `9ebffad65b2742cbb09653aab84bf7388d21f52a30b4d21b2c198575ed9d6461` | 6,872 | 5 | 5,418 | 214 |
+| markAsPaid | no (buyer key) | `5986943f72a75f4d4b657d957cb7d85e138497f97c1ee65bac696b38b6252db3` | 6,168 | 3 | 5,418 | 215 |
+| release | yes | `6dca0a414d0d8fb4e76ab2a4dbb8e69f9e70e344daaadabc09c9251d10afa89a` | 7,225 | 7 | 5,418 | 217 |
+
+The wallet's own unlocking bytecode is 100 bytes per input (a 65-byte Schnorr signature with `SIGHASH_ALL |
+SIGHASH_FORKID` and a 33-byte key, with their pushes). On the mock network one `fund` call asked the role key's
+signature template 11 times while the fee converged, and the release was preceded by a coin split that the wallet
+also signed (`test/JaminEscrow.wallet.test.ts`); that is why a wallet cannot sign the contract argument itself (F10).
+
 ## Test count
 
 `npx solidhat test` on 2026-11-18: 9 files, 89 tests, all passing (BCH 11 lifecycle, 11 rejections, 13 state rules,
