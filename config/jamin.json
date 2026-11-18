@@ -79,7 +79,7 @@
     "bounty": "Best SolidCash Application",
     "repoUrl": "https://github.com/aimanmalib/jamin",
     "prizeAddress": "bitcoincash:zplrydnf2z4pj4z9rv7uhmwsuxyrm8hj7uken87e7q",
-    "deckUrl": ""
+    "deckUrl": "https://jamin.sasateguh.com/deck.pdf"
   },
   "mainnetExamples": "examples/mainnet.json",
   "regtest": {

@@ -1,0 +1,86 @@
+{
+  "_doc": "Text of the event deck, in the order of the event's slide template. An item with a number names its source as 'file#heading'; tests/deck.test.ts checks that every number in the item appears in that section. Rebuild with: npx tsx tools/deck/build.ts",
+  "slides": [
+    {
+      "template": "Title",
+      "kind": "title",
+      "title": "Jamin",
+      "lines": [
+        "Peer-to-peer trade escrow for Bitcoin Cash, written in SolidCash",
+        "BCH BLAZE 2026, Best SolidCash Application",
+        "Muhammad Aiman, Malaysia. Solo build."
+      ]
+    },
+    {
+      "template": "Tagline",
+      "kind": "tagline",
+      "title": "Jamin",
+      "lines": [
+        "Sell BCH or PUSD to a stranger for local money. Neither side has to send first, and no exchange holds the coins."
+      ],
+      "link": "repo"
+    },
+    {
+      "template": "Title here",
+      "kind": "list",
+      "title": "Try it in a minute",
+      "numbered": true,
+      "items": [
+        { "text": "Open jamin.sasateguh.com and choose Try it. The compiled contracts run on the SolidCash mock network in your browser." },
+        { "text": "Play seller, buyer, arbitrator or an outsider through release, buyer cancel, seller cancel and dispute. Each step shows the transaction or the contract's named error." },
+        { "text": "Let one panel member decide a dispute alone. The contract refuses until a second member signs." },
+        { "text": "Switch the seller to the demo wallet: the wallet pays and signs the seller's coins. The page is in English and Bahasa Melayu." }
+      ]
+    },
+    {
+      "template": "The Story of",
+      "kind": "list",
+      "title": "The Story of Jamin",
+      "items": [
+        { "text": "In a peer-to-peer trade one side has to send first, or both trust an exchange that holds the coins." },
+        { "text": "OpenPeer answered this on EVM with an MIT-licensed escrow contract. Jamin ports it to the Bitcoin Cash UTXO model in SolidCash." },
+        { "text": "Each escrow is a stateful contract: its state lives in the coin, and covenant rules fix every payout." },
+        { "text": "Building it turned up ten SolidCash issues. Three fixes are open as pull requests: #8, #9 and #10.", "source": "docs/SOLIDCASH-FINDINGS.md#Fixes submitted upstream" }
+      ]
+    },
+    {
+      "template": "Benefits of",
+      "kind": "list",
+      "title": "Benefits of Jamin",
+      "items": [
+        { "text": "Nobody holds the coins in the middle. Every payout is a covenant output, so whoever builds the transaction cannot redirect it." },
+        { "text": "A dispute costs a fee from the side that opens it, and two of three named arbitrators decide it (checkMultiSig)." },
+        { "text": "The seller can cancel only after the waiting time and only while the buyer has not marked the trade paid." },
+        { "text": "The same rules hold for BCH and for CashTokens such as PUSD." },
+        { "text": "92 SolidHat tests in 10 files. Removing a check from a copy of a contract makes its named test fail.", "source": "docs/MEASURED.md#Test count" }
+      ]
+    },
+    {
+      "template": "BCH Usage",
+      "kind": "list",
+      "title": "BCH Usage",
+      "items": [
+        { "text": "All five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with mainnet relay rules: 20 transactions mined.", "source": "docs/MEASURED.md#Regtest (real consensus limits)" },
+        { "text": "Largest unlocking script 6,888 of 10,000 bytes. Miner fees for all 20 transactions: 118,654 sats.", "source": "docs/MEASURED.md#Regtest (real consensus limits)" },
+        { "text": "A seller wallet signing over the BCH WalletConnect methods created, funded and released an escrow on the same node.", "source": "docs/MEASURED.md#Wallet signing (branch W)" },
+        { "text": "Mainnet: not run yet. The test wallet is not funded; the mainnet run is built and tested behind a spending limit." }
+      ]
+    },
+    {
+      "template": "The Vision for",
+      "kind": "list",
+      "title": "The Vision for Jamin",
+      "items": [
+        { "text": "Run every branch on mainnet, including an escrow of PUSD." },
+        { "text": "Let buyer and seller trade from their own phone wallets over WalletConnect." },
+        { "text": "A refund to the seller that anyone can trigger after a long deadline, so coins never stay locked." },
+        { "text": "A signed payment reference from the buyer that the arbitrators can check in a dispute." }
+      ]
+    },
+    {
+      "template": "Thank you",
+      "kind": "thanks",
+      "title": "Thank you"
+    }
+  ]
+}
