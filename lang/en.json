@@ -278,6 +278,9 @@
     "escrowTitle": "Your escrow",
     "noEscrow": "No escrow yet.",
     "waitBuyer": "The coins are locked. Release them when the buyer has paid you and marked the trade as paid.",
-    "loading": "Loading the wallet tools..."
+    "loading": "Loading the wallet tools...",
+    "resume": "Continuing trade {trade}: connect the same wallet that created it.",
+    "resumeLink": "Keep this link to come back to the escrow later:",
+    "resumeLinkText": "continue this trade"
   }
 }

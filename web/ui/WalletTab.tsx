@@ -8,6 +8,7 @@ import { config, explorerLink } from '../data/config.js';
 import { STATUS, type StatusName } from '../sim/engine.js';
 import { openSession, type WizSession } from '../wallet/session.js';
 import { WalletTrade, parsePublicKey, tradeTerms } from '../wallet/trade.js';
+import { hashQuery } from '../route.js';
 
 type Phase = 'idle' | 'linking' | 'connected' | 'created' | 'funded';
 
@@ -15,9 +16,19 @@ function sats(n: bigint | number): string {
   return Number(n).toLocaleString('en');
 }
 
+/** `#/wallet?trade=…&escrow=…&buyer=…` continues an escrow made earlier (the link the tab shows after creating one). */
+function resumeFrom(hash: string): { trade: string; escrow: string; buyer: string } | undefined {
+  const q = hashQuery(hash);
+  const trade = q.get('trade') ?? '';
+  const escrow = q.get('escrow') ?? '';
+  return /^[\w-]{1,64}$/.test(trade) && /^bitcoincash:[a-z0-9]{40,}$/.test(escrow)
+    ? { trade, escrow, buyer: q.get('buyer') ?? '' } : undefined;
+}
+
 export function WalletTab(): ReactNode {
   const { t } = useLang();
-  const [buyerHex, setBuyerHex] = useState('');
+  const [resume] = useState(() => resumeFrom(location.hash));
+  const [buyerHex, setBuyerHex] = useState(resume?.buyer ?? '');
   const [phase, setPhase] = useState<Phase>('idle');
   const [uri, setUri] = useState('');
   const [trade, setTrade] = useState<WalletTrade | null>(null);
@@ -42,11 +53,18 @@ export function WalletTab(): ReactNode {
     setUri(s.uri);
     setPhase('linking');
     void run(async () => {
-      const name = `${config.walletTrade.tradeNamePrefix}-${Math.floor(Date.now() / 1000)}`;
+      const name = resume?.trade ?? `${config.walletTrade.tradeNamePrefix}-${Math.floor(Date.now() / 1000)}`;
       const w = await WalletTrade.start(s, name);
       setUri('');
       setTrade(w);
-      setPhase('connected');
+      if (resume && buyer) {
+        await w.resume(resume.escrow, buyer);
+        setEscrow(resume.escrow);
+        setStatus(STATUS[Number(await w.status())] ?? null);
+        setPhase('funded');
+      } else {
+        setPhase('connected');
+      }
     });
   };
 
@@ -66,6 +84,7 @@ export function WalletTab(): ReactNode {
       <p className="lede muted">{t('wallet.lede')}</p>
       <div className="sim">
         <div className="card wallet-trade">
+          {resume && <p className="notice small" data-testid="wallet-resume">{t('wallet.resume', { trade: resume.trade })}</p>}
           <ul className="small muted" data-testid="wallet-terms">
             <li>{t('wallet.amount', { sats: sats(terms.amount) })}</li>
             <li>{t('wallet.panel')}</li>
@@ -130,6 +149,8 @@ export function WalletTab(): ReactNode {
               {status && <p className="state-line">{t('try.statusLabel')} <span className="status-pill"
                 data-testid="wallet-status" data-status={status}>{t(`states.${status}`)}</span></p>}
               {status === 'funded' && <p className="small muted">{t('wallet.waitBuyer')}</p>}
+              {trade && <p className="small muted">{t('wallet.resumeLink')} <a className="txid" data-testid="resume-link"
+                href={`#/wallet?trade=${trade.trade}&escrow=${escrow}&buyer=${buyerHex.trim()}`}>{t('wallet.resumeLinkText')}</a></p>}
             </>
           )}
           <ol className="escrow-steps" data-testid="wallet-txs">

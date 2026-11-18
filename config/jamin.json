@@ -79,7 +79,13 @@
       "name": "Cashonize v0.15.2",
       "fundSats": 30000,
       "maxFundSats": 60000,
-      "branch": "X"
+      "branch": "X",
+      "releaseTopUp": {
+        "minCoins": 3,
+        "minSats": 15000,
+        "sats": 15000,
+        "coins": 3
+      }
     }
   },
   "tokens": {

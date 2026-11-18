@@ -117,3 +117,11 @@ test('wallet: the connect button waits for a valid buyer key, in English and Mal
   await expect(page.getByRole('heading', { level: 1, name: 'Berdagang dari dompet anda' })).toBeVisible();
   await expect(page.getByTestId('wallet-connect')).toHaveText('Sambung dompet');
 });
+
+test('wallet: a continue link fills the trade and the buyer key', async ({ page }) => {
+  const escrow = `bitcoincash:p${'q'.repeat(60)}`;
+  await page.goto(`/#/wallet?trade=wallet-1&escrow=${escrow}&buyer=02${'cd'.repeat(32)}`);
+  await expect(page.getByTestId('wallet-resume')).toContainText('wallet-1');
+  await expect(page.getByTestId('buyer-key')).toHaveValue(`02${'cd'.repeat(32)}`);
+  await expect(page.getByTestId('wallet-connect')).toBeEnabled();
+});

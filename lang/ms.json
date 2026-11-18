@@ -278,6 +278,9 @@
     "escrowTitle": "Escrow anda",
     "noEscrow": "Belum ada escrow.",
     "waitBuyer": "Syiling telah dikunci. Lepaskannya apabila pembeli sudah membayar anda dan menanda dagangan sebagai dibayar.",
-    "loading": "Memuatkan alat dompet..."
+    "loading": "Memuatkan alat dompet...",
+    "resume": "Menyambung dagangan {trade}: sambungkan dompet yang sama yang menciptanya.",
+    "resumeLink": "Simpan pautan ini untuk kembali kepada escrow kemudian:",
+    "resumeLinkText": "sambung dagangan ini"
   }
 }

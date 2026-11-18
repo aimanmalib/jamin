@@ -40,6 +40,9 @@ describe('branch X: a third-party wallet sells, the project wallet funds it and 
     expect(coin?.vout).toBe(0);
     expect(coin?.satoshis).toBe(30_000n);
     expect(totalSpent(readLedger(ledgerFile))).toBeGreaterThanOrEqual(30_000);
+    const split = await fundWallet(gated, [party(project.privateKey, gated)], outsider.address, 15_000n, 1, 3);
+    const parts = (await mock.getUtxos(outsider.address)).filter((u) => u.txid === split);
+    expect(parts.map((u) => [u.vout, u.satoshis]).sort()).toEqual([[0, 5_000n], [1, 5_000n], [2, 5_000n]]);
 
     const prefix = outsider.address.split(':')[0] as AddressPrefix;
     const wallet = new WizardWallet(new FakeWizWallet(outsider.privateKey), outsider.publicKey);

@@ -1,5 +1,6 @@
 // Branch X on mainnet (decision 0014): a Cashonize build signs as the seller on the site's "Wallet" tab.
 //   tsx scripts/third-party-wallet.ts --cashonize <built spa dir> [--site <url>] [--port 9052] [--dry]
+//   ... --trade <name> --escrow <address> --created <txid> --funded <txid> [--paid <txid>]   continue an escrow
 // Cashonize runs in Playwright with its own phrase (`mainnet.thirdPartyWallet.mnemonicEnv` in .env, made here once
 // and never printed), and connects to the page over WizardConnect. The project's test wallet funds it once through
 // the spending gate and its buyer key marks the trade paid; the page builds and broadcasts the seller's steps.
@@ -31,11 +32,13 @@ const SPA = arg('--cashonize');
 const SITE = arg('--site') ?? cfg.site.url;
 const PORT = Number(arg('--port') ?? 9052);
 const DRY = process.argv.includes('--dry');
+const RESUME = arg('--trade') !== undefined ? { trade: arg('--trade') ?? '', escrow: arg('--escrow') ?? '',
+  created: arg('--created') ?? '', funded: arg('--funded') ?? '', paid: arg('--paid') } : undefined;
 const SHOTS = process.env.AUTOPILOT_BUKTI_DIR ?? join(repoRoot, cfg.mainnet.outputDir);
 const ENV = join(repoRoot, cfg.wallet.envFile);
 const log = (m: string): void => { console.log(`[${new Date().toISOString().slice(11, 19)}] ${m}`); };
 if (!SPA) { console.error('usage: tsx scripts/third-party-wallet.ts --cashonize <dir> [--site url] [--dry]'); process.exit(2); }
-if (tp.fundSats > tp.maxFundSats) { console.error('thirdPartyWallet.fundSats is above maxFundSats'); process.exit(2); }
+if (tp.fundSats + tp.releaseTopUp.sats > tp.maxFundSats) { console.error('thirdPartyWallet.fundSats is above maxFundSats'); process.exit(2); }
 if (!cfg.mainnet.broadcastHosts.includes(cfg.electrum.mainnet.hostname)) { console.error('server not allowed'); process.exit(2); }
 const phrase = readEnvValue(ENV, cfg.wallet.mnemonicEnv);
 if (!phrase) { console.error(`${cfg.wallet.mnemonicEnv} missing`); process.exit(2); }
@@ -62,6 +65,14 @@ const gated = gateProvider(raw, { ledgerFile: join(repoRoot, cfg.mainnet.ledgerF
   note: `branch ${tp.branch}`, walletLocks: new Set(Object.values(keys).map((k) => binToHex(lockOf(k.address)))) });
 const as = (r: (typeof roles)[number]) => party((keys[r] ?? (() => { throw new Error(r); })()).privateKey, gated);
 const browser = await chromium.launch();
+
+/** Waits until the server lists a coin of `txid` at `address`. */
+async function seen(address: string, txid: string): Promise<void> {
+  for (let i = 0; i < 30; i++) {
+    if ((await raw.getUtxos(address)).some((u) => u.txid === txid)) return;
+    await new Promise((r) => setTimeout(r, 2_000));
+  }
+}
 
 /** Approves every Cashonize sign dialog until `done` shows on the page; the first is captured as `shot`. */
 async function signUntil(wallet: Page, site: Page, done: Locator, shot: string): Promise<void> {
@@ -96,8 +107,9 @@ try {
   log('Cashonize: third-party wallet imported');
 
   const site = await (await browser.newContext({ viewport: { width: 1280, height: 1000 }, locale: 'en-US' })).newPage();
-  await site.goto(`${SITE}/#/wallet`);
-  await site.getByTestId('buyer-key').fill(binToHex(keys.buyer?.publicKey ?? new Uint8Array()));
+  const buyerHex = binToHex(keys.buyer?.publicKey ?? new Uint8Array());
+  await site.goto(RESUME ? `${SITE}/#/wallet?trade=${RESUME.trade}&escrow=${RESUME.escrow}&buyer=${buyerHex}` : `${SITE}/#/wallet`);
+  if (!RESUME) await site.getByTestId('buyer-key').fill(buyerHex);
   await site.getByTestId('wallet-connect').click();
   const link = await site.getByTestId('wallet-link').inputValue({ timeout: 60_000 });
   await wallet.locator('nav').getByText('Connect', { exact: true }).click();
@@ -109,27 +121,45 @@ try {
   await signUntil(wallet, site, site.getByTestId('wallet-connected'), 'role-key');
   const address = await site.getByTestId('wallet-address').innerText();
   const roleKey = await site.getByTestId('role-key').innerText();
-  log(`connected; wallet ${address}; seller key in the escrow ${roleKey}`);
+  const tradeName = await site.getByTestId('trade-name').innerText();
+  log(`connected; wallet ${address}; trade ${tradeName}; seller key in the escrow ${roleKey}`);
   if (DRY) { await site.screenshot({ path: join(SHOTS, 'jamin-x-site-connected.png') }); process.exitCode = 0; }
   else {
-    const need = BigInt(cfg.walletTrade.amountSats);
-    const coins = (await raw.getUtxos(address)).filter((u) => !u.token);
-    if (!coins.some((u) => u.vout === 0 && u.satoshis >= need)) {
-      const txid = await fundWallet(gated, [as('seller'), as('arbitrator')], address, BigInt(tp.fundSats),
-        cfg.mainnet.feeRateSatsPerByte);
-      log(`funded the third-party wallet with ${tp.fundSats} sat: ${txid}`);
-      for (let i = 0; i < 30 && !(await raw.getUtxos(address)).some((u) => u.txid === txid); i++) await wallet.waitForTimeout(2_000);
+    let escrow = RESUME?.escrow ?? '';
+    let paid = RESUME?.paid;
+    if (!RESUME) {
+      const need = BigInt(cfg.walletTrade.amountSats);
+      const coins = (await raw.getUtxos(address)).filter((u) => !u.token);
+      if (!coins.some((u) => u.vout === 0 && u.satoshis >= need)) {
+        const txid = await fundWallet(gated, [as('seller'), as('arbitrator')], address, BigInt(tp.fundSats),
+          cfg.mainnet.feeRateSatsPerByte);
+        log(`funded the third-party wallet with ${tp.fundSats} sat: ${txid}`);
+        await seen(address, txid);
+      }
+      await site.getByTestId('wallet-create').click();
+      await signUntil(wallet, site, site.getByTestId('wallet-fund'), 'create');
+      escrow = await site.getByTestId('escrow-address').innerText();
+      log(`escrow ${escrow}`);
+      await site.getByTestId('wallet-fund').click();
+      await signUntil(wallet, site, site.getByTestId('wallet-refresh'), 'fund');
+    } else {
+      await site.getByTestId('wallet-refresh').waitFor({ timeout: 120_000 });
     }
-    await site.getByTestId('wallet-create').click();
-    await signUntil(wallet, site, site.getByTestId('wallet-fund'), 'create');
-    const escrow = await site.getByTestId('escrow-address').innerText();
-    log(`escrow ${escrow}`);
-    await site.getByTestId('wallet-fund').click();
-    await signUntil(wallet, site, site.getByTestId('wallet-refresh'), 'fund');
-    const sc = await attachEscrow(gated, escrow, keysFrom({ seller: roleKey, buyer: binToHex(keys.buyer?.publicKey ?? new Uint8Array()),
-      panel: cfg.walletTrade.panel, feeRecipientPkh: cfg.walletTrade.feeRecipientPkh }));
-    const paid = await buyerMarksPaid(sc, as('buyer'));
-    log(`buyer marked paid: ${paid}`);
+    if (paid === undefined) {
+      const sc = await attachEscrow(gated, escrow, keysFrom({ seller: roleKey, buyer: buyerHex,
+        panel: cfg.walletTrade.panel, feeRecipientPkh: cfg.walletTrade.feeRecipientPkh }));
+      paid = await buyerMarksPaid(sc, as('buyer'));
+      log(`buyer marked paid: ${paid}`);
+    }
+    // A stateful call is funded by several wallet coins: top the wallet up when it holds too few.
+    const top = tp.releaseTopUp;
+    const plain = (await raw.getUtxos(address)).filter((u) => !u.token);
+    if (plain.length < top.minCoins || plain.reduce((a, u) => a + u.satoshis, 0n) < BigInt(top.minSats)) {
+      const txid = await fundWallet(gated, [as('buyer'), as('seller')], address, BigInt(top.sats),
+        cfg.mainnet.feeRateSatsPerByte, top.coins);
+      log(`topped the third-party wallet up with ${top.sats} sat in ${top.coins} coins: ${txid}`);
+      await seen(address, txid);
+    }
     const release = site.getByTestId('wallet-release');
     for (let i = 0; i < 20 && !(await release.isEnabled()); i++) {
       await site.waitForTimeout(6_000);
@@ -141,8 +171,8 @@ try {
     await site.screenshot({ path: join(SHOTS, 'jamin-x-site-released.png'), fullPage: true });
     const txid = async (step: string): Promise<string> =>
       site.locator(`[data-testid="wallet-txs"] li[data-step="${step}"] a`).innerText();
-    const steps = branchXSteps(tp.branch, escrow, tp.name,
-      { createEscrow: await txid('createEscrow'), fund: await txid('fund'), release: await txid('release') }, paid);
+    const steps = branchXSteps(tp.branch, escrow, tp.name, { createEscrow: RESUME?.created ?? await txid('createEscrow'),
+      fund: RESUME?.funded ?? await txid('fund'), release: await txid('release') }, paid);
     const measured = [];
     for (const st of steps) measured.push(await measure(raw, st));
     const outDir = join(repoRoot, cfg.mainnet.outputDir);

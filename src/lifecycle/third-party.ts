@@ -13,11 +13,12 @@ async function plainCoins(provider: NetworkProvider, address: string): Promise<U
 }
 
 /**
- * Pays `amount` to `to` as output 0 (a contract's token genesis spends an output 0), from the plain coins of
- * `payers` in order until they cover it; change goes to the first payer. Returns the txid.
+ * Pays `amount` to `to` in `parts` equal coins starting at output 0 (a contract's token genesis spends an output 0;
+ * a stateful call wants several wallet coins to fund it), from the plain coins of `payers` in order until they cover
+ * it; change goes to the first payer. Returns the txid.
  */
 export async function fundWallet(provider: NetworkProvider, payers: Party[], to: string, amount: bigint,
-  feeRate: number): Promise<string> {
+  feeRate: number, parts = 1): Promise<string> {
   const [first] = payers;
   if (first === undefined) throw new Error('no payer');
   let tx = new TransactionBuilder({ provider });
@@ -30,7 +31,9 @@ export async function fundWallet(provider: NetworkProvider, payers: Party[], to:
     taken += coins.reduce((a, u) => a + u.satoshis, 0n);
   }
   if (taken < amount + 1_000n) throw new Error(`the payers hold ${taken} sat, ${amount} needed plus the fee`);
-  tx = tx.addOutputs([{ to: lockOf(to), amount }]).addBchChangeOutputIfNeeded({ to: first.address, feeRate });
+  const each = amount / BigInt(parts);
+  tx = tx.addOutputs(Array.from({ length: parts }, () => ({ to: lockOf(to), amount: each })))
+    .addBchChangeOutputIfNeeded({ to: first.address, feeRate });
   return (await tx.send()).txid;
 }
 

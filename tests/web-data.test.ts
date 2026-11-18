@@ -4,7 +4,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { parseFeatures } from '../web/data/features.js';
 import { summarise } from '../web/net/utxos.js';
-import { tabFromHash, hrefOf } from '../web/route.js';
+import { hashQuery, tabFromHash, hrefOf } from '../web/route.js';
 import regtest from '../examples/regtest.json' with { type: 'json' };
 import mainnet from '../examples/mainnet.json' with { type: 'json' };
 
@@ -65,5 +65,12 @@ describe('hash routes', () => {
     expect(tabFromHash('#/nope')).toBe('home');
     expect(hrefOf('home')).toBe('#/');
     expect(hrefOf('lifecycle')).toBe('#/lifecycle');
+  });
+
+  it('keeps the query of a wallet link out of the tab name', () => {
+    expect(tabFromHash('#/wallet?trade=wallet-1&escrow=bitcoincash:p0')).toBe('wallet');
+    const q = hashQuery('#/wallet?trade=wallet-1&escrow=bitcoincash:p0&buyer=02ab');
+    expect([q.get('trade'), q.get('escrow'), q.get('buyer')]).toEqual(['wallet-1', 'bitcoincash:p0', '02ab']);
+    expect(hashQuery('#/wallet').get('trade')).toBeNull();
   });
 });

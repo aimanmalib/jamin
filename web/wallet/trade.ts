@@ -2,10 +2,10 @@
 // role key request, the creation, the deposit and the release; the buyer marks the trade paid from their own wallet;
 // this page broadcasts each transaction to the Electrum server in config/jamin.json. It holds no wallet key; the role
 // key lives in this page's memory only and is derived again from the same wallet and trade name.
-import { hexToBin } from '@bitauth/libauth';
+import { binToHex, cashAddressToLockingBytecode, hexToBin } from '@bitauth/libauth';
 import { Network, type NetworkProvider } from '@solidcash/solidcash';
 import { ElectrumNetworkProvider } from '@solidcash/solidcash/network/electrum';
-import type { StatefulContract } from '@solidcash/solidcash/stateful';
+import { StatefulContract } from '@solidcash/solidcash/stateful';
 import { WizardWallet } from '../../src/wallet/wizard.js';
 import {
   createEscrow, escrowStatus, fundEscrow, releaseEscrow, walletSeller, type Counterparties, type TradeTerms,
@@ -35,6 +35,12 @@ export function counterparties(buyer: Uint8Array): Counterparties {
   const [a, b, c] = config.walletTrade.panel.map(hexToBin);
   if (!a || !b || !c || config.walletTrade.panel.length !== 3) throw new Error('walletTrade.panel needs three keys');
   return { buyer, panel: [a, b, c], feeRecipientPkh: hexToBin(config.walletTrade.feeRecipientPkh) };
+}
+
+function lock(address: string): string {
+  const decoded = cashAddressToLockingBytecode(address);
+  if (typeof decoded === 'string') throw new Error(decoded);
+  return binToHex(decoded.bytecode);
 }
 
 export function mainnetProvider(): NetworkProvider {
@@ -67,6 +73,15 @@ export class WalletTrade {
     this.sc = sc;
     this.txs.push({ step: 'createEscrow', txid });
     return txid;
+  }
+
+  /** Continues an escrow made earlier with the same wallet and trade name; throws when the keys do not match it. */
+  async resume(escrow: string, buyer: Uint8Array): Promise<void> {
+    const p = counterparties(buyer);
+    const sc = await StatefulContract.at(escrow, await artifact('JaminEscrow'), this.provider, { constructorArgs:
+      [this.seller.role.publicKey, p.buyer, ...p.panel, p.feeRecipientPkh] as never }) as unknown as StatefulContract;
+    if (lock(sc.tokenAddress) !== lock(escrow)) throw new Error('this wallet, trade name and buyer key do not make that escrow');
+    this.sc = sc;
   }
 
   async fund(): Promise<string> {

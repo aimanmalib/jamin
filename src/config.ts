@@ -31,7 +31,9 @@ export interface JaminConfig {
   walletTrade: { amountSats: number; panel: string[]; feeRecipientPkh: string; relayUrls: string[] };
   mainnet: {
     /** The third-party wallet of branch X: its own phrase in the env file, funded through the spending gate. */
-    thirdPartyWallet: { mnemonicEnv: string; name: string; fundSats: number; maxFundSats: number; branch: string };
+    thirdPartyWallet: { mnemonicEnv: string; name: string; fundSats: number; maxFundSats: number; branch: string;
+      /** Before a release: below `minCoins` plain coins or `minSats`, send `sats` in `coins` coins. */
+      releaseTopUp: { minCoins: number; minSats: number; sats: number; coins: number } };
     budgetSats: number;
     ledgerFile: string;
     fundingRequest: { bchSats: number; pusd: string };
