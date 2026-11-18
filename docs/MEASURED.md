@@ -264,7 +264,52 @@ SIGHASH_FORKID` and a 33-byte key, with their pushes). On the mock network one `
 signature template 11 times while the fee converged, and the release was preceded by a coin split that the wallet
 also signed (`test/JaminEscrow.wallet.test.ts`); that is why a wallet cannot sign the contract argument itself (F10).
 
+## Third-party wallet on mainnet (branch X)
+
+Measured 2026-11-18 between 21:37 and 22:49 UTC (decision 0014). Cashonize v0.15.2 (commit
+`4542351748dc412763a4e50c04451735fc8cf038`, `pnpm install --frozen-lockfile` and `pnpm build`) ran in headless Chromium
+on the host with a phrase of its own (`JAMIN_W3_MNEMONIC`, made by the script, never printed), and connected over
+WizardConnect to the public site's Wallet tab (`https://jamin.sasateguh.com/#/wallet`, image `716ad1f` for the
+release, `6a631c3` before). The page built and broadcast every seller step to `bch.imaginary.cash`; Cashonize
+showed each request in its "Sign transaction" dialog and signed it. Driver: `scripts/third-party-wallet.ts`.
+
+| Step | Signed in | Txid | Size (B) | Inputs | Miner fee (sat) | Height |
+| --- | --- | --- | --- | --- | --- | --- |
+| createEscrow | Cashonize v0.15.2 | `70b8183bae59fad4c83b4b75007432fb53531f080c4a904c3b39650b7a8ea427` | 758 | 1 | 1,758 | 977939 |
+| fund | Cashonize v0.15.2 | `0617d193feb779083dbe2b16954caec84fa4eba94f0f2dddf22e7100c050da38` | 6,872 | 5 | 7,055 | 977939 |
+| markAsPaid | buyer key (project wallet) | `de740e920a3d2f87b3b671e898cabf5cd8922f98e2a6f5b2bb5164bee93d8dd9` | 6,168 | 3 | 6,358 | 977939 |
+| release | Cashonize v0.15.2 | `c52013543babf07865b737cb3e680e3bc9f9cb2212a1fc15c76e574d36a53490` | 7,225 | 7 | 7,408 | 977943 |
+
+Escrow `bitcoincash:pd2ale5ne76cyn4x3agmaqpkf9k2gm8lglaz3kmzu9mqacc7k255jtdupjdr6`, amount 5,000 sats
+(`walletTrade.amountSats`); the third-party wallet's address is `bitcoincash:qz4e6systwqz7ecevc4xlu3f42rj4fllqg0mwf944p`
+and the trade name `wallet-1795037853`. The seller key in the escrow,
+`03fd1ce0d2ac809fa33f2861820cc4dc016531ece6f1673020ba6f7b3484218d0e`, is derived from Cashonize's signature over the
+role key request; Cashonize also signed that request again when the page reconnected, and the key came out the same.
+
+- Funding, through the spending gate: `d85b5f6acdd9e8862aa6106e0b977f109af1e3c91fd240beec6261e78cb22b53` sent 30,000
+  sats to the wallet as output 0 (360 sats fee); `c89e9682a46fbdd8fe96bd198ecfaef8da63a9e5ff8a988b8042e2a1cab5bab9`
+  sent 15,000 sats in three coins before the release (428 sats fee). Together 45,000 of the 60,000 allowed.
+- The first attempt stopped at the release. After the creation and the deposit the wallet held one plain coin of
+  6,685 sats, and the SDK refused before signing: "Signer has 1 available plain UTXO(s) but 3 funder(s) needed, and
+  splitting a larger coin did not yield enough." The escrow stayed in the paid state. The Wallet tab gained a link
+  that continues an escrow (trade name, escrow address, buyer key), the driver tops the wallet up with three coins
+  when it holds fewer, and the release was made from the continued page about an hour later.
+- The trade name of the first attempt was not logged. Signing the role key request for each second of the attempt's
+  minute with a local copy of the same key (the protocol stand-in in `test/helpers/wiz-wallet.ts`) gave Cashonize's
+  key at `wallet-1795037853`: the stand-in and Cashonize make the same signature byte for byte.
+- After the release, at 23:20 UTC (tip 977943): the third-party wallet holds 13,077 sats in 2 coins; the release paid
+  the buyer's address 5,000 sats (output 5) and the fee recipient 546 sats (output 4: the 15-sat escrow fee is
+  below the dust limit, so the contract pays the dust minimum, as in branch A). Escrow X's own contract coins are not in the
+  "Final state" table above, which was measured before it.
+- Captures (not tracked): Cashonize's sign dialog for the role key, the creation, the deposit and the release, and
+  the Wallet tab after the release. The pairing link and the phrase appear in none of them.
+
 ## Test count
+
+On the host on 2026-11-18 23:05 UTC, `npx solidhat test`: 11 files, 99 tests. 98 passed in the full run; one
+token-panel test (`test/JaminTokenEscrow.reject.test.ts`, "resolves a two-sided dispute for the seller") reached the
+120-second limit at a load average of 26 and passed when its file ran alone (11 of 11). The seven new tests are the
+WizardConnect tests in `test/JaminEscrow.wizard.test.ts` (decision 0014).
 
 `npm run gate` on Depot CI on 2026-11-18 08:23 UTC (run `nvg2zqcxq3`, commit e2bd231, after `npm ci`): `solidhat test`
 10 files, 92 tests, all passing; vitest 15 files, 66 tests; build passed. The three new SolidHat tests are the

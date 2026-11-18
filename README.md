@@ -18,7 +18,7 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   WalletConnect requests and signs the seller's coins (decision 0009). English and Bahasa Melayu.
 - **Contracts:** `contracts/` (four files, native SolidCash): `EscrowBase.scash`, `JaminEscrow.scash` (BCH),
   `JaminTokenEscrow.scash` (CashTokens such as PUSD), `FeeMath.scash`. Rules: `docs/SPEC.md`.
-- **Tests:** `npm ci && npm run solidhat:test`: 92 SolidHat tests in 10 files on the mock network with the production
+- **Tests:** `npm ci && npm run solidhat:test`: 99 SolidHat tests in 11 files on the mock network with the production
   profile (count in `docs/MEASURED.md`). Every attack in `docs/THREAT_MODEL.md` names the test that runs it.
 - **Real consensus limits:** all five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with
   standardness rules on, the dispute decided by two of the three panel members: 20 transactions mined, largest
@@ -30,6 +30,11 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   Cauldron pool, ran on Bitcoin Cash mainnet from the project's test wallet: 24 escrow transactions, the dispute
   decided by two of the three panel members (`docs/MEASURED.md`, "Mainnet"; `examples/mainnet.json`; the Lifecycle
   tab links each txid to an explorer).
+- **A third-party wallet on mainnet:** on the site's **Wallet** tab a seller connects a wallet over WizardConnect
+  and sells BCH through a real escrow. Cashonize v0.15.2, built from its tag and driven by a script with a phrase of
+  its own, signed the seller key request, the creation, the deposit and the release of one mainnet escrow there
+  (branch X, 4 escrow transactions, `docs/MEASURED.md`, "Third-party wallet on mainnet";
+  `docs/decisions/0014-third-party-wallet.md`).
 - **Refused by the network:** in branch R on mainnet, a seller cancel sent before its time and a release signed by
   the buyer were sent as raw transactions past the SDK's own checks, and the network refused both; the server's text
   is recorded verbatim, the escrow's coins stayed unspent, and the seller's valid release followed (4 more escrow
@@ -107,13 +112,14 @@ keeps its references honest.
 
 | What | Where |
 | --- | --- |
-| SolidHat tests (92, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
+| SolidHat tests (99, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
 | Sabotage: a check removed from a copy of a contract makes its named test fail | `docs/MEASURED.md` |
 | Script and transaction sizes of every function | `docs/MEASURED.md` |
 | Size and miner fee of each call on regtest | "Size and cost" below, `examples/regtest.json` |
 | Five branches on stock BCHN 29.0.0 regtest, 20 txids | `docs/MEASURED.md`, `examples/regtest.json` |
 | Web app end-to-end tests on Chromium and WebKit (iPhone 13), and on the public URL | `e2e/`, `docs/MEASURED.md` |
 | Mainnet run: branches A to E and W, 24 escrow txids, PUSD bought from a Cauldron pool | `docs/MEASURED.md` "Mainnet", `examples/mainnet.json` |
+| Mainnet branch X: Cashonize signs the seller's steps on the Wallet tab over WizardConnect | `docs/MEASURED.md` "Third-party wallet on mainnet", `examples/mainnet.json` |
 | Mainnet branch R: two forbidden calls the network refused (server text, raw hashes), then a valid release | `docs/MEASURED.md` "Refused on mainnet", `examples/mainnet.json` |
 
 ## Size and cost
@@ -193,9 +199,12 @@ The reasons the other ten are not are in the same file.
   signs its own inputs, and the seller's escrow key is derived from a message the wallet signs
   (`docs/decisions/0009-wallet-connection.md`; a wallet cannot sign the contract's own signature check through the
   SDK, F10). This is tested on the mock network and on regtest with a protocol-level test wallet, and the simulator
-  shows it with a demo wallet in the page. The web app does not open a WalletConnect session to a phone wallet,
-  which needs a relay project id. Payments back to such a seller go to the escrow key's
-  address.
+  shows it with a demo wallet in the page. The Wallet tab connects a real wallet over WizardConnect, which needs no
+  relay account (decision 0014); the BCH WalletConnect protocol needs a relay project id and is not connected.
+  On mainnet the third-party wallet was Cashonize driven by a script, so it shows that a wallet nobody here wrote
+  signs these transactions, not a person's judgement; no phone wallet has been tried. The tab needs a wallet coin
+  at output 0 for the escrow's token genesis, and sells only BCH, at an amount the site fixes, with disputes going
+  to the site's demo panel. Payments back to such a seller go to the escrow key's address.
 
 ## Development
 

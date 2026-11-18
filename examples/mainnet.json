@@ -266,6 +266,47 @@
           "height": 977918
         }
       ]
+    },
+    {
+      "branch": "X",
+      "asset": "BCH",
+      "address": "bitcoincash:pd2ale5ne76cyn4x3agmaqpkf9k2gm8lglaz3kmzu9mqacc7k255jtdupjdr6",
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "70b8183bae59fad4c83b4b75007432fb53531f080c4a904c3b39650b7a8ea427",
+          "signer": "wallet",
+          "wallet": "Cashonize v0.15.2",
+          "txBytes": 758,
+          "feeSats": 1758,
+          "height": 977939
+        },
+        {
+          "step": "fund",
+          "txid": "0617d193feb779083dbe2b16954caec84fa4eba94f0f2dddf22e7100c050da38",
+          "signer": "wallet",
+          "wallet": "Cashonize v0.15.2",
+          "txBytes": 6872,
+          "feeSats": 7055,
+          "height": 977939
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "de740e920a3d2f87b3b671e898cabf5cd8922f98e2a6f5b2bb5164bee93d8dd9",
+          "txBytes": 6168,
+          "feeSats": 6358,
+          "height": 977939
+        },
+        {
+          "step": "release",
+          "txid": "c52013543babf07865b737cb3e680e3bc9f9cb2212a1fc15c76e574d36a53490",
+          "signer": "wallet",
+          "wallet": "Cashonize v0.15.2",
+          "txBytes": 7225,
+          "feeSats": 7408,
+          "height": 977943
+        }
+      ]
     }
   ]
 }
