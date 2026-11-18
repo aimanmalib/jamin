@@ -7,10 +7,22 @@ export interface RegtestTx {
   branch: string; step: string; txid: string; height: number; txBytes: number; inputs: number;
   largestUnlockBytes: number;
 }
-export interface RegtestRun { node: string; measuredAt: string; unlockLimitBytes: number; transactions: RegtestTx[] }
-
 export interface MainnetStep { step: string; txid: string; height?: number; signer?: 'wallet' }
-export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: MainnetStep[] }
+/** A call the network refused (docs/decisions/0015): never mined, so a raw hash and no txid. */
+export interface RefusedStep {
+  step: string; refused: true; by: string; expected: string; rawTxHash: string; serverError: string; at: string;
+}
+export type EscrowStep = MainnetStep | RefusedStep;
+export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: EscrowStep[] }
+export interface RefusedRun extends MainnetEscrow { node: string; measuredAt: string }
+
+export interface RegtestRun {
+  node: string; measuredAt: string; unlockLimitBytes: number; transactions: RegtestTx[]; refused?: RefusedRun;
+}
+
+export function isRefused(s: EscrowStep): s is RefusedStep {
+  return 'refused' in s && s.refused;
+}
 export interface MainnetRun { escrows: MainnetEscrow[] }
 
 export const regtest = regtestRaw as RegtestRun;

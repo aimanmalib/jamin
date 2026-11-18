@@ -1,10 +1,11 @@
 // "Lifecycle": every escrow recorded on a real network. Mainnet escrows come from examples/mainnet.json with their
 // coins read live from Electrum, block height and which steps the seller's wallet signed; until that file has
-// entries the page says so. The regtest run follows.
+// entries the page says so. The regtest run follows, then branch R on regtest: calls the node refused.
 import { useEffect, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { byBranch, mainnet, regtest, type MainnetEscrow } from '../data/examples.js';
 import { config, explorerLink } from '../data/config.js';
+import { EscrowSteps } from './EscrowSteps.js';
 import { fetchCoins, type Coins } from '../net/utxos.js';
 import { StateDiagram } from './StateDiagram.js';
 
@@ -26,14 +27,7 @@ function MainnetEscrowCard({ e }: { e: MainnetEscrow }): ReactNode {
         <p className="small"><a className="txid" href={explorerLink(config.explorer.mainnetAddress, e.address)}>{e.address}</a>
           {' '}<LiveCoins address={e.address} /></p>
       )}
-      <ol>
-        {e.steps.map((s) => (
-          <li key={s.txid}>{t(`log.step.${s.step}`)}{' '}
-            <a className="txid" href={explorerLink(config.explorer.mainnetTx, s.txid)}>{s.txid}</a>{' '}
-            <span className="muted small">{s.height === undefined ? t('lifecycle.mempool')
-              : t('lifecycle.block', { height: s.height })}{s.signer === 'wallet' ? `, ${t('lifecycle.walletSigned')}` : ''}</span></li>
-        ))}
-      </ol>
+      <EscrowSteps steps={e.steps} link />
     </article>
   );
 }
@@ -76,6 +70,18 @@ export function Lifecycle(): ReactNode {
           </div>
         ))}
       </section>
+      {regtest.refused && (
+        <section aria-labelledby="refused-h" data-testid="regtest-refused">
+          <h2 id="refused-h">{t('lifecycle.regtestRefusedTitle')}</h2>
+          <p className="muted">{t('lifecycle.regtestRefusedNote', { node: regtest.refused.node,
+            date: regtest.refused.measuredAt.slice(0, 10) })}</p>
+          <article className="card">
+            <h3>{t('lifecycle.branchTitle', { branch: regtest.refused.branch,
+              name: t(`lifecycle.branch.${regtest.refused.branch}`) })}</h3>
+            <EscrowSteps steps={regtest.refused.steps} link={false} />
+          </article>
+        </section>
+      )}
     </>
   );
 }

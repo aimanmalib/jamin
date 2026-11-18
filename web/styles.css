@@ -181,3 +181,12 @@ main { padding-top: 2rem; }
 .wallet { border-top: 1px solid var(--line); margin: 0 0 1rem; padding-top: 0.75rem; min-width: 0; }
 .wallet-message { font-family: var(--font-mono); font-size: 0.85rem; background: var(--paper-deep); border: 1px solid var(--line);
   border-radius: 8px; padding: 0.5rem 0.75rem; margin: 0.5rem 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* A call the network refused (Lifecycle): marked, with the rejection text kept whole and wrapped on small screens. */
+.escrow-steps li { margin-bottom: 0.35rem; }
+.refused { border-left: 3px solid var(--danger); padding: 0.4rem 0 0.4rem 0.6rem; background: var(--paper);
+  border-radius: 0 6px 6px 0; list-style-position: inside; }
+.refused p { margin: 0.25rem 0; }
+.refused-label { display: block; color: var(--danger); }
+.server-error { display: block; white-space: pre-wrap; overflow-wrap: anywhere; padding: 0.4rem 0.5rem;
+  background: var(--card); border: 1px solid var(--line); border-radius: 6px; }

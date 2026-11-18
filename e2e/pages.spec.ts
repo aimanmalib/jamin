@@ -45,9 +45,28 @@ test('lifecycle: lists every mainnet escrow with its txids, and the regtest run'
   if (mainnet.escrows.length === 0) await expect(page.getByTestId('mainnet-empty')).toBeVisible();
   else await expect(page.getByTestId('mainnet-lede')).toBeVisible();
   for (const e of mainnet.escrows) {
-    for (const s of e.steps) await expect(page.getByRole('link', { name: s.txid, exact: true })).toHaveCount(1);
+    for (const s of e.steps) {
+      if ('txid' in s) await expect(page.getByRole('link', { name: s.txid, exact: true })).toHaveCount(1);
+    }
   }
   for (const tx of regtest.transactions) await expect(page.getByText(tx.txid)).toHaveCount(1);
+});
+
+test('lifecycle: calls the network refused show the rejection text verbatim, in both languages', async ({ page }) => {
+  const refused = [...(regtest.refused?.steps ?? []), ...mainnet.escrows.flatMap((e) => e.steps)]
+    .filter((s) => 'refused' in s && s.refused);
+  expect(refused.length).toBeGreaterThanOrEqual(2);
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto('/#/lifecycle');
+  await expect(page.getByTestId('refused-step')).toHaveCount(refused.length);
+  for (const s of refused as Array<{ serverError: string; rawTxHash: string }>) {
+    await expect(page.getByTestId('server-error').filter({ hasText: s.serverError })).toHaveCount(1);
+    await expect(page.getByText(s.rawTxHash, { exact: true })).toHaveCount(1);
+  }
+  await page.getByTestId('regtest-refused').scrollIntoViewIfNeeded();
+  await noHorizontalOverflow(page);
+  await page.getByRole('button', { name: 'Bahasa Melayu' }).click();
+  await expect(page.getByText('Ditolak oleh rangkaian')).toHaveCount(refused.length);
 });
 
 test('contract: a feature reference highlights its source line', async ({ page }) => {

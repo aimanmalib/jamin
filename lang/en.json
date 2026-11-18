@@ -213,7 +213,8 @@
       "C": "buyer cancels",
       "D": "seller cancels after the waiting time",
       "E": "dispute, arbitrator decides",
-      "W": "release, seller trades from a wallet"
+      "W": "release, seller trades from a wallet",
+      "R": "two calls refused, then release"
     },
     "colStep": "Step",
     "colTx": "Txid",
@@ -224,7 +225,17 @@
     "coins": "{count} coins, {sats} sats now",
     "block": "block {height}",
     "mempool": "not yet in a block",
-    "walletSigned": "signed by the seller's wallet"
+    "walletSigned": "signed by the seller's wallet",
+    "refused": "Refused by the network",
+    "refusedBy": "{step}, signed by the {party}",
+    "refusedWhy": {
+      "TooEarly": "The seller tried to cancel before the waiting time ended. The contract's time lock fails, so the network will not accept the transaction.",
+      "NotSeller": "Only the seller may release the coins. A release signed by the buyer fails the contract's signature check, so the network will not accept it."
+    },
+    "refusedText": "Rejection text, as received",
+    "rawHash": "Hash of the refused transaction (never mined)",
+    "regtestRefusedTitle": "Calls the node refused",
+    "regtestRefusedNote": "{node}, {date}. The run sent two calls the contract forbids straight to the node, past the local checks. The node refused both and the escrow's coins stayed unspent; the valid release that followed was mined."
   },
   "contract": {
     "title": "The contract",

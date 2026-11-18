@@ -213,7 +213,8 @@
       "C": "pembeli membatal",
       "D": "penjual membatal selepas tempoh menunggu",
       "E": "pertikaian, penimbang tara memutuskan",
-      "W": "lepas, penjual berdagang dari dompet"
+      "W": "lepas, penjual berdagang dari dompet",
+      "R": "dua panggilan ditolak, kemudian lepas"
     },
     "colStep": "Langkah",
     "colTx": "Txid",
@@ -224,7 +225,17 @@
     "coins": "{count} syiling, {sats} sat sekarang",
     "block": "blok {height}",
     "mempool": "belum dalam blok",
-    "walletSigned": "ditandatangani dompet penjual"
+    "walletSigned": "ditandatangani dompet penjual",
+    "refused": "Ditolak oleh rangkaian",
+    "refusedBy": "{step}, ditandatangani {party}",
+    "refusedWhy": {
+      "TooEarly": "Penjual cuba membatal sebelum tempoh menunggu tamat. Kunci masa kontrak gagal, jadi rangkaian tidak menerima transaksi itu.",
+      "NotSeller": "Hanya penjual boleh melepaskan syiling. Pelepasan yang ditandatangani pembeli gagal semakan tandatangan kontrak, jadi rangkaian tidak menerimanya."
+    },
+    "refusedText": "Teks penolakan, seperti diterima",
+    "rawHash": "Cincangan transaksi yang ditolak (tidak pernah dilombong)",
+    "regtestRefusedTitle": "Panggilan yang ditolak nod",
+    "regtestRefusedNote": "{node}, {date}. Larian ini menghantar dua panggilan yang dilarang kontrak terus ke nod, melepasi semakan tempatan. Nod menolak kedua-duanya dan syiling escrow kekal tidak dibelanja; pelepasan sah selepas itu dilombong."
   },
   "contract": {
     "title": "Kontrak",
