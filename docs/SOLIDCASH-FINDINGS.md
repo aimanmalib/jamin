@@ -138,16 +138,16 @@ requests #1 and #4 to #7, issues #2 and #3).
   a plain contract). A fix needs an asynchronous signing step between the final build and the broadcast, which is
   larger than a small patch; not prepared as a fix.
 
-## Fixes prepared for upstream
+## Fixes submitted upstream
 
 Three findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
-the change. They are prepared as branches and have not been submitted yet.
+the change. Each was opened as a pull request to `solidcash/solidcash` on 18 November 2026.
 
-| Finding | Branch | Change | Test |
-| --- | --- | --- | --- |
-| F8 | `fix/constructor-require-site` | `sc-derive-deploy-commitments.ts` names the failing constructor `require` with `probeRequireStatement` | `packages/solidcash/test/e2e/ConstructorRequireSite.test.ts` |
-| F4 | `fix/mock-provider-exact-optional` | `NetworkProvider.oraclePoolCategory` declared `?: string \| undefined` | `packages/solidcash/test/unit/MockProviderExactOptionalTypes.test.ts` |
-| F1 | `fix/framed-locking-bytecode-instantiation` | `LowerFramedCreate2Address` and the optional-lowering survey skip the built-in locking bytecode classes | `packages/solidc/test/framed/master/locking-bytecode-instantiation.test.ts` |
+| Finding | Pull request | Branch | Change | Test |
+| --- | --- | --- | --- | --- |
+| F8 | [#8](https://github.com/solidcash/solidcash/pull/8) | `fix/constructor-require-site` | `sc-derive-deploy-commitments.ts` names the failing constructor `require` with `probeRequireStatement` | `packages/solidcash/test/e2e/ConstructorRequireSite.test.ts` |
+| F4 | [#10](https://github.com/solidcash/solidcash/pull/10) | `fix/mock-provider-exact-optional` | `NetworkProvider.oraclePoolCategory` declared `?: string \| undefined` | `packages/solidcash/test/unit/MockProviderExactOptionalTypes.test.ts` |
+| F1 | [#9](https://github.com/solidcash/solidcash/pull/9) | `fix/framed-locking-bytecode-instantiation` | `LowerFramedCreate2Address` and the optional-lowering survey skip the built-in locking bytecode classes | `packages/solidc/test/framed/master/locking-bytecode-instantiation.test.ts` |
 
 For F1 the direct composition is unchanged: the bytecode and ABI of the 11 upstream contract files and examples that
 use a built-in locking bytecode class hash the same before and after the change. The fix lets the framed contract

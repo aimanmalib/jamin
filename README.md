@@ -28,6 +28,8 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   `docs/MEASURED.md`, "Wallet signing"; `docs/decisions/0009-wallet-connection.md`).
 - **Mainnet:** not run yet (see "Known limits").
 - **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
+- **Upstream:** three fixes found while building this are open as pull requests to SolidCash (#8, #9, #10;
+  "Upstream contributions").
 - **Port:** every OpenPeerEscrow function, event and modifier and what became of it, in `docs/PORTING.md`.
 
 ## Who it is for
@@ -100,12 +102,18 @@ The full table, with file and line and the test for each row, is `docs/FEATURES.
 
 ## Upstream contributions
 
-Building Jamin turned up nine issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
+Building Jamin turned up ten issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
 `docs/SOLIDCASH-FINDINGS.md`. Three have a small fix with a regression test that fails on upstream `master` and
-passes with the change: a constructor `require` that fails is reported as missing state writes (F8),
-`MockNetworkProvider` does not type-check under `exactOptionalPropertyTypes` (F4), and a framed contract cannot pay to
-`new LockingBytecodeP2PKH(...)` (F1). All three are prepared as branches and have not been submitted as pull requests
-yet. The reasons the other six are not are in the same file.
+passes with the change, and each is open as a pull request:
+
+- [solidcash/solidcash#8](https://github.com/solidcash/solidcash/pull/8): a constructor `require` that fails is
+  reported as missing state writes (F8).
+- [solidcash/solidcash#9](https://github.com/solidcash/solidcash/pull/9): a framed contract cannot pay to
+  `new LockingBytecodeP2PKH(...)` (F1).
+- [solidcash/solidcash#10](https://github.com/solidcash/solidcash/pull/10): `MockNetworkProvider` does not
+  type-check under `exactOptionalPropertyTypes` (F4).
+
+The reasons the other seven are not are in the same file.
 
 ## Known limits
 
