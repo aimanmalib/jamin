@@ -51,6 +51,9 @@ test('contract: a feature reference highlights its source line', async ({ page }
   await ref.click();
   await expect(page.locator('pre.source')).toHaveAttribute('aria-label', file ?? '');
   await expect(page.locator(`#L${line}`)).toHaveClass(/hit/);
+  // SDK rows name code outside contracts/: plain text, not links into the contract source viewer.
+  await expect(page.locator('code.ref-code', { hasText: 'src/lifecycle/wallet-branch.ts:' })).toBeVisible();
+  await expect(page.locator('button.ref', { hasText: 'src/' })).toHaveCount(0);
 });
 
 test('320 px wide: no horizontal overflow on any tab, also after scrolling', async ({ page }) => {

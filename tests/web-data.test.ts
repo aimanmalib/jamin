@@ -11,10 +11,17 @@ import mainnet from '../examples/mainnet.json' with { type: 'json' };
 describe('feature table', () => {
   const features = parseFeatures(readFileSync('docs/FEATURES.md', 'utf8'));
 
-  it('reads every numbered row with at least one contract reference', () => {
+  it('reads every numbered row with at least one code reference', () => {
     expect(features.length).toBeGreaterThanOrEqual(12);
     expect(features.map((f) => f.n)).toEqual(features.map((_, i) => i + 1));
-    for (const f of features) expect(f.refs.length, f.name).toBeGreaterThan(0);
+    for (const f of features) expect(f.refs.length + f.code.length, f.name).toBeGreaterThan(0);
+    expect(features.filter((f) => f.refs.length > 0).length).toBeGreaterThanOrEqual(12);
+  });
+
+  it('keeps SDK references outside contracts/ as text, not as contract source links', () => {
+    const rows = parseFeatures('| 1 | SDK | `src/a.ts:3`, `contracts/B.scash:2` | t |\n| 2 | Lang | `contracts/C.scash:9` | t |');
+    expect(rows.map((r) => [r.refs, r.code])).toEqual([[[{ file: 'B.scash', line: 2 }], ['src/a.ts:3']],
+      [[{ file: 'C.scash', line: 9 }], []]]);
   });
 
   it('points every reference at an existing line of a contract file', () => {

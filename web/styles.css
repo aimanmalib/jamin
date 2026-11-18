@@ -135,6 +135,7 @@ th { font-weight: 600; background: var(--paper-deep); }
 .features li { min-width: 0; }
 .ref { font-family: var(--font-mono); font-size: 0.85rem; background: none; border: 0; padding: 0.2rem 0; min-height: 32px;
   color: var(--river); text-decoration: underline; cursor: pointer; overflow-wrap: anywhere; }
+.ref-code { font-family: var(--font-mono); font-size: 0.85rem; overflow-wrap: anywhere; }
 .source { margin: 0; background: var(--ink); color: var(--paper); border-radius: var(--radius); padding: 0.75rem 0;
   overflow-x: auto; font: 0.8rem/1.6 var(--font-mono); max-height: 36rem; overflow-y: auto; }
 .source span.ln { display: block; padding: 0 0.75rem; white-space: pre; }

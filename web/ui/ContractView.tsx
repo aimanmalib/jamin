@@ -35,7 +35,8 @@ export function ContractView(): ReactNode {
               <div>{f.refs.map((r) => (
                 <button key={`${r.file}:${r.line}`} type="button" className="ref" onClick={() => show(r)}>
                   {r.file}:{r.line}</button>
-              )).reduce<ReactNode[]>((acc, el, i) => (i ? [...acc, ' ', el] : [el]), [])}</div>
+              )).concat(f.code.map((c) => <code key={c} className="ref-code">{c}</code>))
+                .reduce<ReactNode[]>((acc, el, i) => (i ? [...acc, ' ', el] : [el]), [])}</div>
               <div className="small muted">{t('contract.testedBy')} {f.test}</div>
             </li>
           ))}
