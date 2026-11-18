@@ -44,6 +44,26 @@ export interface Step {
   signer?: 'wallet';
 }
 
+/**
+ * A transaction a run sent on purpose although the contract forbids it, and the network refused (branch R, decision
+ * 0015). It was never mined, so it has a raw hash and no txid.
+ */
+export interface RefusedStep {
+  branch: string;
+  step: string;
+  refused: true;
+  /** The party whose key signed the contract input. */
+  by: PartyName;
+  /** The contract error the call breaks. */
+  expected: string;
+  rawTxHash: string;
+  /** The node's or server's rejection text, as it came back. */
+  serverError: string;
+  at: string;
+  /** The txid of the last step recorded before this attempt. */
+  afterTxid?: string;
+}
+
 export interface Ctx {
   network: string;
   provider: NetworkProvider;
@@ -56,6 +76,8 @@ export interface Ctx {
   /** Resolves once the chain's median time past is at or after `timestamp`. */
   waitUntil(timestamp: bigint): Promise<void>;
   record(step: Step): void;
+  /** Attempts the network refused, in order (branch R). */
+  refused: RefusedStep[];
 }
 
 export function party(privateKey: Uint8Array, provider: NetworkProvider): Party {

@@ -1,6 +1,6 @@
 // examples/regtest.json is made from a regtest run file, and only from a run where every branch passed.
 import { describe, expect, it } from 'vitest';
-import { nodeName, regtestExample, type RegtestRunFile } from '../src/lifecycle/example.js';
+import { nodeName, refusedExample, regtestExample, type RegtestRunFile } from '../src/lifecycle/example.js';
 
 const step = { branch: 'E', step: 'resolveDispute', txid: 'ab'.repeat(32), txBytes: 7665, inputs: 8,
   maxUnlockingBytes: 5498, height: 258 };
@@ -30,5 +30,27 @@ describe('regtestExample', () => {
 
   it('leaves an unknown node string as it is', () => {
     expect(nodeName('custom')).toBe('custom');
+  });
+});
+
+describe('refusedExample', () => {
+  const tx = (n: number): string => n.toString(16).padStart(64, '0');
+  const r = (n: number, height: number, stepName: string, escrow?: string) => ({ branch: 'R', step: stepName, txid: tx(n),
+    txBytes: 700, inputs: 1, maxUnlockingBytes: 100, height, ...(escrow ? { escrow } : {}) });
+  const rRun: RegtestRunFile = { ...run, steps: [step, r(1, 300, 'createEscrow', 'bchreg:pr'), r(2, 301, 'fund'),
+    r(3, 302, 'release')],
+  refused: [{ branch: 'R', step: 'release', refused: true, by: 'buyer', expected: 'NotSeller', rawTxHash: tx(9),
+    serverError: 'Request failed after 1 attempts: Error: mandatory-script-verify-flag-failed (x) (code 16)',
+    at: '2026-11-18T16:41:13.836Z', afterTxid: tx(2) }] };
+
+  it('keeps branch R only, with the refused attempt after the step it followed', () => {
+    const e = refusedExample(rRun);
+    expect(e).toMatchObject({ node: 'Bitcoin Cash Node 29.0.0', branch: 'R', asset: 'BCH', address: 'bchreg:pr' });
+    expect(e.steps.map((s) => s.step)).toEqual(['createEscrow', 'fund', 'release', 'release']);
+    expect(e.steps[2]).toMatchObject({ refused: true, serverError: 'mandatory-script-verify-flag-failed (x) (code 16)' });
+  });
+
+  it('refuses a run without refused attempts', () => {
+    expect(() => refusedExample(run)).toThrow(/no refused attempts/);
   });
 });

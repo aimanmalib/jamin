@@ -1,12 +1,14 @@
 // Runs the five escrow lifecycle branches on a real network and writes every transaction with its sizes. Branch W
-// (branch A with the seller signing through a wallet, docs/decisions/0009) runs when named.
-//   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E,W]
-//   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E,W]   (test wallet, spending gate; see below)
+// (branch A with the seller signing through a wallet, docs/decisions/0009) and branch R (calls the network refuses,
+// docs/decisions/0015) run when named.
+//   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E,W,R]
+//   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E,W,R]   (test wallet, spending gate; see below)
 // Regtest needs a node: bash scripts/regtest-node.sh start (and stop afterwards). Mainnet: scripts/lifecycle-mainnet.ts.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { loadConfig, repoRoot } from '../src/config.js';
 import { branchA, branchB, branchC, branchE, finishD, startD } from '../src/lifecycle/branches.js';
 import { branchW } from '../src/lifecycle/wallet-branch.js';
+import { branchR } from '../src/lifecycle/refused.js';
 import type { Ctx, Terms } from '../src/lifecycle/context.js';
 import { measure } from '../src/lifecycle/inspect.js';
 import { regtestContext } from '../src/lifecycle/regtest.js';
@@ -36,7 +38,7 @@ const { ctx, steps, rpc } = await regtestContext(terms);
 const node = await rpc('getnetworkinfo') as { subversion: string };
 const runs: Array<[string, (c: Ctx) => Promise<void>]> = [
   ['A', branchA], ['B', branchB], ['C', branchC],
-  ['D', async (c) => finishD(c, await startD(c))], ['E', branchE], ['W', (c) => branchW(c)],
+  ['D', async (c) => finishD(c, await startD(c))], ['E', branchE], ['W', (c) => branchW(c)], ['R', branchR],
 ];
 const failures: string[] = [];
 for (const [name, body] of runs) {
@@ -59,10 +61,11 @@ for (const s of steps) {
   console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
 }
 const out = { network, node: node.subversion, at: new Date().toISOString(), terms: Object.fromEntries(
-  Object.entries(terms).map(([k, v]) => [k, v.toString()])), failures, steps: measured };
+  Object.entries(terms).map(([k, v]) => [k, v.toString()])), failures, steps: measured, refused: ctx.refused };
 const dir = `${repoRoot}${cfg.regtest.outputDir}`;
 mkdirSync(dir, { recursive: true });
 const file = `${dir}/run-${out.at.replace(/[:.]/g, '-')}.json`;
 writeFileSync(file, `${JSON.stringify(out, null, 2)}\n`);
+for (const r of ctx.refused) console.log(`${r.branch} ${r.step} by ${r.by} REFUSED ${r.rawTxHash}: ${r.serverError}`);
 console.log(`node ${node.subversion}; ${measured.length} transactions; written ${file.slice(repoRoot.length)}`);
 process.exit(failures.length === 0 ? 0 : 1);

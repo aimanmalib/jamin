@@ -12,6 +12,8 @@ export interface SpendEntry {
   txid: string;
   spentSats: number;
   note: string;
+  /** A broadcast the network refused: nothing left the wallet, so it counts 0 sat (decision 0015). */
+  refused?: true;
 }
 
 export interface Ledger {
@@ -57,7 +59,9 @@ export function recordSpend(file: string, entry: Omit<SpendEntry, 'at'> & { at?:
   assertSats(entry.spentSats, 'spentSats');
   if (!/^[0-9a-f]{64}$/.test(entry.txid)) throw new Error('txid must be 64 lowercase hex characters');
   const ledger = readLedger(file);
-  if (ledger.entries.some((e) => e.txid === entry.txid)) return ledger;
+  // A refused attempt never hides a later accepted broadcast of the same transaction from the budget.
+  const same = ledger.entries.filter((e) => e.txid === entry.txid);
+  if (same.some((e) => e.refused !== true) || (entry.refused === true && same.length > 0)) return ledger;
   const next: Ledger = { entries: [...ledger.entries, { ...entry, at: entry.at ?? new Date().toISOString() }] };
   mkdirSync(dirname(file), { recursive: true });
   const tmp = `${file}.${process.pid}.tmp`;

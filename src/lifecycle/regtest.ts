@@ -61,6 +61,7 @@ export async function regtestContext(terms: Terms): Promise<RegtestRun> {
       if (mtp < timestamp) await regtest.increaseTime(timestamp - mtp + 60n);
     },
     record: (s) => { steps.push(s); },
+    refused: [],
   };
   return { ctx, steps, rpc: regtestRpc(rpcUrl, rpcUser, rpcPassword) };
 }

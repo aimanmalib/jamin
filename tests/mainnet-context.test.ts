@@ -108,6 +108,6 @@ describe('mainnet context behind the spending gate', { timeout: 180_000 }, () =>
     for (const s of steps) expect(recorded.has(s.txid)).toBe(true);
     const record = addSteps({ network: 'mainnet', escrows: [] }, steps);
     expect(record.escrows).toHaveLength(1);
-    expect(record.escrows[0]?.steps.filter((s) => s.signer === 'wallet')).toHaveLength(3);
+    expect(record.escrows[0]?.steps.filter((s) => 'signer' in s && s.signer === 'wallet')).toHaveLength(3);
   });
 });

@@ -13,14 +13,15 @@ export const Status = { Funded: 1n, Paid: 2n, Disputed: 3n, Released: 4n, Cancel
 
 interface State { status: bigint; terms: { amount: bigint; fee: bigint; disputeFee: bigint; sellerCanCancelAfter: bigint } }
 
-async function stateOf(sc: Escrow): Promise<State> {
+export async function stateOf(sc: Escrow): Promise<State> {
   const s = await sc.getState() as { status: bigint | number; terms: State['terms'] };
   return { status: BigInt(s.status), terms: s.terms };
 }
 
-async function run(ctx: Ctx, branch: string, step: string, send: Promise<TransactionDetails>): Promise<void> {
+export async function run(ctx: Ctx, branch: string, step: string, send: Promise<TransactionDetails>): Promise<string> {
   const { txid } = await send;
   ctx.record({ branch, step, txid });
+  return txid;
 }
 
 /** Contract parameters of an escrow between the context's parties. */
@@ -42,19 +43,19 @@ async function deploy(ctx: Ctx, branch: string, name: string, extra: unknown[], 
   return contract;
 }
 
-async function openBch(ctx: Ctx, branch: string): Promise<{ sc: Escrow; fee: bigint }> {
+export async function openBch(ctx: Ctx, branch: string): Promise<{ sc: Escrow; fee: bigint; txid: string }> {
   const sc = await deploy(ctx, branch, 'JaminEscrow', [], ctx.terms.amount);
   const { fee } = (await stateOf(sc)).terms;
-  await run(ctx, branch, 'fund', call(sc, ctx.parties.seller, 'fund').withValue(ctx.terms.amount + fee).send());
-  return { sc, fee };
+  const txid = await run(ctx, branch, 'fund', call(sc, ctx.parties.seller, 'fund').withValue(ctx.terms.amount + fee).send());
+  return { sc, fee, txid };
 }
 
-async function markPaid(ctx: Ctx, branch: string, sc: Escrow, ...args: unknown[]): Promise<void> {
-  await run(ctx, branch, 'markAsPaid', call(sc, ctx.parties.buyer, 'markAsPaid', ...args).send());
+export async function markPaid(ctx: Ctx, branch: string, sc: Escrow, ...args: unknown[]): Promise<string> {
+  return run(ctx, branch, 'markAsPaid', call(sc, ctx.parties.buyer, 'markAsPaid', ...args).send());
 }
 
 /** Satoshi changes at the named parties' addresses while `body` runs. */
-async function deltas(ctx: Ctx, names: PartyName[], body: () => Promise<void>): Promise<bigint[]> {
+export async function deltas(ctx: Ctx, names: PartyName[], body: () => Promise<unknown>): Promise<bigint[]> {
   const read = (): Promise<bigint[]> => Promise.all(names.map((n) => satsAt(ctx.provider, ctx.parties[n].address)));
   const before = await read();
   await body();
@@ -62,7 +63,7 @@ async function deltas(ctx: Ctx, names: PartyName[], body: () => Promise<void>): 
   return after.map((a, i) => a - (before[i] ?? 0n));
 }
 
-async function closed(ctx: Ctx, sc: Escrow, status: bigint, label: string): Promise<void> {
+export async function closed(ctx: Ctx, sc: Escrow, status: bigint, label: string): Promise<void> {
   check((await stateOf(sc)).status === status, `${label}: status ${status}`);
   check(await sc.getBalance() === ctx.terms.reserve, `${label}: escrow keeps only the reserve`);
 }

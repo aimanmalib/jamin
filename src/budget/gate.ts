@@ -1,7 +1,8 @@
 // The spending gate every mainnet broadcast goes through. It wraps a network provider so that sending a transaction
 // first works out what the transaction takes out of the test wallet, refuses before broadcasting when that would pass
-// the budget, and records the spend in the ledger once the network accepted it.
-import { binToHex, decodeTransaction, hexToBin } from '@bitauth/libauth';
+// the budget, and records the spend in the ledger once the network accepted it. A broadcast the network refuses is
+// recorded as an attempt of 0 sat (decision 0015).
+import { binToHex, decodeTransaction, hashTransaction, hexToBin } from '@bitauth/libauth';
 import type { NetworkProvider } from '@solidcash/solidcash';
 import { checkBudget, readLedger, recordSpend } from './ledger.js';
 
@@ -71,7 +72,17 @@ export function gateProvider<P extends NetworkProvider>(provider: P, opts: GateO
   const gated = (send: Fn, hexOf: (arg: unknown) => string) => async (arg: unknown): Promise<string> => {
     const spentSats = await walletSpend(hexOf(arg), opts.walletLocks, prevout);
     checkBudget(readLedger(opts.ledgerFile), opts.budgetSats, spentSats);
-    const txid = await send.call(provider, arg) as string;
+    let txid: string;
+    try {
+      txid = await send.call(provider, arg) as string;
+    } catch (e) {
+      // A transaction a run takes before broadcasting (branch R, refused.ts) never reached the network.
+      if (!(e instanceof Error && e.name === 'CapturedTransaction')) {
+        recordSpend(opts.ledgerFile, { network: 'mainnet', txid: hashTransaction(hexToBin(hexOf(arg))), spentSats: 0,
+          note: `${opts.note}: refused: ${(e as Error).message.slice(0, 200)}`, refused: true });
+      }
+      throw e;
+    }
     recordSpend(opts.ledgerFile, { network: 'mainnet', txid, spentSats, note: opts.note });
     return txid;
   };

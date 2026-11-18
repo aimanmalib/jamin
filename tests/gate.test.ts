@@ -3,9 +3,10 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { binToHex, encodeTransaction, hexToBin } from '@bitauth/libauth';
+import { binToHex, encodeTransaction, hashTransaction, hexToBin } from '@bitauth/libauth';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { gateProvider, prevoutsFrom, walletSpend } from '../src/budget/gate.js';
+import { readLedger, recordSpend, totalSpent } from '../src/budget/ledger.js';
 
 let dir = '';
 beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'jamin-gate-')); });
@@ -48,5 +49,36 @@ describe('spending gate', () => {
     const other = gateProvider({ publishOraclePoolTransaction: () => 'sent' } as never, { ledgerFile: join(dir, 'l.json'),
       budgetSats: 1, walletLocks: new Set(), note: 'test' }) as unknown as { publishOraclePoolTransaction: () => unknown };
     expect(() => other.publishOraclePoolTransaction()).toThrow(/not gated/);
+  });
+
+  it('records a refused broadcast as a 0 sat attempt, which a later accepted one does not hide', async () => {
+    const ledgerFile = join(dir, 'refused.json');
+    recordSpend(ledgerFile, { network: 'mainnet', txid: 'ab'.repeat(32), spentSats: 900, note: 'earlier' });
+    const hex = raw([input('cd'.repeat(32), 0)], [out(OTHER, 500n)]);
+    let accept = false;
+    const inner = { sendRawTransaction: (h: string) => (accept ? Promise.resolve(hashTransaction(hexToBin(h)))
+      : Promise.reject(new Error('mandatory-script-verify-flag-failed (code 16)'))) };
+    // The budget is spent to the last satoshi: an attempt that takes nothing out of the wallet still goes through.
+    const gated = gateProvider(inner as never, { ledgerFile, budgetSats: 900, walletLocks: new Set([binToHex(WALLET)]),
+      note: 'branch R', prevout: () => Promise.resolve({ lockingBytecode: OTHER, satoshis: 600n }) }) as unknown as {
+      sendRawTransaction: (h: string) => Promise<string> };
+    await expect(gated.sendRawTransaction(hex)).rejects.toThrow(/code 16/);
+    const after = readLedger(ledgerFile);
+    expect(totalSpent(after)).toBe(900);
+    expect(after.entries[1]).toMatchObject({ txid: hashTransaction(hexToBin(hex)), spentSats: 0, refused: true });
+    expect(after.entries[1]?.note).toMatch(/^branch R: refused: mandatory-script-verify-flag-failed/);
+    accept = true;
+    await gated.sendRawTransaction(hex);
+    expect(readLedger(ledgerFile).entries.map((e) => e.refused ?? false)).toEqual([false, true, false]);
+  });
+
+  it('records nothing for a transaction taken before it was broadcast', async () => {
+    const ledgerFile = join(dir, 'captured.json');
+    const taken = Object.assign(new Error('taken'), { name: 'CapturedTransaction' });
+    const gated = gateProvider({ sendRawTransaction: () => Promise.reject(taken) } as never, { ledgerFile, budgetSats: 1,
+      walletLocks: new Set(), note: 'test', prevout: () => Promise.resolve({ lockingBytecode: OTHER, satoshis: 1n }) }) as
+      unknown as { sendRawTransaction: (h: string) => Promise<string> };
+    await expect(gated.sendRawTransaction(raw([input('ef'.repeat(32), 1)], [out(OTHER, 1n)]))).rejects.toBe(taken);
+    expect(readLedger(ledgerFile).entries).toEqual([]);
   });
 });

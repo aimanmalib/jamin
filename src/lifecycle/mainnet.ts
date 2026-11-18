@@ -106,6 +106,7 @@ export async function walletContext(o: WalletOptions): Promise<WalletRun> {
       if (BigInt(await provider.getMedianTimePast()) < timestamp) throw new WaitError(timestamp);
     },
     record: (s) => { steps.push(s); },
+    refused: [],
   };
   return { ctx, steps };
 }

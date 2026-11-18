@@ -3,7 +3,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { PendingD } from './branches.js';
-import type { Step } from './context.js';
+import type { RefusedStep, Step } from './context.js';
 
 export interface SavedPending { address: string; fee: string; after: string; steps: Step[] }
 
@@ -31,20 +31,45 @@ export function clearPending(file: string): void {
 export interface MainnetStep {
   step: string; txid: string; height?: number; signer?: 'wallet'; txBytes?: number; feeSats?: number;
 }
-export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: MainnetStep[] }
+/** A call the network refused (decision 0015): never mined, so a raw hash and no txid. */
+export interface RefusedRow {
+  step: string; refused: true; by: string; expected: string; rawTxHash: string; serverError: string; at: string;
+}
+export type RecordRow = MainnetStep | RefusedRow;
+
+export function isRefused(row: RecordRow): row is RefusedRow {
+  return 'refused' in row && row.refused;
+}
+
+/** The record row of a refused attempt: the shape examples/mainnet.json keeps (no txid, no run bookkeeping). */
+export function refusedRow(r: RefusedStep): RefusedRow {
+  return { step: r.step, refused: true, by: r.by, expected: r.expected, rawTxHash: r.rawTxHash,
+    serverError: serverText(r.serverError), at: r.at };
+}
+
+/**
+ * The rejection text as the node or server sent it. The SDK's providers put their retry note in front
+ * ("Request failed after 1 attempts: Error: "); that note is the provider's, so it is cut, and nothing else is.
+ */
+export function serverText(message: string): string {
+  return message.replace(/^Request failed after \d+ attempts?: (?:Error: )?/, '');
+}
+export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: RecordRow[] }
 export interface MainnetRecord { network: 'mainnet'; escrows: MainnetEscrow[] }
 
 /** The asset each branch trades. */
-export const BRANCH_ASSET: Record<string, string> = { A: 'BCH', B: 'PUSD', C: 'BCH', D: 'BCH', E: 'BCH', W: 'BCH' };
+export const BRANCH_ASSET: Record<string, string> = { A: 'BCH', B: 'PUSD', C: 'BCH', D: 'BCH', E: 'BCH', W: 'BCH',
+  R: 'BCH' };
 
 /**
  * Adds the steps of one escrow to the record. A branch's steps start a new escrow at `createEscrow`; steps without
  * one (D finished in a later run) join the latest escrow of that branch. A txid already recorded is not repeated.
+ * A refused attempt goes right after the step it followed (`afterTxid`), in the escrow holding that step.
  */
 export function addSteps(record: MainnetRecord,
-  steps: Array<Step & { height?: number; txBytes?: number; feeSats?: number }>): MainnetRecord {
+  steps: Array<Step & { height?: number; txBytes?: number; feeSats?: number }>, refused: RefusedStep[] = []): MainnetRecord {
   const escrows = record.escrows.map((e) => ({ ...e, steps: [...e.steps] }));
-  const known = new Set(escrows.flatMap((e) => e.steps.map((s) => s.txid)));
+  const known = new Set(escrows.flatMap((e) => e.steps.map((s) => (isRefused(s) ? s.rawTxHash : s.txid))));
   for (const s of steps) {
     if (known.has(s.txid)) continue;
     known.add(s.txid);
@@ -60,17 +85,27 @@ export function addSteps(record: MainnetRecord,
       latest.steps.push(row);
     }
   }
+  for (const r of refused) {
+    if (known.has(r.rawTxHash)) continue;
+    known.add(r.rawTxHash);
+    const escrow = escrows.find((e) => e.steps.some((s) => !isRefused(s) && s.txid === r.afterTxid));
+    if (!escrow) throw new Error(`refused ${r.step}: no recorded step ${r.afterTxid ?? '(none)'} to follow`);
+    let at = escrow.steps.findIndex((s) => !isRefused(s) && s.txid === r.afterTxid) + 1;
+    while (at < escrow.steps.length && isRefused(escrow.steps[at] as RecordRow)) at += 1;
+    escrow.steps.splice(at, 0, refusedRow(r));
+  }
   return { network: 'mainnet', escrows };
 }
 
 /** Txids recorded without a block height (still in the mempool when their run wrote them). */
 export function unmined(record: MainnetRecord): string[] {
-  return record.escrows.flatMap((e) => e.steps.filter((s) => s.height === undefined).map((s) => s.txid));
+  return record.escrows.flatMap((e) => e.steps.flatMap((s) => (isRefused(s) || s.height !== undefined ? [] : [s.txid])));
 }
 
 /** Sets the block height of recorded steps that have none, from `heights` (txid to height). */
 export function withHeights(record: MainnetRecord, heights: Map<string, number>): MainnetRecord {
   return { ...record, escrows: record.escrows.map((e) => ({ ...e, steps: e.steps.map((s) => {
+    if (isRefused(s)) return s;
     const h = heights.get(s.txid);
     return s.height === undefined && h !== undefined ? { ...s, height: h } : s;
   }) })) };

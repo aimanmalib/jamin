@@ -93,7 +93,8 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
       console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
     }
     const recordFile = join(repoRoot, cfg.mainnetExamples);
-    const record = addSteps(readRecord(recordFile), measured);
+    const record = addSteps(readRecord(recordFile), measured, ctx.refused);
+    for (const r of ctx.refused) console.log(`${r.branch} ${r.step} by ${r.by} REFUSED ${r.rawTxHash}: ${r.serverError}`);
     // Steps an earlier run left in the mempool get their block height now.
     const heights = new Map<string, number>();
     for (const txid of unmined(record)) {
@@ -106,7 +107,7 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
     const dir = join(repoRoot, cfg.mainnet.outputDir);
     mkdirSync(dir, { recursive: true });
     writeFileSync(join(dir, `run-${at.replace(/[:.]/g, '-')}.json`), `${JSON.stringify({ at, server: server.hostname,
-      failures: result.failures, skipped: result.skipped, spentSats: spent, steps: measured }, null, 2)}\n`);
+      failures: result.failures, skipped: result.skipped, spentSats: spent, steps: measured, refused: ctx.refused }, null, 2)}\n`);
     for (const s of result.skipped) console.log(`skipped ${s}`);
     for (const f of result.failures) console.log(`FAILED ${f.slice(0, 400)}`);
     console.log(`ledger: ${spent} of ${cfg.mainnet.budgetSats} sat spent; ${measured.length} transactions recorded`);
