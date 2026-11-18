@@ -83,7 +83,7 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
       const m = await measure(raw, s);
       const height = await heightOf(electrum, s.txid, tip);
       measured.push({ ...m, ...(height === undefined ? {} : { height }) });
-      console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B`);
+      console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
     }
     const recordFile = join(repoRoot, cfg.mainnetExamples);
     writeRecord(recordFile, addSteps(readRecord(recordFile), measured));

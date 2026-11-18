@@ -6,7 +6,7 @@ export interface RegtestRunFile {
   at: string;
   failures: string[];
   steps: Array<{ branch: string; step: string; txid: string; txBytes: number; inputs: number;
-    maxUnlockingBytes: number; height: number | null }>;
+    maxUnlockingBytes: number; feeSats?: number; height: number | null }>;
 }
 
 export interface RegtestExample {
@@ -16,7 +16,7 @@ export interface RegtestExample {
   source: string;
   unlockLimitBytes: number;
   transactions: Array<{ branch: string; step: string; txid: string; height: number; txBytes: number; inputs: number;
-    largestUnlockBytes: number }>;
+    largestUnlockBytes: number; feeSats?: number }>;
 }
 
 /** Per-input unlocking bytecode limit of the May 2025 VM limits upgrade. */
@@ -40,7 +40,7 @@ export function regtestExample(run: RegtestRunFile): RegtestExample {
     transactions: run.steps.map((s) => {
       if (s.height === null) throw new Error(`${s.branch} ${s.step} ${s.txid} was not mined`);
       return { branch: s.branch, step: s.step, txid: s.txid, height: s.height, txBytes: s.txBytes, inputs: s.inputs,
-        largestUnlockBytes: s.maxUnlockingBytes };
+        largestUnlockBytes: s.maxUnlockingBytes, ...(s.feeSats === undefined ? {} : { feeSats: s.feeSats }) };
     }),
   };
 }

@@ -1,4 +1,4 @@
-import { encodeTransaction } from '@bitauth/libauth';
+import { encodeTransaction, hexToBin } from '@bitauth/libauth';
 import type { NetworkProvider } from '@solidcash/solidcash';
 import { describe, expect, it } from 'vitest';
 import { tradeFee } from '../src/lifecycle/branches.js';
@@ -24,6 +24,29 @@ describe('measure', () => {
     const provider = { getRawTransaction: async () => hex } as unknown as NetworkProvider;
     const m = await measure(provider, { branch: 'A', step: 'fund', txid: 'ab'.repeat(32) });
     expect(m).toMatchObject({ txBytes: raw.length, inputs: 2, outputs: 1, maxUnlockingBytes: 300, step: 'fund' });
+  });
+
+  it('reads the miner fee from the transactions the inputs spend', async () => {
+    const prev = encodeTransaction({ version: 2, locktime: 0, inputs: [],
+      outputs: [{ lockingBytecode: new Uint8Array(25), valueSatoshis: 5_000n },
+        { lockingBytecode: new Uint8Array(25), valueSatoshis: 7_000n }] });
+    const prevId = 'cd'.repeat(31) + 'ef';
+    const spend = (outpointIndex: number) => ({ outpointIndex, outpointTransactionHash: hexToBin(prevId),
+      sequenceNumber: 0, unlockingBytecode: new Uint8Array(100) });
+    const tx = encodeTransaction({ version: 2, locktime: 0, inputs: [spend(0), spend(1)],
+      outputs: [{ lockingBytecode: new Uint8Array(25), valueSatoshis: 11_250n }] });
+    const txs = new Map([[prevId, prev], ['ab'.repeat(32), tx]]);
+    const provider = { getRawTransaction: async (id: string) => {
+      const found = txs.get(id);
+      if (found === undefined) throw new Error(`unknown ${id}`);
+      return Buffer.from(found).toString('hex');
+    } } as unknown as NetworkProvider;
+    const m = await measure(provider, { branch: 'A', step: 'fund', txid: 'ab'.repeat(32) });
+    expect(m.feeSats).toBe(750);
+    txs.delete(prevId);
+    const unknown = await measure(provider, { branch: 'A', step: 'fund', txid: 'ab'.repeat(32) });
+    expect(unknown.feeSats).toBeUndefined();
+    expect(unknown.txBytes).toBe(tx.length);
   });
 });
 

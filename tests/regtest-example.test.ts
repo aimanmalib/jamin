@@ -17,6 +17,11 @@ describe('regtestExample', () => {
     });
   });
 
+  it('keeps the miner fee when the run measured it', () => {
+    const withFee = regtestExample({ ...run, steps: [{ ...step, feeSats: 7_700 }] });
+    expect(withFee.transactions[0]?.feeSats).toBe(7_700);
+  });
+
   it('refuses a run with a failed branch, an unmined step or another network', () => {
     expect(() => regtestExample({ ...run, failures: ['D: TooEarly'] })).toThrow(/failed branches/);
     expect(() => regtestExample({ ...run, steps: [{ ...step, height: null }] })).toThrow(/not mined/);

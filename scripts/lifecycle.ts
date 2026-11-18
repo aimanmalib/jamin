@@ -56,7 +56,7 @@ for (const s of steps) {
   const tx = await rpc('getrawtransaction', [s.txid, true]) as { blockhash?: string };
   const height = tx.blockhash ? (await rpc('getblockheader', [tx.blockhash]) as { height: number }).height : null;
   measured.push({ ...m, height });
-  console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B`);
+  console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
 }
 const out = { network, node: node.subversion, at: new Date().toISOString(), terms: Object.fromEntries(
   Object.entries(terms).map(([k, v]) => [k, v.toString()])), failures, steps: measured };
