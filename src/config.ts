@@ -56,6 +56,17 @@ export interface JaminConfig {
       /** Refuse a purchase when the pools ask more satoshis than this, trade fee included. */
       maxSupplySats: number;
     };
+    /** Reading and sweeping what finished escrows leave at their contract addresses (scripts/contract-coins.ts). */
+    contractCoins: {
+      /** Blocks an event record waits before anyone may spend it (SolidCash event covenant, OP_CHECKSEQUENCEVERIFY). */
+      eventRelativeBlocks: number;
+      /** Blocks before branch W's deployment tried when its seller role key is derived again. */
+      walletBranchSearchBlocks: number;
+      /** Made-up satoshis per party coin on the mirror the entry points are tried on; they only pay fees. */
+      mirrorFundingSats: number;
+      /** Smallest plain seller coin an identity burn spends for its fee. */
+      identityFeeCoinSats: number;
+    };
     /** An escrow waiting for its seller-cancel time between runs. */
     pendingFile: string;
     outputDir: string;

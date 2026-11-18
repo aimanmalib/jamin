@@ -66,6 +66,12 @@
       "maxUnits": 200,
       "maxSupplySats": 80000
     },
+    "contractCoins": {
+      "eventRelativeBlocks": 144,
+      "walletBranchSearchBlocks": 12,
+      "mirrorFundingSats": 100000,
+      "identityFeeCoinSats": 1000
+    },
     "pendingFile": "state/mainnet/pending.json",
     "outputDir": "state/mainnet"
   },
