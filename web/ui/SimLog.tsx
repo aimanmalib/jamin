@@ -40,6 +40,9 @@ export function SimLog({ log }: { log: LogEntry[] }): ReactNode {
             <div className="txid">{t('log.tx', { bytes: entry.bytes ?? 0 })} {entry.txid}</div>
           )}
           <Signatures entry={entry} />
+          {entry.ok && (entry.walletInputs ?? 0) > 0 && (
+            <div className="small" data-testid="wallet-inputs">{t('log.walletInputs', { count: entry.walletInputs ?? 0 })}</div>
+          )}
           {entry.ok && entry.action === 'wait' && <div className="small muted">{t('log.waited')}</div>}
           {!entry.ok && (
             <div className="small">

@@ -71,6 +71,21 @@ describe('simulator engine', { timeout: 120_000 }, () => {
     expect(await sim.status()).toBe('resolved');
     expect(sim.log.filter((l) => l.action !== 'resolveForSeller').every((l) => l.signers === undefined)).toBe(true);
   });
+
+  it('W: a seller trading from a wallet funds, cancels after the waiting time and releases another trade', async () => {
+    const text = { template: 'Role {role} at {site} for {trade}', site: 'jamin.example', trade: 'w' };
+    const sim = await Simulation.start(artifacts, 'bch', BCH, 'wallet', text);
+    expect(sim.seller.message).toBe('Role seller at jamin.example for w');
+    expect(sim.log.map((l) => l.walletInputs)).toEqual([1, 1]);
+    await sim.passTime();
+    const cancel = await sim.act('seller', 'sellerCancel');
+    expect(cancel.ok).toBe(true);
+    expect(cancel.walletInputs).toBeGreaterThan(0);
+    const token = await Simulation.start(artifacts, 'token', TOKEN, 'wallet', text);
+    await token.act('buyer', 'markAsPaid');
+    expect((await token.act('seller', 'release')).ok).toBe(true);
+    expect(await token.status()).toBe('released');
+  });
 });
 
 describe('rejectionName', () => {

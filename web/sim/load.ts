@@ -1,6 +1,7 @@
 // Loads the compiled artifacts and the simulator engine on demand, so the first screen does not carry them.
 import type { Artifact } from '@solidcash/solidcash';
 import type { Asset, SimTerms, Simulation } from './engine.js';
+import type { SellerMode } from './seller.js';
 import { config } from '../data/config.js';
 
 /** Escrow terms of the simulator, from config/jamin.json. */
@@ -23,9 +24,14 @@ async function artifact(name: string): Promise<Artifact> {
   return load();
 }
 
-export async function startSimulation(asset: Asset): Promise<Simulation> {
+let trades = 0;
+
+export async function startSimulation(asset: Asset, mode: SellerMode = 'key'): Promise<Simulation> {
   const [{ Simulation: Sim }, bch, token] = await Promise.all([
     import('./engine.js'), artifact('JaminEscrow'), artifact('JaminTokenEscrow'),
   ]);
-  return Sim.start({ bch, token }, asset, simTerms(asset));
+  trades += 1;
+  const text = { template: config.walletSigning.roleKeyMessage, site: new URL(config.site.url).host,
+    trade: `simulator-${trades}` };
+  return Sim.start({ bch, token }, asset, simTerms(asset), mode, text);
 }

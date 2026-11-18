@@ -15,9 +15,10 @@ export async function noHorizontalOverflow(page: Page): Promise<void> {
   expect(scroll, 'page wider than the viewport').toBeLessThanOrEqual(client);
 }
 
-export async function startTrade(page: Page, asset: 'bch' | 'token'): Promise<void> {
+export async function startTrade(page: Page, asset: 'bch' | 'token', seller: 'key' | 'wallet' = 'key'): Promise<void> {
   await page.goto('/#/try');
   await page.locator(`input[name="asset"][value="${asset}"]`).check({ force: true });
+  await page.locator(`input[name="seller"][value="${seller}"]`).check({ force: true });
   await page.getByRole('button', { name: /^Start a trade$|^Start again$/ }).click();
   await expect(page.getByTestId('status')).toHaveText('Coins locked');
 }

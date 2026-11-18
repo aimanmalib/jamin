@@ -93,7 +93,15 @@
     "cosign": {
       "B": "Member A and member B (2 of 3)",
       "none": "Member A alone"
-    }
+    },
+    "sellerLegend": "The seller signs with",
+    "seller": {
+      "key": "A key in this page",
+      "wallet": "A wallet"
+    },
+    "walletTitle": "Seller's wallet",
+    "walletNote": "A demo wallet in this page answers the BCH WalletConnect requests bch_signTransaction and bch_signMessage, as a phone wallet does. It pays for the seller's transactions and signs their coins. The escrow's seller key comes from the wallet's signature over this message:",
+    "walletLimit": "Connecting a phone wallet needs a WalletConnect relay id, which this site does not have yet."
   },
   "actions": {
     "markAsPaid": {
@@ -155,7 +163,8 @@
       "seller": "seller",
       "buyer": "buyer",
       "outsider": "someone else"
-    }
+    },
+    "walletInputs": "Inputs signed by the wallet: {count}"
   },
   "errors": {
     "InvalidAmount": "The amount must be above zero.",

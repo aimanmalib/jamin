@@ -14,7 +14,8 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 
 - **Try it:** https://jamin.sasateguh.com, tab **Try it**. The compiled contracts run on the SolidCash mock network
   in your browser. Play seller, buyer, arbitrator (panel member A, signing with member B or alone, which the contract refuses) or an outsider through all five branches and see each transaction
-  or the contract's named error. English and Bahasa Melayu.
+  or the contract's named error. The seller can also trade through a demo wallet in the page that answers the BCH
+  WalletConnect requests and signs the seller's coins (decision 0009). English and Bahasa Melayu.
 - **Contracts:** `contracts/` (four files, native SolidCash): `EscrowBase.scash`, `JaminEscrow.scash` (BCH),
   `JaminTokenEscrow.scash` (CashTokens such as PUSD), `FeeMath.scash`. Rules: `docs/SPEC.md`.
 - **Tests:** `npm ci && npm run solidhat:test`: 89 SolidHat tests in 9 files on the mock network with the production
@@ -127,8 +128,9 @@ yet. The reasons the other six are not are in the same file.
 - **Wallets:** a seller can trade from a wallet that signs over the BCH WalletConnect methods: the wallet pays and
   signs its own inputs, and the seller's escrow key is derived from a message the wallet signs
   (`docs/decisions/0009-wallet-connection.md`; a wallet cannot sign the contract's own signature check through the
-  SDK, F10). This is tested on the mock network with a protocol-level test wallet. The web app does not open a
-  WalletConnect session, which needs a relay project id. Payments back to such a seller go to the escrow key's
+  SDK, F10). This is tested on the mock network and on regtest with a protocol-level test wallet, and the simulator
+  shows it with a demo wallet in the page. The web app does not open a WalletConnect session to a phone wallet,
+  which needs a relay project id. Payments back to such a seller go to the escrow key's
   address.
 
 ## Development

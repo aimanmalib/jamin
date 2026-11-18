@@ -177,3 +177,6 @@ main { padding-top: 2rem; }
   .btn-lang { min-height: 40px; font-size: 0.9rem; }
   .banner { font-size: 0.8rem; }
 }
+.wallet { border-top: 1px solid var(--line); margin: 0 0 1rem; padding-top: 0.75rem; min-width: 0; }
+.wallet-message { font-family: var(--font-mono); font-size: 0.85rem; background: var(--paper-deep); border: 1px solid var(--line);
+  border-radius: 8px; padding: 0.5rem 0.75rem; margin: 0.5rem 0; white-space: pre-wrap; overflow-wrap: anywhere; }

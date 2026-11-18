@@ -248,6 +248,11 @@ first screen (one primary button in view, banner, no console errors), the langua
 serious or critical violation on any tab, the recorded regtest txids, a feature reference opening its source line,
 and no horizontal overflow at 320 px wide. On 2026-11-17 18:05 UTC, before the panel UI: 22 tests passed.
 
+On 2026-11-18 08:05 UTC the spec "W: the seller trades from a wallet that signs its own coins" passed on both engines
+(`npx playwright test e2e/simulator.spec.ts -g "W:"`, 2 tests in 1.2 minutes): the seller picks a wallet, the page
+shows the role key message the wallet signed, the creation, deposit and release log the inputs the wallet signed,
+axe WCAG 2 A/AA has no serious or critical violation, and at 320 px wide nothing overflows.
+
 The same engine runs in Node in `tests/sim-engine.test.ts` (five branches, named rejections, and one panel
 signature refused before two decide).
 

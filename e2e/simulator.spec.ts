@@ -1,4 +1,5 @@
 // The five lifecycle branches, played through the browser simulator on the real compiled contracts.
+import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { act, latest, noHorizontalOverflow, startTrade, watchErrors } from './helpers.js';
 
@@ -15,6 +16,23 @@ test.describe('simulator', () => {
     await expect(page.getByTestId('status')).toHaveText('Marked as paid');
     await act(page, 'seller', 'release');
     await expect(page.getByTestId('status')).toHaveText('Released to buyer');
+    expect(errors).toEqual([]);
+  });
+
+  test('W: the seller trades from a wallet that signs its own coins', async ({ page }) => {
+    const errors = watchErrors(page);
+    await startTrade(page, 'bch', 'wallet');
+    await expect(page.getByTestId('wallet-message')).toContainText('Role: seller');
+    await expect(latest(page).getByTestId('wallet-inputs')).toBeVisible();
+    await act(page, 'buyer', 'markAsPaid');
+    await act(page, 'seller', 'release');
+    await expect(page.getByTestId('status')).toHaveText('Released to buyer');
+    await expect(latest(page).getByTestId('wallet-inputs')).toContainText(/Inputs signed by the wallet: [1-9]/);
+    const axe = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+    expect(axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical').map((v) => v.id)).toEqual([]);
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.getByTestId('wallet-message').scrollIntoViewIfNeeded();
+    await noHorizontalOverflow(page);
     expect(errors).toEqual([]);
   });
 

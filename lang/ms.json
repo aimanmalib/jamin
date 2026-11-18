@@ -93,7 +93,15 @@
     "cosign": {
       "B": "Ahli A dan ahli B (2 daripada 3)",
       "none": "Ahli A seorang"
-    }
+    },
+    "sellerLegend": "Penjual menandatangani dengan",
+    "seller": {
+      "key": "Kunci dalam halaman ini",
+      "wallet": "Dompet"
+    },
+    "walletTitle": "Dompet penjual",
+    "walletNote": "Dompet demo dalam halaman ini menjawab permintaan BCH WalletConnect bch_signTransaction dan bch_signMessage, seperti dompet telefon. Ia membayar transaksi penjual dan menandatangani syilingnya. Kunci penjual dalam escrow datang daripada tandatangan dompet atas mesej ini:",
+    "walletLimit": "Menyambung dompet telefon memerlukan id relay WalletConnect, yang belum ada pada laman ini."
   },
   "actions": {
     "markAsPaid": {
@@ -155,7 +163,8 @@
       "seller": "penjual",
       "buyer": "pembeli",
       "outsider": "orang lain"
-    }
+    },
+    "walletInputs": "Input yang ditandatangani dompet: {count}"
   },
   "errors": {
     "InvalidAmount": "Amaun mesti melebihi sifar.",

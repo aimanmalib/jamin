@@ -9,6 +9,7 @@ export interface WebConfig {
   simulator: { bchAmountSats: number; tokenAmount: number; tokenSymbol: string; tokenDecimals: number };
   banner: { event: string; bounty: string; repoUrl: string; prizeAddress: string; deckUrl: string };
   web: { tabs: string[]; contracts: string[]; languageStorageKey: string };
+  walletSigning: { roleKeyMessage: string };
 }
 
 export const config = raw as WebConfig;

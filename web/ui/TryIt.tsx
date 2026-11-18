@@ -5,9 +5,11 @@ import { useLang } from '../i18n.js';
 import { ACTIONS, COSIGNS, type Action, type Cosign, type Actor, type Asset, type LogEntry, type Simulation, type StatusName }
   from '../sim/engine.js';
 import { startSimulation } from '../sim/load.js';
+import { SELLER_MODES, type SellerMode } from '../sim/seller.js';
 import { StateDiagram } from './StateDiagram.js';
 import { LastResult, SimLog } from './SimLog.js';
 import { TermsList } from './TermsList.js';
+import { WalletPanel } from './WalletPanel.js';
 
 const ACTORS: Actor[] = ['seller', 'buyer', 'arbitrator', 'outsider'];
 const ASSETS: Asset[] = ['bch', 'token'];
@@ -19,6 +21,7 @@ export function TryIt(): ReactNode {
   const [asset, setAsset] = useState<Asset>('bch');
   const [actor, setActor] = useState<Actor>('buyer');
   const [cosign, setCosign] = useState<Cosign>('B');
+  const [mode, setMode] = useState<SellerMode>('key');
   const [sim, setSim] = useState<Simulation | null>(null);
   const [view, setView] = useState<View | null>(null);
   const [busy, setBusy] = useState(false);
@@ -36,7 +39,7 @@ export function TryIt(): ReactNode {
 
   const start = (): void => {
     void run(async () => {
-      const s = await startSimulation(asset);
+      const s = await startSimulation(asset, mode);
       setSim(s);
       await refresh(s);
     });
@@ -44,7 +47,7 @@ export function TryIt(): ReactNode {
   const act = (a: Action): void => { if (sim) void run(async () => { await sim.act(actor, a, cosign); await refresh(sim); }); };
   const wait = (): void => { if (sim) void run(async () => { await sim.passTime(); await refresh(sim); }); };
 
-  useEffect(() => { setSim(null); setView(null); }, [asset]);
+  useEffect(() => { setSim(null); setView(null); }, [asset, mode]);
 
   return (
     <>
@@ -61,6 +64,15 @@ export function TryIt(): ReactNode {
               </label>
             ))}
           </fieldset>
+          <fieldset className="seg">
+            <legend>{t('try.sellerLegend')}</legend>
+            {SELLER_MODES.map((m) => (
+              <label key={m}>
+                <input type="radio" name="seller" value={m} checked={mode === m} onChange={() => setMode(m)} />
+                <span>{t(`try.seller.${m}`)}</span>
+              </label>
+            ))}
+          </fieldset>
           <button type="button" className="btn btn-primary" onClick={start} disabled={busy}>
             {sim ? t('try.restart') : t('try.start')}
           </button>
@@ -72,6 +84,7 @@ export function TryIt(): ReactNode {
                 {t('try.statusLabel')} <span className="status-pill" data-testid="status">{t(`states.${view.status}`)}</span>
               </p>
               <TermsList sim={sim} waitLeft={view.waitLeft} />
+              <WalletPanel sim={sim} />
               <fieldset className="seg">
                 <legend>{t('try.actorLegend')}</legend>
                 {ACTORS.map((a) => (

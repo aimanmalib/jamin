@@ -3,8 +3,9 @@
 import { SignatureAlgorithm, SignatureTemplate, type Artifact, type Utxo } from '@solidcash/solidcash';
 import { MockNetworkProvider } from '@solidcash/solidcash/network/mock';
 import { StatefulContract } from '@solidcash/solidcash/stateful';
-import { cashAddressToLockingBytecode } from '@bitauth/libauth';
+import { hash160 } from '@bitauth/libauth';
 import { rejectionName } from './errors.js';
+import { sellerKeys, walletInputsSince, type RoleKeyText, type SellerKeys, type SellerMode } from './seller.js';
 
 export type Asset = 'bch' | 'token';
 export type Actor = 'seller' | 'buyer' | 'arbitrator' | 'outsider';
@@ -45,6 +46,8 @@ export interface LogEntry {
   signers?: SignerName[];
   /** The first line of the rejection message, for the curious. */
   detail?: string;
+  /** Inputs the seller's wallet signed for this step, when the seller trades from a wallet. */
+  walletInputs?: number;
 }
 
 type Signer = Awaited<ReturnType<MockNetworkProvider['getSigners']>>[number];
@@ -52,20 +55,15 @@ type Escrow = StatefulContract;
 
 export interface Artifacts { bch: Artifact; token: Artifact }
 
-function lockOf(address: string): Uint8Array {
-  const lock = cashAddressToLockingBytecode(address);
-  if (typeof lock === 'string') throw new Error(lock);
-  return lock.bytecode;
-}
-
 export class Simulation {
   readonly log: LogEntry[] = [];
   private constructor(readonly asset: Asset, readonly terms: SimTerms, private readonly provider: MockNetworkProvider,
     private readonly people: Record<Actor, Signer>, private readonly panelB: Signer, private readonly sc: Escrow, readonly category: string | undefined,
-    readonly fee: bigint) {}
+    readonly fee: bigint, readonly seller: SellerKeys) {}
 
-  /** Deploys an escrow of `asset` and funds it as the seller. */
-  static async start(artifacts: Artifacts, asset: Asset, terms: SimTerms): Promise<Simulation> {
+  /** Deploys an escrow of `asset` and funds it as the seller, who signs with a key or through a wallet. */
+  static async start(artifacts: Artifacts, asset: Asset, terms: SimTerms, mode: SellerMode = 'key',
+    text: RoleKeyText = { template: '{site} {role} {trade}', site: 'simulator', trade: 'trade' }): Promise<Simulation> {
     const provider = new MockNetworkProvider({ profile: 'production' });
     // The arbitrator is panel member A; B and C complete the 2-of-3 panel. B co-signs the arbitrator's decisions.
     const [seller, buyer, arbitrator, fees, outsider, arbiterB, arbiterC] = await provider.getSigners(7);
@@ -83,25 +81,27 @@ export class Simulation {
       category = minted.categoryId;
       tokenCoin = minted.utxos[0];
     }
-    const params = [seller.publicKey, buyer.publicKey, arbitrator.publicKey, arbiterB.publicKey, arbiterC.publicKey,
+    const keys = await sellerKeys(mode, seller, provider, text);
+    const params = [keys.publicKey, buyer.publicKey, arbitrator.publicKey, arbiterB.publicKey, arbiterC.publicKey,
       fees.pkh, ...(category ? [category] : [])];
     const funding = (await provider.getUtxos(seller.address)).find((u) => u.vout === 0 && !u.token);
     if (!funding) throw new Error('no funding coin');
     const { contract, tx } = await StatefulContract.deploy(asset === 'bch' ? artifacts.bch : artifacts.token,
-      params as never, { provider: provider as never, fundingUtxo: funding, funder: seller.unlockP2PKH(),
+      params as never, { provider: provider as never, fundingUtxo: funding, funder: keys.connect.unlockP2PKH(),
         changeAddress: seller.address, initialBalance: terms.reserve,
         initArgs: [terms.amount, terms.feeBps, terms.disputeFee, cancelAfter] as never });
-    const sim = new Simulation(asset, terms, provider, people, arbiterB, contract, category, fee);
-    sim.log.push({ actor: 'seller', action: 'createEscrow', ok: true, txid: tx.txid, bytes: tx.hex.length / 2 });
-    const sc = contract.connect(seller);
-    const sig = new SignatureTemplate(seller.privateKey);
+    const sim = new Simulation(asset, terms, provider, people, arbiterB, contract, category, fee, keys);
+    sim.log.push({ actor: 'seller', action: 'createEscrow', ok: true, txid: tx.txid, bytes: tx.hex.length / 2,
+      ...sim.walletShare(0) });
+    const asked = keys.wallet?.signed.length ?? 0;
+    const sc = contract.connect(keys.connect);
     const send = asset === 'bch'
-      ? call(sc, 'fund', sig).withValue(terms.amount + fee).send()
-      : call(sc, 'deposit', sig, category).addInput(tokenCoin as Utxo, seller.unlockP2PKH())
+      ? call(sc, 'fund', keys.sig).withValue(terms.amount + fee).send()
+      : call(sc, 'deposit', keys.sig, category).addInput(tokenCoin as Utxo, keys.connect.unlockP2PKH())
         .tokenContainerDeposit(category as string, terms.amount + fee + 1n).send();
     const funded = await send;
     sim.log.push({ actor: 'seller', action: asset === 'bch' ? 'fund' : 'deposit', ok: true, txid: funded.txid,
-      bytes: funded.hex.length / 2 });
+      bytes: funded.hex.length / 2, ...sim.walletShare(asked) });
     return sim;
   }
 
@@ -130,11 +130,12 @@ export class Simulation {
     const decides = action === 'resolveForBuyer' || action === 'resolveForSeller';
     const signers = decides ? signersOf(actor, cosign) : [];
     const shown = decides ? { signers } : {};
+    const asked = this.seller.wallet?.signed.length ?? 0;
     try {
       // Call builders are thenable, so they are never returned from an async function.
       const lockTime = await this.provider.getMedianTimePast() - 1;
       const { txid, hex } = await this.build(actor, action, lockTime, signers).send();
-      entry = { actor, action, ok: true, txid, bytes: hex.length / 2, ...shown };
+      entry = { actor, action, ok: true, txid, bytes: hex.length / 2, ...shown, ...this.walletShare(asked) };
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       entry = { actor, action, ok: false, error: rejectionName(message), ...shown,
@@ -144,10 +145,16 @@ export class Simulation {
     return entry;
   }
 
+  /** The wallet's part in a step: the inputs it signed since it had answered `since` requests. */
+  private walletShare(since: number): { walletInputs?: number } {
+    return this.seller.wallet ? { walletInputs: walletInputsSince(this.seller, since) } : {};
+  }
+
   private build(actor: Actor, action: Action, lockTime: number, signers: SignerName[]): CallBuilder {
     const who = this.people[actor];
-    const sc = this.sc.connect(who);
-    const sig = new SignatureTemplate(who.privateKey);
+    const isSeller = actor === 'seller';
+    const sc = this.sc.connect(isSeller ? this.seller.connect : who);
+    const sig = isSeller ? this.seller.sig : new SignatureTemplate(who.privateKey);
     const cat = this.category === undefined ? [] : [this.category];
     switch (action) {
       case 'openDispute':
@@ -171,7 +178,8 @@ export class Simulation {
   /** `lockTime` is a time-type locktime one second behind the median time past; with a locktime set the SDK takes the payment
    * named by hand (docs/SOLIDCASH-FINDINGS.md, F6). Before the waiting time the VM rejects the locktime (F7). */
   private sellerCancel(sc: Escrow, sig: SignatureTemplate, cat: string[], lockTime: number): CallBuilder {
-    const to = lockOf(this.people.seller.address);
+    // The contract pays the key it names as seller: the role key when the seller trades from a wallet.
+    const to = Uint8Array.of(0x76, 0xa9, 0x14, ...hash160(this.seller.publicKey), 0x88, 0xac);
     const builder = call(sc, 'sellerCancel', sig, ...cat).setLocktime(lockTime);
     const back = this.terms.amount + this.fee;
     return this.category === undefined ? builder.transfer(to, back)
