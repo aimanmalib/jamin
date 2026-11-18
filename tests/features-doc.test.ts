@@ -41,9 +41,10 @@ const PINS: Record<string, RegExp> = {
   'contracts/JaminTokenEscrow.scash:56': /tx\.time >=/,
   'contracts/JaminTokenEscrow.scash:68': /function resolveDispute\(/,
   'src/lifecycle/branches.ts:37': /StatefulContract\.deploy\(/,
-  'src/lifecycle/context.ts:86': /SignatureAlgorithm\.ECDSA/,
-  'src/lifecycle/context.ts:104': /contract\.connect\(/,
+  'src/lifecycle/context.ts:88': /SignatureAlgorithm\.ECDSA/,
+  'src/lifecycle/context.ts:106': /contract\.connect\(/,
   'src/lifecycle/wallet-branch.ts:35': /Signer\.external\(/,
+  'src/wallet/wizard-trade.ts:52': /Signer\.external\(/,
   'src/lifecycle/mainnet.ts:54': /new TransactionBuilder\(.*unlockP2PKH\(\)/,
   'test/helpers/escrow.ts:48': /new MockNetworkProvider\(\{ profile: 'production' \}\)/,
 };

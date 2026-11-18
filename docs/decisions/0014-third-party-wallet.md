@@ -66,3 +66,22 @@ static build was served on `127.0.0.1` and driven by Playwright (Chromium, headl
 - If Cashonize stops signing deterministically, the derived role key changes; the run checks the role key's
   public key against the escrow before it signs anything.
 - No pairing URI, QR code, wallet phrase or key appears in any capture or log.
+
+## Implementation (branch X), 2026-11-18
+
+- `src/wallet/wizard.ts` is the adapter: it names the inputs at the wallet's `receive/0` key in `inputPaths`, sends
+  source outputs without a `contract` field (Cashonize then leaves the contract inputs empty, as the SDK sent them),
+  and checks every returned signature against the shared key before the SDK uses the transaction. The role key is
+  `sha256("jamin role key" || signature)` over a request that spends the made-up outpoint `sha256(message)` and pays
+  a zero-value data output; the wallet shows the role key message as the prompt.
+- `src/wallet/wizard-trade.ts` runs the seller's side (create, deposit, release) and is shared by the site's new
+  "Wallet" tab (`web/ui/WalletTab.tsx`, mainnet, amount fixed in `config/jamin.json` `walletTrade`) and the tests.
+  The tab needs a coin at output 0 in the wallet for the escrow's token genesis; it says so when there is none.
+  Disputes on that tab go to the project's demo panel; the panel keys are public keys in the config.
+- The content security policy allows the two default WizardConnect relays.
+- `scripts/third-party-wallet.ts` drives branch X on mainnet: Cashonize in Playwright with its own phrase, the
+  site's Wallet tab in a second browser page, the project wallet funding the third-party wallet once
+  (`mainnet.thirdPartyWallet.fundSats`, at most `maxFundSats`) through the spending gate, and the buyer marking the
+  trade paid from Node. Each step is recorded with `"signer": "wallet"` and `"wallet": "Cashonize v0.15.2"`.
+- Tests: `test/JaminEscrow.wizard.test.ts` (a stand-in wallet that reads the wire form as Cashonize does) and
+  `tests/third-party.test.ts` (funding, attaching from the page's keys, the record).

@@ -29,7 +29,7 @@ export function clearPending(file: string): void {
 }
 
 export interface MainnetStep {
-  step: string; txid: string; height?: number; signer?: 'wallet'; txBytes?: number; feeSats?: number;
+  step: string; txid: string; height?: number; signer?: 'wallet'; wallet?: string; txBytes?: number; feeSats?: number;
 }
 /** A call the network refused (decision 0015): never mined, so a raw hash and no txid. */
 export interface RefusedRow {
@@ -59,7 +59,7 @@ export interface MainnetRecord { network: 'mainnet'; escrows: MainnetEscrow[] }
 
 /** The asset each branch trades. */
 export const BRANCH_ASSET: Record<string, string> = { A: 'BCH', B: 'PUSD', C: 'BCH', D: 'BCH', E: 'BCH', W: 'BCH',
-  R: 'BCH' };
+  R: 'BCH', X: 'BCH' };
 
 /**
  * Adds the steps of one escrow to the record. A branch's steps start a new escrow at `createEscrow`; steps without
@@ -75,6 +75,7 @@ export function addSteps(record: MainnetRecord,
     known.add(s.txid);
     const row: MainnetStep = { step: s.step, txid: s.txid, ...(s.height === undefined ? {} : { height: s.height }),
       ...(s.signer === undefined ? {} : { signer: s.signer }),
+      ...(s.wallet === undefined ? {} : { wallet: s.wallet }),
       ...(s.txBytes === undefined ? {} : { txBytes: s.txBytes }),
       ...(s.feeSats === undefined ? {} : { feeSats: s.feeSats }) };
     const latest = [...escrows].reverse().find((e) => e.branch === s.branch);
