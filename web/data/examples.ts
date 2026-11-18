@@ -7,7 +7,7 @@ export interface RegtestTx {
   branch: string; step: string; txid: string; height: number; txBytes: number; inputs: number;
   largestUnlockBytes: number;
 }
-export interface MainnetStep { step: string; txid: string; height?: number; signer?: 'wallet' }
+export interface MainnetStep { step: string; txid: string; height?: number; signer?: 'wallet'; wallet?: string }
 /** A call the network refused (docs/decisions/0015): never mined, so a raw hash and no txid. */
 export interface RefusedStep {
   step: string; refused: true; by: string; expected: string; rawTxHash: string; serverError: string; at: string;

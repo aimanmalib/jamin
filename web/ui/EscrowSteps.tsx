@@ -30,7 +30,8 @@ export function EscrowSteps({ steps, link }: { steps: EscrowStep[]; link: boolea
           {link ? <a className="txid" href={explorerLink(config.explorer.mainnetTx, s.txid)}>{s.txid}</a>
             : <span className="txid">{s.txid}</span>}{' '}
           <span className="muted small">{s.height === undefined ? t('lifecycle.mempool')
-            : t('lifecycle.block', { height: s.height })}{s.signer === 'wallet' ? `, ${t('lifecycle.walletSigned')}` : ''}</span>
+            : t('lifecycle.block', { height: s.height })}{s.signer === 'wallet' ? `, ${s.wallet === undefined ? t('lifecycle.walletSigned')
+              : t('lifecycle.walletSignedBy', { wallet: s.wallet })}` : ''}</span>
         </li>
       )))}
     </ol>

@@ -18,12 +18,16 @@ describe('content security policy', () => {
       .toBe("default-src 'none'; connect-src 'self' wss://electrum.example:50004");
   });
 
-  it('lets the configured policy run the simulator and the Lifecycle page', () => {
+  it('lets the configured policy run the simulator, the Lifecycle page and the Wallet tab', () => {
     const config = loadConfig();
     const header = cspHeader(config.deploy.contentSecurityPolicy, config.electrum.mainnet);
-    // The simulator runs libauth's WebAssembly; the Lifecycle page opens the configured Electrum server.
+    // The simulator runs libauth's WebAssembly; the Lifecycle page and the Wallet tab open the configured Electrum
+    // server, and the Wallet tab the WizardConnect relays.
     expect(header).toMatch(/script-src [^;]*'wasm-unsafe-eval'/);
-    expect(header).toContain(`connect-src 'self' ${electrumOrigin(config.electrum.mainnet)}`);
+    const connect = /connect-src ([^;]*)/.exec(header)?.[1]?.split(' ') ?? [];
+    expect(connect).toContain("'self'");
+    expect(connect).toContain(electrumOrigin(config.electrum.mainnet));
+    for (const relay of config.walletTrade.relayUrls) expect(connect).toContain(new URL(relay).origin);
     expect(header).not.toContain("'unsafe-inline'");
     expect(header).toContain("frame-ancestors 'none'");
   });

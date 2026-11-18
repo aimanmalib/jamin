@@ -1,7 +1,7 @@
-// Tabs are hash routes (#/try, #/lifecycle, #/contract), so the app is one static page.
+// Tabs are hash routes (#/try, #/wallet, #/lifecycle, #/contract), so the app is one static page.
 import { config } from './data/config.js';
 
-export type Tab = 'home' | 'try' | 'lifecycle' | 'contract';
+export type Tab = 'home' | 'try' | 'wallet' | 'lifecycle' | 'contract';
 export const TABS = config.web.tabs as Tab[];
 
 export function tabFromHash(hash: string): Tab {

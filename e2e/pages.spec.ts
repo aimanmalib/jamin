@@ -7,7 +7,7 @@ import regtest from '../examples/regtest.json' with { type: 'json' };
 import mainnet from '../examples/mainnet.json' with { type: 'json' };
 import config from '../config/jamin.json' with { type: 'json' };
 
-const TABS = ['/#/', '/#/try', '/#/lifecycle', '/#/contract'];
+const TABS = ['/#/', '/#/try', '/#/wallet', '/#/lifecycle', '/#/contract'];
 
 test('home: one sentence, one primary button, the banner, no console errors', async ({ page }) => {
   const errors = watchErrors(page);
@@ -98,4 +98,22 @@ test('320 px wide: no horizontal overflow on any tab, also after scrolling', asy
   await page.getByRole('button', { name: 'Start a trade' }).click();
   await expect(page.getByTestId('status')).toBeVisible();
   await noHorizontalOverflow(page);
+});
+
+test('wallet: the connect button waits for a valid buyer key, in English and Malay, at 320 px', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto('/#/wallet');
+  await expect(page.getByRole('heading', { level: 1, name: 'Trade from your wallet' })).toBeVisible();
+  const connect = page.getByTestId('wallet-connect');
+  await expect(connect).toBeDisabled();
+  await page.getByTestId('buyer-key').fill('02abc');
+  await expect(page.getByTestId('buyer-key')).toHaveAttribute('aria-invalid', 'true');
+  await expect(connect).toBeDisabled();
+  await page.getByTestId('buyer-key').fill(`02${'ab'.repeat(32)}`);
+  await expect(connect).toBeEnabled();
+  await expect(page.getByTestId('wallet-terms')).toContainText(config.walletTrade.amountSats.toLocaleString('en'));
+  await noHorizontalOverflow(page);
+  await page.getByRole('button', { name: 'Bahasa Melayu' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Berdagang dari dompet anda' })).toBeVisible();
+  await expect(page.getByTestId('wallet-connect')).toHaveText('Sambung dompet');
 });

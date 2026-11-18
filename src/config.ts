@@ -27,7 +27,11 @@ export interface JaminConfig {
     /** The message a wallet signs for a role key; fields {site}, {role} and {trade}. */
     roleKeyMessage: string;
   };
+  /** The "Wallet" tab's trade (decision 0014): fixed amount and the demo panel's public keys. */
+  walletTrade: { amountSats: number; panel: string[]; feeRecipientPkh: string; relayUrls: string[] };
   mainnet: {
+    /** The third-party wallet of branch X: its own phrase in the env file, funded through the spending gate. */
+    thirdPartyWallet: { mnemonicEnv: string; name: string; fundSats: number; maxFundSats: number; branch: string };
     budgetSats: number;
     ledgerFile: string;
     fundingRequest: { bchSats: number; pusd: string };

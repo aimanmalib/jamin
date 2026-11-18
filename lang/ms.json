@@ -9,6 +9,7 @@
   "tabs": {
     "home": "Utama",
     "try": "Cuba",
+    "wallet": "Dompet",
     "lifecycle": "Kitaran hayat",
     "contract": "Kontrak"
   },
@@ -214,7 +215,8 @@
       "D": "penjual membatal selepas tempoh menunggu",
       "E": "pertikaian, penimbang tara memutuskan",
       "W": "lepas, penjual berdagang dari dompet",
-      "R": "dua panggilan ditolak, kemudian lepas"
+      "R": "dua panggilan ditolak, kemudian lepas",
+      "X": "lepas, penjual menandatangani dalam dompet pihak ketiga"
     },
     "colStep": "Langkah",
     "colTx": "Txid",
@@ -226,6 +228,7 @@
     "block": "blok {height}",
     "mempool": "belum dalam blok",
     "walletSigned": "ditandatangani dompet penjual",
+    "walletSignedBy": "ditandatangani dalam {wallet}",
     "refused": "Ditolak oleh rangkaian",
     "refusedBy": "{step}, ditandatangani {party}",
     "refusedWhy": {
@@ -248,5 +251,33 @@
   "footer": {
     "what": "Jamin bermaksud jaminan. Dibina untuk BCH BLAZE 2026.",
     "license": "Sumber terbuka, MIT"
+  },
+  "wallet": {
+    "title": "Berdagang dari dompet anda",
+    "lede": "Jual BCH melalui escrow sebenar di mainnet. Dompet anda bersambung melalui WizardConnect, membayar setiap langkah dan menandatanganinya; halaman ini membina transaksi dan menyiarkannya. Ia tidak pernah melihat kunci dompet anda.",
+    "amount": "Jumlah: {sats} sat, ditetapkan oleh laman ini. Dompet anda juga membayar yuran rangkaian.",
+    "panel": "Pertikaian dibawa ke panel demo tiga kunci laman ini, dan yuran escrow ke alamat yurannya.",
+    "wallets": "Dompet dengan WizardConnect: {names}.",
+    "buyerLabel": "Kunci awam pembeli",
+    "buyerHelp": "Pembeli menghantar kunci awam termampat mereka (66 aksara heks, bermula 02 atau 03).",
+    "buyerInvalid": "Ini bukan kunci awam termampat: 66 aksara heks bermula dengan 02 atau 03.",
+    "connect": "Sambung dompet",
+    "linkNote": "Salin pautan ini ke skrin WizardConnect dompet anda dan terima. Ia berfungsi sekali dan hanya untuk halaman ini.",
+    "linkLabel": "Pautan WizardConnect",
+    "waiting": "Menunggu dompet anda. Kemudian ia akan meminta anda menandatangani permintaan kunci penjual.",
+    "connected": "Bersambung: {name}.",
+    "address": "Alamat dompet:",
+    "roleKey": "Kunci penjual dalam escrow:",
+    "tradeName": "Nama dagangan (dompet dan nama yang sama memberi kunci penjual yang sama):",
+    "create": "Cipta escrow",
+    "fund": "Kunci syiling",
+    "refresh": "Semak bayaran pembeli",
+    "release": "Lepaskan kepada pembeli",
+    "signInWallet": "Luluskan permintaan dalam dompet anda...",
+    "failed": "Berhenti: {message}",
+    "escrowTitle": "Escrow anda",
+    "noEscrow": "Belum ada escrow.",
+    "waitBuyer": "Syiling telah dikunci. Lepaskannya apabila pembeli sudah membayar anda dan menanda dagangan sebagai dibayar.",
+    "loading": "Memuatkan alat dompet..."
   }
 }

@@ -1,6 +1,6 @@
 // Page shell: event banner, header with the tabs and language toggle, the current tab, footer. Tabs are hash routes
-// (#/try, #/lifecycle, #/contract) so the app is one static page.
-import { useEffect, useState, type ReactNode } from 'react';
+// (#/try, #/wallet, #/lifecycle, #/contract) so the app is one static page.
+import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 import { useLang } from './i18n.js';
 import { config } from './data/config.js';
 import { Banner } from './ui/Banner.js';
@@ -8,6 +8,9 @@ import { Home } from './ui/Home.js';
 import { TryIt } from './ui/TryIt.js';
 import { Lifecycle } from './ui/Lifecycle.js';
 import { ContractView } from './ui/ContractView.js';
+
+// The wallet tab carries the SDK's Electrum provider and the WizardConnect packages: loaded only when opened.
+const WalletTab = lazy(async () => ({ default: (await import('./ui/WalletTab.js')).WalletTab }));
 import { Mark } from './ui/Art.js';
 import { TABS, hrefOf, tabFromHash, type Tab } from './route.js';
 
@@ -48,6 +51,7 @@ export function App(): ReactNode {
       <main id="main" className="wrap" tabIndex={-1}>
         {tab === 'home' && <Home />}
         {tab === 'try' && <TryIt />}
+        {tab === 'wallet' && <Suspense fallback={<p className="muted">{t('wallet.loading')}</p>}><WalletTab /></Suspense>}
         {tab === 'lifecycle' && <Lifecycle />}
         {tab === 'contract' && <ContractView />}
       </main>

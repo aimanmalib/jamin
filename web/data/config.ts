@@ -10,6 +10,11 @@ export interface WebConfig {
   banner: { event: string; bounty: string; repoUrl: string; prizeAddress: string; deckUrl: string };
   web: { tabs: string[]; contracts: string[]; languageStorageKey: string };
   walletSigning: { roleKeyMessage: string };
+  walletTrade: {
+    network: 'mainnet'; dappName: string; relayUrls: string[]; amountSats: number; minGenesisCoinSats: number;
+    roleKeyRequestSats: number; connectTimeoutMs: number; tradeNamePrefix: string; panel: string[];
+    feeRecipientPkh: string; wallets: string[];
+  };
 }
 
 export const config = raw as WebConfig;

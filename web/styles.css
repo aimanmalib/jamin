@@ -190,3 +190,12 @@ main { padding-top: 2rem; }
 .refused-label { display: block; color: var(--danger); }
 .server-error { display: block; white-space: pre-wrap; overflow-wrap: anywhere; padding: 0.4rem 0.5rem;
   background: var(--card); border: 1px solid var(--line); border-radius: 6px; }
+
+/* Wallet tab: a key field and the WizardConnect link, both in the mono face and never wider than the card. */
+.field { display: grid; gap: 0.3rem; margin: 0.75rem 0 0.25rem; min-width: 0; font-weight: 600; }
+.field input, .wallet-link { width: 100%; max-width: 100%; min-width: 0; min-height: var(--tap); padding: 0 0.6rem;
+  border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink);
+  font-family: var(--font-mono); font-size: 0.85rem; font-weight: 400; }
+.field input[aria-invalid="true"] { border-color: var(--ink); border-style: dashed; }
+.wallet-trade ul { padding-left: 1.1rem; margin: 0 0 0.5rem; }
+.wallet-trade .actions { margin-top: 0.75rem; }

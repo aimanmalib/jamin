@@ -9,6 +9,7 @@
   "tabs": {
     "home": "Home",
     "try": "Try it",
+    "wallet": "Wallet",
     "lifecycle": "Lifecycle",
     "contract": "Contract"
   },
@@ -214,7 +215,8 @@
       "D": "seller cancels after the waiting time",
       "E": "dispute, arbitrator decides",
       "W": "release, seller trades from a wallet",
-      "R": "two calls refused, then release"
+      "R": "two calls refused, then release",
+      "X": "release, seller signs in a third-party wallet"
     },
     "colStep": "Step",
     "colTx": "Txid",
@@ -226,6 +228,7 @@
     "block": "block {height}",
     "mempool": "not yet in a block",
     "walletSigned": "signed by the seller's wallet",
+    "walletSignedBy": "signed in {wallet}",
     "refused": "Refused by the network",
     "refusedBy": "{step}, signed by the {party}",
     "refusedWhy": {
@@ -248,5 +251,33 @@
   "footer": {
     "what": "Jamin means guarantee in Malay. Built for BCH BLAZE 2026.",
     "license": "Open source, MIT"
+  },
+  "wallet": {
+    "title": "Trade from your wallet",
+    "lede": "Sell BCH through a real escrow on mainnet. Your wallet connects over WizardConnect, pays for each step and signs it; this page builds the transactions and broadcasts them. It never sees your wallet's keys.",
+    "amount": "Amount: {sats} sat, fixed by this site. Your wallet also pays the network fees.",
+    "panel": "Disputes go to this site's demo panel of three keys, and the escrow fee goes to its fee address.",
+    "wallets": "Wallets with WizardConnect: {names}.",
+    "buyerLabel": "Buyer's public key",
+    "buyerHelp": "The buyer sends you their compressed public key (66 hex characters, starting 02 or 03).",
+    "buyerInvalid": "This is not a compressed public key: 66 hex characters starting with 02 or 03.",
+    "connect": "Connect a wallet",
+    "linkNote": "Copy this link into your wallet's WizardConnect screen and accept. It works once and only for this page.",
+    "linkLabel": "WizardConnect link",
+    "waiting": "Waiting for your wallet. It will then ask you to sign the seller key request.",
+    "connected": "Connected: {name}.",
+    "address": "Wallet address:",
+    "roleKey": "Seller key in the escrow:",
+    "tradeName": "Trade name (the same wallet and name give the same seller key):",
+    "create": "Create the escrow",
+    "fund": "Lock the coins",
+    "refresh": "Check for the buyer's payment",
+    "release": "Release to the buyer",
+    "signInWallet": "Approve the request in your wallet...",
+    "failed": "Stopped: {message}",
+    "escrowTitle": "Your escrow",
+    "noEscrow": "No escrow yet.",
+    "waitBuyer": "The coins are locked. Release them when the buyer has paid you and marked the trade as paid.",
+    "loading": "Loading the wallet tools..."
   }
 }

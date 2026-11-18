@@ -18,7 +18,7 @@ export function simTerms(asset: Asset): SimTerms {
 // Globbed rather than imported, so type checking does not need the artifacts (they are build outputs).
 const ARTIFACTS = import.meta.glob<Artifact>('../../artifacts/solidcash/Jamin*Escrow.json', { import: 'default' });
 
-async function artifact(name: string): Promise<Artifact> {
+export async function artifact(name: string): Promise<Artifact> {
   const load = ARTIFACTS[`../../artifacts/solidcash/${name}.json`];
   if (!load) throw new Error(`artifact ${name} missing: run npm run build`);
   return load();
