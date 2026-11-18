@@ -1,6 +1,6 @@
 // Escrows brought to a given status, shared by the BCH and CashToken test files.
 import type { Utxo } from '@solidcash/solidcash';
-import { TERMS, deploy, entry, world, roleParams, type World } from './escrow.js';
+import { TERMS, deploy, entry, panelSigs, world, roleParams, type World } from './escrow.js';
 
 type Escrow = Awaited<ReturnType<typeof deploy>>['sc'];
 
@@ -87,4 +87,9 @@ export function byHand(w: World, sc: Escrow, signer: keyof World['roles'], lockT
   ...args: unknown[]): ReturnType<typeof entry> {
   const s = w.roles[signer];
   return entry(sc.connect(s), name, w.sig(s), ...args).setLocktime(lockTime);
+}
+
+/** `resolveDispute` signed by panel members A and B, set up like `byHand` (the arbitrator pays the fee). */
+export function byPanel(w: World, sc: Escrow, lockTime: number, ...args: unknown[]): ReturnType<typeof entry> {
+  return entry(sc.connect(w.roles.arbitrator), 'resolveDispute', ...panelSigs(w), ...args).setLocktime(lockTime);
 }

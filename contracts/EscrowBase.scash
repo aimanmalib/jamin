@@ -4,7 +4,10 @@ import "./FeeMath.scash";
 
 // Shared state machine of one escrow, ported from OpenPeerEscrow (see NOTICE and docs/PORTING.md).
 // Every role is a public key checked with checkSig; msg.sender is never used for authorisation.
-abstract contract EscrowBase(pubkey seller, pubkey buyer, pubkey arbitrator, bytes20 feeRecipient) {
+// Disputes are decided by a panel of three arbitrator keys, any two of which must sign (checkMultiSig). A single
+// arbitrator fills all three slots with one key and signs once, passing that signature twice (docs/decisions/0008).
+abstract contract EscrowBase(pubkey seller, pubkey buyer, pubkey arbiterA, pubkey arbiterB, pubkey arbiterC,
+    bytes20 feeRecipient) {
     enum Status { Created, Funded, Paid, Disputed, Released, CancelledByBuyer, CancelledBySeller, Resolved }
 
     struct Terms {
@@ -47,6 +50,7 @@ abstract contract EscrowBase(pubkey seller, pubkey buyer, pubkey arbitrator, byt
     error WrongDisputeFee();
     error AlreadyPaidDispute();
     error NoDispute();
+    error PartyOnPanel();
 
     modifier onlySeller(sig s) {
         require(checkSig(s, seller), NotSeller());
@@ -58,8 +62,9 @@ abstract contract EscrowBase(pubkey seller, pubkey buyer, pubkey arbitrator, byt
         _;
     }
 
-    modifier onlyArbitrator(sig s) {
-        require(checkSig(s, arbitrator), NotArbitrator());
+    // Two panel signatures in panel key order. OP_CHECKMULTISIG checks legacy ECDSA signatures, not Schnorr.
+    modifier onlyPanel(sig first, sig second) {
+        require(checkMultiSig([first, second], [arbiterA, arbiterB, arbiterC]), NotArbitrator());
         _;
     }
 
@@ -73,6 +78,10 @@ abstract contract EscrowBase(pubkey seller, pubkey buyer, pubkey arbitrator, byt
         require(amount > 0, InvalidAmount());
         require(disputeFee > 0, InvalidDisputeFee());
         require(cancelAfter >= LOCKTIME_THRESHOLD, InvalidCancelTime());
+        // A trading party on the panel could decide its own dispute.
+        require(arbiterA != seller && arbiterA != buyer, PartyOnPanel());
+        require(arbiterB != seller && arbiterB != buyer, PartyOnPanel());
+        require(arbiterC != seller && arbiterC != buyer, PartyOnPanel());
         this.terms = Terms(amount, fee, disputeFee, cancelAfter);
         emit EscrowCreated(amount, fee, cancelAfter);
     }

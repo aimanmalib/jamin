@@ -3,7 +3,7 @@
 // what the recipients received and that the escrow keeps only its reserve, and records every transaction id.
 import { StatefulContract } from '@solidcash/solidcash/stateful';
 import type { TransactionDetails } from '@solidcash/solidcash';
-import { call, check, loadArtifact, lockOf, satsAt, tokensAt, type Ctx, type PartyName } from './context.js';
+import { PANEL, call, check, loadArtifact, panelCall, lockOf, satsAt, tokensAt, type Ctx, type PartyName } from './context.js';
 
 type Escrow = StatefulContract;
 
@@ -25,8 +25,8 @@ async function run(ctx: Ctx, branch: string, step: string, send: Promise<Transac
 
 /** Contract parameters of an escrow between the context's parties. */
 function escrowParams(ctx: Ctx, extra: unknown[]): unknown[] {
-  const { seller, buyer, arbitrator, fees } = ctx.parties;
-  return [seller.publicKey, buyer.publicKey, arbitrator.publicKey, fees.signer.pkh, ...extra];
+  const { seller, buyer, fees } = ctx.parties;
+  return [seller.publicKey, buyer.publicKey, ...PANEL.map((n) => ctx.parties[n].publicKey), fees.signer.pkh, ...extra];
 }
 
 async function deploy(ctx: Ctx, branch: string, name: string, extra: unknown[], amount: bigint): Promise<Escrow> {
@@ -153,7 +153,7 @@ export async function branchE(ctx: Ctx): Promise<void> {
   await run(ctx, 'E', 'openDispute', call(sc, ctx.parties.buyer, 'openDispute', true)
     .withValue(ctx.terms.disputeFee).send());
   const [buyer, fees] = await deltas(ctx, ['buyer', 'fees'], () =>
-    run(ctx, 'E', 'resolveDispute', call(sc, ctx.parties.arbitrator, 'resolveDispute', true).send()));
+    run(ctx, 'E', 'resolveDispute', panelCall(sc, ctx.parties, ['arbitrator', 'arbiterB'], true).send()));
   check(buyer === ctx.terms.amount + ctx.terms.disputeFee && fees === fee,
     'E: the buyer wins the amount and the dispute fee, the fee recipient the fee');
   await closed(ctx, sc, Status.Resolved, 'E');

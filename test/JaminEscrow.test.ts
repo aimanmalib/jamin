@@ -1,7 +1,7 @@
 // BCH escrow lifecycle on the production-profile mock network. Rejections are in JaminEscrow.reject.test.ts.
 import { describe, expect, it } from 'vitest';
 import {
-  TERMS, Status, deploy, entry, lockOf, lockTimeNow, roleParams, satsAt, statusOf, world, type World,
+  TERMS, Status, deploy, entry, lockOf, lockTimeNow, panelSigs, roleParams, satsAt, statusOf, world, type World,
 } from './helpers/escrow.js';
 import { BCH_FEE, openBch, waitOut } from './helpers/flows.js';
 
@@ -74,7 +74,7 @@ describe('JaminEscrow (BCH)', () => {
       expect(await statusOf(sc)).toBe(Status.Disputed);
       await entry(sc.connect(seller), 'openDispute', w.sig(seller), false).withValue(TERMS.disputeFee).send();
       const feesBefore = await satsAt(w.provider, fees.address);
-      await entry(sc.connect(arbitrator), 'resolveDispute', w.sig(arbitrator), buyerWins).send();
+      await entry(sc.connect(arbitrator), 'resolveDispute', ...panelSigs(w), buyerWins).send();
       expect(await statusOf(sc)).toBe(Status.Resolved);
       const expectedFees = (buyerWins ? FEE : 0n) + TERMS.disputeFee;
       expect(await satsAt(w.provider, fees.address) - feesBefore).toBe(expectedFees);

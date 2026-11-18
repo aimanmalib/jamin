@@ -6,8 +6,8 @@ pragma satoshicontainer single;
 import "./EscrowBase.scash";
 
 // One BCH escrow. The seller deploys it, then pays amount + fee into the satoshi container with `fund`.
-contract JaminEscrow(pubkey seller, pubkey buyer, pubkey arbitrator, bytes20 feeRecipient)
-    is EscrowBase(seller, buyer, arbitrator, feeRecipient) {
+contract JaminEscrow(pubkey seller, pubkey buyer, pubkey arbiterA, pubkey arbiterB, pubkey arbiterC,
+    bytes20 feeRecipient) is EscrowBase(seller, buyer, arbiterA, arbiterB, arbiterC, feeRecipient) {
 
     // P2PKH dust limit: the smallest relayable fee output.
     int constant DUST_LIMIT = 546;
@@ -56,9 +56,9 @@ contract JaminEscrow(pubkey seller, pubkey buyer, pubkey arbitrator, bytes20 fee
         recordDispute(s, byBuyer);
     }
 
-    // The arbitrator picks the winner. A buyer win settles like a release, a seller win like a cancel.
+    // Two of the three panel arbitrators pick the winner. A buyer win settles like a release, a seller win like a cancel.
     // The winner's dispute fee is returned; the loser's goes to the fee recipient.
-    function resolveDispute(sig s, bool buyerWins) public onlyArbitrator(s) {
+    function resolveDispute(sig first, sig second, bool buyerWins) public onlyPanel(first, second) {
         require(this.status == Status.Disputed, NoDispute());
         int toWinner = this.terms.amount;
         int toFees = 0;

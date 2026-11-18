@@ -1,6 +1,6 @@
 // The in-browser simulator: the real compiled escrow artifacts running on the SolidCash mock network with the
 // production profile (BCH size limits, dust rule). No keys leave the page and no network is contacted.
-import { SignatureTemplate, type Artifact, type Utxo } from '@solidcash/solidcash';
+import { SignatureAlgorithm, SignatureTemplate, type Artifact, type Utxo } from '@solidcash/solidcash';
 import { MockNetworkProvider } from '@solidcash/solidcash/network/mock';
 import { StatefulContract } from '@solidcash/solidcash/stateful';
 import { cashAddressToLockingBytecode } from '@bitauth/libauth';
@@ -53,14 +53,17 @@ function lockOf(address: string): Uint8Array {
 export class Simulation {
   readonly log: LogEntry[] = [];
   private constructor(readonly asset: Asset, readonly terms: SimTerms, private readonly provider: MockNetworkProvider,
-    private readonly people: Record<Actor, Signer>, private readonly sc: Escrow, readonly category: string | undefined,
+    private readonly people: Record<Actor, Signer>, private readonly panelB: Signer, private readonly sc: Escrow, readonly category: string | undefined,
     readonly fee: bigint) {}
 
   /** Deploys an escrow of `asset` and funds it as the seller. */
   static async start(artifacts: Artifacts, asset: Asset, terms: SimTerms): Promise<Simulation> {
     const provider = new MockNetworkProvider({ profile: 'production' });
-    const [seller, buyer, arbitrator, fees, outsider] = await provider.getSigners(5);
-    if (!seller || !buyer || !arbitrator || !fees || !outsider) throw new Error('mock signers missing');
+    // The arbitrator is panel member A; B and C complete the 2-of-3 panel. B co-signs the arbitrator's decisions.
+    const [seller, buyer, arbitrator, fees, outsider, arbiterB, arbiterC] = await provider.getSigners(7);
+    if (!seller || !buyer || !arbitrator || !fees || !outsider || !arbiterB || !arbiterC) {
+      throw new Error('mock signers missing');
+    }
     const people = { seller, buyer, arbitrator, outsider };
     const cancelAfter = BigInt(provider.getBlockTime()) + terms.waitSeconds;
     let category: string | undefined;
@@ -72,14 +75,15 @@ export class Simulation {
       category = minted.categoryId;
       tokenCoin = minted.utxos[0];
     }
-    const params = [seller.publicKey, buyer.publicKey, arbitrator.publicKey, fees.pkh, ...(category ? [category] : [])];
+    const params = [seller.publicKey, buyer.publicKey, arbitrator.publicKey, arbiterB.publicKey, arbiterC.publicKey,
+      fees.pkh, ...(category ? [category] : [])];
     const funding = (await provider.getUtxos(seller.address)).find((u) => u.vout === 0 && !u.token);
     if (!funding) throw new Error('no funding coin');
     const { contract, tx } = await StatefulContract.deploy(asset === 'bch' ? artifacts.bch : artifacts.token,
       params as never, { provider: provider as never, fundingUtxo: funding, funder: seller.unlockP2PKH(),
         changeAddress: seller.address, initialBalance: terms.reserve,
         initArgs: [terms.amount, terms.feeBps, terms.disputeFee, cancelAfter] as never });
-    const sim = new Simulation(asset, terms, provider, people, contract, category, fee);
+    const sim = new Simulation(asset, terms, provider, people, arbiterB, contract, category, fee);
     sim.log.push({ actor: 'seller', action: 'createEscrow', ok: true, txid: tx.txid, bytes: tx.hex.length / 2 });
     const sc = contract.connect(seller);
     const sig = new SignatureTemplate(seller.privateKey);
@@ -138,12 +142,18 @@ export class Simulation {
         return call(sc, 'openDispute', sig, actor !== 'seller').withValue(this.terms.disputeFee);
       case 'resolveForBuyer':
       case 'resolveForSeller':
-        return call(sc, 'resolveDispute', sig, ...cat, action === 'resolveForBuyer');
+        return call(sc, 'resolveDispute', ...this.panelSigs(who), ...cat, action === 'resolveForBuyer');
       case 'sellerCancel':
         return this.sellerCancel(sc, sig, cat, lockTime);
       default:
         return call(sc, action, sig, ...cat);
     }
+  }
+
+  /** Two ECDSA signatures (OP_CHECKMULTISIG): the arbitrator with panel member B; anyone else signs twice alone. */
+  private panelSigs(who: Signer): SignatureTemplate[] {
+    const ecdsa = (s: Signer): SignatureTemplate => new SignatureTemplate(s.privateKey, undefined, SignatureAlgorithm.ECDSA);
+    return who === this.people.arbitrator ? [ecdsa(who), ecdsa(this.panelB)] : [ecdsa(who), ecdsa(who)];
   }
 
   /** `lockTime` is a time-type locktime one second behind the median time past; with a locktime set the SDK takes the payment

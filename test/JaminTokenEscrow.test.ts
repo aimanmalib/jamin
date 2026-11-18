@@ -1,6 +1,6 @@
 // CashToken escrow lifecycle on the production-profile mock network, with a test token issued on the mock.
 import { describe, expect, it } from 'vitest';
-import { TERMS, Status, entry, lockOf, lockTimeNow, statusOf, tokensAt } from './helpers/escrow.js';
+import { TERMS, Status, entry, lockOf, lockTimeNow, panelSigs, statusOf, tokensAt } from './helpers/escrow.js';
 import { TOKEN, openToken, tokenWorld, type TokenWorld, waitOut } from './helpers/flows.js';
 
 const AMOUNT = TOKEN.amount;
@@ -57,7 +57,7 @@ describe('JaminTokenEscrow (CashToken)', () => {
     await entry(sc.connect(buyer), 'markAsPaid', w.sig(buyer), w.category).send();
     await entry(sc.connect(buyer), 'openDispute', w.sig(buyer), true).withValue(TERMS.disputeFee).send();
     await entry(sc.connect(seller), 'openDispute', w.sig(seller), false).withValue(TERMS.disputeFee).send();
-    await entry(sc.connect(arbitrator), 'resolveDispute', w.sig(arbitrator), w.category, true).send();
+    await entry(sc.connect(arbitrator), 'resolveDispute', ...panelSigs(w), w.category, true).send();
     expect(await statusOf(sc)).toBe(Status.Resolved);
     expect(await tokensAt(w.provider, buyer.address, w.category)).toBe(AMOUNT);
   });

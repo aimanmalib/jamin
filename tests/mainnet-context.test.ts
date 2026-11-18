@@ -25,13 +25,13 @@ afterEach(() => { rmSync(dir, { recursive: true, force: true }); });
 
 async function setup(budgetSats: number, tokenCategory = '00'.repeat(32)) {
   const mock = new MockNetworkProvider({ profile: 'production' });
-  const [s, b, a, f] = await mock.getSigners(4);
-  if (!s || !b || !a || !f) throw new Error('mock signers missing');
+  const [s, b, a, f, a2, a3] = await mock.getSigners(6);
+  if (!s || !b || !a || !f || !a2 || !a3) throw new Error('mock signers missing');
   const keys: Record<PartyName, Uint8Array> = { seller: s.privateKey, buyer: b.privateKey, arbitrator: a.privateKey,
-    fees: f.privateKey };
+    arbiterB: a2.privateKey, arbiterC: a3.privateKey, fees: f.privateKey };
   const gate: GateOptions = {
     ledgerFile: join(dir, 'belanja.json'), budgetSats, note: 'test',
-    walletLocks: new Set([s, b, a, f].map((x) => binToHex(lockOf(x.address)))),
+    walletLocks: new Set([s, b, a, f, a2, a3].map((x) => binToHex(lockOf(x.address)))),
     prevout: async (txid, vout) => {
       const out = await mock.getLedgerOutput(txid, vout);
       if (!out) throw new Error(`no live output ${txid}:${vout}`);

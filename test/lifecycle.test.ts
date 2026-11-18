@@ -2,7 +2,7 @@
 // (CashToken), C buyer cancel, D seller cancel after the waiting time, E dispute and resolution. Each branch checks
 // that every party receives its share and that the escrow keeps only the reserve that opened it.
 import { describe, expect, it } from 'vitest';
-import { RESERVE_SATS, TERMS, Status, entry, lockOf, lockTimeNow, satsAt, statusOf, tokensAt, world, type World }
+import { RESERVE_SATS, TERMS, Status, entry, lockOf, lockTimeNow, panelSigs, satsAt, statusOf, tokensAt, world, type World }
   from './helpers/escrow.js';
 import { BCH_FEE, TOKEN, openBch, paidBch, paidToken, tokenWorld, waitOut } from './helpers/flows.js';
 
@@ -78,7 +78,7 @@ describe('lifecycle branches', () => {
     const { buyer, arbitrator } = w.roles;
     const sc = await paidBch(w);
     await entry(sc.connect(buyer), 'openDispute', w.sig(buyer), true).withValue(TERMS.disputeFee).send();
-    const d = await deltas(w, () => entry(sc.connect(arbitrator), 'resolveDispute', w.sig(arbitrator), true).send());
+    const d = await deltas(w, () => entry(sc.connect(arbitrator), 'resolveDispute', ...panelSigs(w), true).send());
     expect([d.buyer, d.fees, d.seller]).toEqual([TERMS.amount + TERMS.disputeFee, BCH_FEE, 0n]);
     expect(await sc.getBalance()).toBe(RESERVE_SATS);
     expect(await eventCount(sc, 'DisputeResolved')).toBe(1);

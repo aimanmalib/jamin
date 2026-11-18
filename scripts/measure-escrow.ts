@@ -5,7 +5,7 @@
 import { decodeTransaction, hexToBin } from '@bitauth/libauth';
 import { utils } from '@solidcash/solidcash';
 import {
-  RESERVE_SATS, TERMS, deploy, entry, loadArtifact, lockOf, lockTimeNow, roleParams, world, type World,
+  RESERVE_SATS, TERMS, deploy, entry, loadArtifact, lockOf, lockTimeNow, panelSigs, roleParams, world, type World,
 } from '../test/helpers/escrow.js';
 
 const MAX_INPUT_BYTES = 10_000;
@@ -49,7 +49,7 @@ async function bch(path: 'release' | 'buyerCancel' | 'sellerCancel' | 'dispute')
     steps.push(['markAsPaid', () => entry(as(buyer), 'markAsPaid', w.sig(buyer)).send()]);
     steps.push(['openDispute', () => entry(as(buyer), 'openDispute', w.sig(buyer), true)
       .withValue(TERMS.disputeFee).send()]);
-    steps.push(['resolveDispute', () => entry(as(arbitrator), 'resolveDispute', w.sig(arbitrator), true).send()]);
+    steps.push(['resolveDispute', () => entry(as(arbitrator), 'resolveDispute', ...panelSigs(w), true).send()]);
   }
   await record(w, 'JaminEscrow', `deploy (reserve ${RESERVE_SATS} sats)`, d.txid);
   await run(w, 'JaminEscrow', steps);
@@ -73,7 +73,7 @@ async function token(): Promise<void> {
       .tokenContainerDeposit(categoryId, amount + fee + reserve).send()],
     ['markAsPaid', () => entry(as(buyer), 'markAsPaid', w.sig(buyer), categoryId).send()],
     ['openDispute', () => entry(as(buyer), 'openDispute', w.sig(buyer), true).withValue(TERMS.disputeFee).send()],
-    ['resolveDispute', () => entry(as(arbitrator), 'resolveDispute', w.sig(arbitrator), categoryId, true).send()],
+    ['resolveDispute', () => entry(as(arbitrator), 'resolveDispute', ...panelSigs(w), categoryId, true).send()],
   ]);
 }
 

@@ -8,7 +8,8 @@ export interface ElectrumServer {
   timeoutMs: number;
 }
 
-export type Role = 'seller' | 'buyer' | 'arbitrator' | 'feeRecipient';
+/** `arbitrator`, `arbiterB` and `arbiterC` are the arbitration panel, in contract key order. */
+export type Role = 'seller' | 'buyer' | 'arbitrator' | 'arbiterB' | 'arbiterC' | 'feeRecipient';
 
 export interface JaminConfig {
   electrum: { mainnet: ElectrumServer };

@@ -1,7 +1,7 @@
 // BCH escrow rejections: each test fails if the contract check it names is removed.
 import { describe, expect, it } from 'vitest';
 import {
-  TERMS, Status, deploy, entry, lockOf, lockTimeNow, satsAt, statusOf, tooEarly, world, type World,
+  TERMS, Status, deploy, entry, lockOf, lockTimeNow, panelSigs, satsAt, statusOf, tooEarly, world, type World,
 } from './helpers/escrow.js';
 import { BCH_FEE, disputedBch, openBch, paidBch, waitOut } from './helpers/flows.js';
 
@@ -37,7 +37,7 @@ describe('JaminEscrow (BCH) rejections', () => {
       const w = await world();
       const signer = w.roles[role];
       const sc = await disputed(w);
-      await expect(entry(sc.connect(signer), 'resolveDispute', w.sig(signer), true).send())
+      await expect(entry(sc.connect(signer), 'resolveDispute', w.ecdsa(signer), w.ecdsa(signer), true).send())
         .rejects.toThrow(/NotArbitrator/);
       expect(await statusOf(sc)).toBe(Status.Disputed);
     });
@@ -91,7 +91,7 @@ describe('JaminEscrow (BCH) rejections', () => {
     const sc = await disputed(w);
     const sellerBefore = await satsAt(w.provider, seller.address);
     const feesBefore = await satsAt(w.provider, fees.address);
-    await entry(sc.connect(arbitrator), 'resolveDispute', w.sig(arbitrator), false).send();
+    await entry(sc.connect(arbitrator), 'resolveDispute', ...panelSigs(w), false).send();
     expect(await satsAt(w.provider, seller.address) - sellerBefore).toBe(TERMS.amount + FEE);
     expect(await satsAt(w.provider, fees.address) - feesBefore).toBe(TERMS.disputeFee);
   });

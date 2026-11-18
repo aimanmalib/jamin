@@ -149,7 +149,7 @@
     "InvalidCancelTime": "Tempoh menunggu tidak sah.",
     "NotSeller": "Hanya tandatangan penjual boleh melakukan ini.",
     "NotBuyer": "Hanya tandatangan pembeli boleh melakukan ini.",
-    "NotArbitrator": "Hanya tandatangan penimbang tara boleh melakukan ini.",
+    "NotArbitrator": "Hanya dua daripada tiga tandatangan panel penimbang tara boleh melakukan ini.",
     "NotFunded": "Syiling belum dikunci.",
     "AlreadyFunded": "Syiling sudah dikunci.",
     "WrongDeposit": "Deposit bukan tepat amaun serta yuran.",

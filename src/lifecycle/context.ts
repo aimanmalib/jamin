@@ -1,17 +1,24 @@
-// What a lifecycle run needs from a network: a provider, the four parties as signers, the escrow terms, and the
+// What a lifecycle run needs from a network: a provider, the parties as signers (with the three arbitration panel
+// keys), the escrow terms, and the
 // network's way of letting time pass. The branches in branches.ts read only this, so the same code runs on regtest
 // and mainnet.
 import { readFileSync } from 'node:fs';
 import { cashAddressToLockingBytecode } from '@bitauth/libauth';
-import { SignatureTemplate, Signer, type Artifact, type NetworkProvider, type Utxo } from '@solidcash/solidcash';
+import { SignatureAlgorithm, SignatureTemplate, Signer, type Artifact, type NetworkProvider, type Utxo } from '@solidcash/solidcash';
 import type { StatefulContract } from '@solidcash/solidcash/stateful';
 import { repoRoot } from '../config.js';
 
-export type PartyName = 'seller' | 'buyer' | 'arbitrator' | 'fees';
+/** `arbitrator` is panel member A and pays for a resolution; `arbiterB` and `arbiterC` only sign. */
+export type PartyName = 'seller' | 'buyer' | 'arbitrator' | 'arbiterB' | 'arbiterC' | 'fees';
+
+/** The arbitration panel in contract key order. */
+export const PANEL = ['arbitrator', 'arbiterB', 'arbiterC'] as const satisfies readonly PartyName[];
 
 export interface Party {
   signer: Signer;
   sig: SignatureTemplate;
+  /** Legacy ECDSA signature, which OP_CHECKMULTISIG (the panel check) needs. */
+  ecdsa: SignatureTemplate;
   publicKey: Uint8Array;
   address: string;
 }
@@ -51,7 +58,9 @@ export interface Ctx {
 
 export function party(privateKey: Uint8Array, provider: NetworkProvider): Party {
   const signer = new Signer(privateKey, provider);
-  return { signer, sig: new SignatureTemplate(privateKey), publicKey: signer.publicKey, address: signer.address };
+  return { signer, sig: new SignatureTemplate(privateKey),
+    ecdsa: new SignatureTemplate(privateKey, undefined, SignatureAlgorithm.ECDSA),
+    publicKey: signer.publicKey, address: signer.address };
 }
 
 export function loadArtifact(name: string): Artifact {
@@ -72,6 +81,14 @@ export function call(contract: StatefulContract, p: Party, name: string, ...args
   const fn = connected.call[name];
   if (fn === undefined) throw new Error(`contract has no entry point ${name}`);
   return fn(p.sig, ...(args as []));
+}
+
+/** `resolveDispute` signed by two panel members in panel key order; the arbitrator (member A) pays the fee. */
+export function panelCall(contract: StatefulContract, parties: Record<PartyName, Party>,
+  signers: readonly [PartyName, PartyName], ...args: unknown[]): CallBuilder {
+  const fn = contract.connect(parties.arbitrator.signer).call.resolveDispute;
+  if (fn === undefined) throw new Error('contract has no entry point resolveDispute');
+  return fn(...([...signers.map((n) => parties[n].ecdsa), ...args] as []));
 }
 
 export async function satsAt(provider: NetworkProvider, address: string): Promise<bigint> {

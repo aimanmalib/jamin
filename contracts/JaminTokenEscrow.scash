@@ -7,8 +7,8 @@ import "./EscrowBase.scash";
 
 // One CashToken escrow (for example PUSD). The trade amount and the fee are fungible tokens of one category held
 // in the contract's token container; dispute fees are paid in BCH into the satoshi container.
-contract JaminTokenEscrow(pubkey seller, pubkey buyer, pubkey arbitrator, bytes20 feeRecipient, bytes32 token)
-    is EscrowBase(seller, buyer, arbitrator, feeRecipient) {
+contract JaminTokenEscrow(pubkey seller, pubkey buyer, pubkey arbiterA, pubkey arbiterB, pubkey arbiterC,
+    bytes20 feeRecipient, bytes32 token) is EscrowBase(seller, buyer, arbiterA, arbiterB, arbiterC, feeRecipient) {
 
     // An ordinary call cannot empty a fungible-only token container, so one base unit stays behind for good.
     int constant RESERVE_UNITS = 1;
@@ -65,7 +65,8 @@ contract JaminTokenEscrow(pubkey seller, pubkey buyer, pubkey arbitrator, bytes2
 
     // Tokens go as in the BCH escrow; the BCH dispute fees go back to a paying winner and from a paying loser to
     // the fee recipient.
-    function resolveDispute(sig s, bytes32 category, bool buyerWins) public onlyArbitrator(s) onlyToken(category) {
+    function resolveDispute(sig first, sig second, bytes32 category, bool buyerWins) public
+        onlyPanel(first, second) onlyToken(category) {
         require(this.status == Status.Disputed, NoDispute());
         int tokensToWinner = this.terms.amount;
         if (!buyerWins) {

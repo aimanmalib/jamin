@@ -2,7 +2,7 @@
 // four funded roles and deploy helpers that read the artifacts SolidHat compiles before the tests run.
 import { readFileSync } from 'node:fs';
 import { cashAddressToLockingBytecode } from '@bitauth/libauth';
-import { SignatureTemplate, type Artifact, type Utxo } from '@solidcash/solidcash';
+import { SignatureAlgorithm, SignatureTemplate, type Artifact, type Utxo } from '@solidcash/solidcash';
 import { MockNetworkProvider } from '@solidcash/solidcash/network/mock';
 import { StatefulContract } from '@solidcash/solidcash/stateful';
 import { asProvider, entry } from '../../src/sdk/mock.js';
@@ -25,29 +25,48 @@ type Signer = Awaited<ReturnType<MockNetworkProvider['getSigners']>>[number];
 export interface Roles {
   seller: Signer;
   buyer: Signer;
+  /** Arbitration panel member A; it also pays the fee of a dispute resolution. */
   arbitrator: Signer;
   fees: Signer;
   outsider: Signer;
+  arbiterB: Signer;
+  arbiterC: Signer;
 }
+
+export type RoleName = keyof Roles;
 
 export interface World {
   provider: MockNetworkProvider;
   roles: Roles;
   sig: (signer: Signer) => SignatureTemplate;
+  /** The legacy ECDSA signature OP_CHECKMULTISIG needs (the SDK default is Schnorr). */
+  ecdsa: (signer: Signer) => SignatureTemplate;
   cancelAfter: bigint;
 }
 
 export async function world(): Promise<World> {
   const provider = new MockNetworkProvider({ profile: 'production' });
-  const [seller, buyer, arbitrator, fees, outsider] = await provider.getSigners(5);
-  if (!seller || !buyer || !arbitrator || !fees || !outsider) throw new Error('mock signers missing');
+  const [seller, buyer, arbitrator, fees, outsider, arbiterB, arbiterC] = await provider.getSigners(7);
+  if (!seller || !buyer || !arbitrator || !fees || !outsider || !arbiterB || !arbiterC) {
+    throw new Error('mock signers missing');
+  }
   const cancelAfter = BigInt(provider.getBlockTime()) + TERMS.waitSeconds;
-  return { provider, roles: { seller, buyer, arbitrator, fees, outsider },
-    sig: (s) => new SignatureTemplate(s.privateKey), cancelAfter };
+  return { provider, roles: { seller, buyer, arbitrator, fees, outsider, arbiterB, arbiterC },
+    sig: (s) => new SignatureTemplate(s.privateKey),
+    ecdsa: (s) => new SignatureTemplate(s.privateKey, undefined, SignatureAlgorithm.ECDSA), cancelAfter };
 }
 
-export function roleParams(r: Roles): unknown[] {
-  return [r.seller.publicKey, r.buyer.publicKey, r.arbitrator.publicKey, r.fees.pkh];
+/** The panel in key order: A, B, C. */
+export const PANEL = ['arbitrator', 'arbiterB', 'arbiterC'] as const satisfies readonly RoleName[];
+
+/** Contract parameters with a given panel (default: the three panel members). */
+export function roleParams(r: Roles, panel: readonly RoleName[] = PANEL): unknown[] {
+  return [r.seller.publicKey, r.buyer.publicKey, ...panel.map((n) => r[n].publicKey), r.fees.pkh];
+}
+
+/** The two signatures of a dispute resolution, signed by `signers` in that order (default: panel A then B). */
+export function panelSigs(w: World, signers: readonly RoleName[] = ['arbitrator', 'arbiterB']): SignatureTemplate[] {
+  return signers.map((n) => w.ecdsa(w.roles[n]));
 }
 
 export async function fundingCoin(provider: MockNetworkProvider, signer: Signer): Promise<Utxo> {

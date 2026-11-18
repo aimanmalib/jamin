@@ -2,7 +2,7 @@
 // only the outputs differ from the contract's, so a rejection comes from the output checks, not from a signature.
 import { describe, expect, it } from 'vitest';
 import { TERMS, Status, entry, lockOf, lockTimeNow, satsAt, statusOf, world, type World } from './helpers/escrow.js';
-import { BCH_FEE, byHand, disputedBch, openBch, paidBch, waitOut } from './helpers/flows.js';
+import { BCH_FEE, byHand, byPanel, disputedBch, openBch, paidBch, waitOut } from './helpers/flows.js';
 
 const AMOUNT = TERMS.amount;
 // The SDK names this when the contract input's script fails a check (no custom error: the payout checks are
@@ -79,7 +79,7 @@ describe('JaminEscrow (BCH) covenant', () => {
   it('rejects a dispute resolution for the buyer that pays the seller', async () => {
     const w = await world();
     const sc = await disputedBch(w);
-    await expect(byHand(w, sc, 'arbitrator', await lockTimeNow(w), 'resolveDispute', true).transfer(lock(w, 'fees'), BCH_FEE)
+    await expect(byPanel(w, sc, await lockTimeNow(w), true).transfer(lock(w, 'fees'), BCH_FEE)
       .transfer(lock(w, 'seller'), AMOUNT + TERMS.disputeFee).send()).rejects.toThrow(OUTPUT_CHECK);
     expect(await statusOf(sc)).toBe(Status.Disputed);
   });

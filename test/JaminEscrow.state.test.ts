@@ -1,8 +1,8 @@
 // BCH escrow state rules: bad terms at creation, calls in the wrong status, signatures of the wrong role, and closed
 // escrows that cannot be spent again.
 import { describe, expect, it } from 'vitest';
-import { RESERVE_SATS, TERMS, Status, deploy, entry, lockOf, lockTimeNow, roleParams, statusOf, world, type World } from './helpers/escrow.js';
-import { BCH_FEE, byHand, disputedBch, openBch, paidBch } from './helpers/flows.js';
+import { RESERVE_SATS, TERMS, Status, deploy, entry, lockOf, lockTimeNow, panelSigs, roleParams, statusOf, world, type World } from './helpers/escrow.js';
+import { BCH_FEE, byHand, byPanel, disputedBch, openBch, paidBch } from './helpers/flows.js';
 
 type Escrow = Awaited<ReturnType<typeof openBch>>;
 
@@ -69,7 +69,7 @@ describe('JaminEscrow (BCH) state rules', () => {
   it('refuses a dispute resolution when no dispute is open (NoDispute)', async () => {
     const w = await world();
     const sc = await paidBch(w);
-    await expect(byHand(w, sc, 'arbitrator', await lockTimeNow(w), 'resolveDispute', true).transfer(lockOf(w.roles.fees.address),
+    await expect(byPanel(w, sc, await lockTimeNow(w), true).transfer(lockOf(w.roles.fees.address),
       BCH_FEE).transfer(lockOf(w.roles.buyer.address), TERMS.amount).send()).rejects.toThrow(/NoDispute/);
     expect(await statusOf(sc)).toBe(Status.Paid);
   });
@@ -130,7 +130,7 @@ describe('JaminEscrow (BCH) state rules', () => {
     const w = await world();
     const { arbitrator } = w.roles;
     const sc = await disputedBch(w);
-    await entry(sc.connect(arbitrator), 'resolveDispute', w.sig(arbitrator), false).send();
+    await entry(sc.connect(arbitrator), 'resolveDispute', ...panelSigs(w), false).send();
     await expectClosed(w, sc, Status.Resolved);
   });
 });

@@ -149,7 +149,7 @@
     "InvalidCancelTime": "The waiting time is not valid.",
     "NotSeller": "Only the seller's signature can do this.",
     "NotBuyer": "Only the buyer's signature can do this.",
-    "NotArbitrator": "Only the arbitrator's signature can do this.",
+    "NotArbitrator": "Only two of the three arbitration panel signatures can do this.",
     "NotFunded": "The coins are not locked yet.",
     "AlreadyFunded": "The coins are already locked.",
     "WrongDeposit": "The deposit is not exactly amount plus fee.",

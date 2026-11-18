@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { binToHex } from '@bitauth/libauth';
 import { ElectrumNetworkProvider } from '@solidcash/solidcash/network/electrum';
 import { Network, type NetworkProvider } from '@solidcash/solidcash';
-import { loadConfig, repoRoot } from '../src/config.js';
+import { loadConfig, repoRoot, type Role } from '../src/config.js';
 import { gateProvider } from '../src/budget/gate.js';
 import { readLedger, totalSpent } from '../src/budget/ledger.js';
 import { lockOf, satsAt, type PartyName, type Terms } from '../src/lifecycle/context.js';
@@ -18,8 +18,9 @@ import { addSteps, loadPending, readRecord, writeRecord } from '../src/lifecycle
 import { childPath, deriveKey } from '../src/wallet/keys.js';
 import { readEnvValue } from '../src/wallet/env-file.js';
 
-const ROLE_OF: Record<PartyName, 'seller' | 'buyer' | 'arbitrator' | 'feeRecipient'> = {
-  seller: 'seller', buyer: 'buyer', arbitrator: 'arbitrator', fees: 'feeRecipient' };
+const ROLE_OF: Record<PartyName, Role> = {
+  seller: 'seller', buyer: 'buyer', arbitrator: 'arbitrator', arbiterB: 'arbiterB', arbiterC: 'arbiterC',
+  fees: 'feeRecipient' };
 
 function utc(seconds: bigint): string {
   return new Date(Number(seconds) * 1000).toISOString().slice(0, 16).replace('T', ' ');

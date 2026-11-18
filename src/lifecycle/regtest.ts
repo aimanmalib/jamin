@@ -35,6 +35,7 @@ export async function regtestContext(terms: Terms): Promise<RegtestRun> {
   const parties = {
     seller: party(keyOf('seller'), provider), buyer: party(keyOf('buyer'), provider),
     arbitrator: party(keyOf('arbitrator'), provider), fees: party(keyOf('feeRecipient'), provider),
+    arbiterB: party(keyOf('arbiterB'), provider), arbiterC: party(keyOf('arbiterC'), provider),
   };
   const steps: Step[] = [];
   const fund = (p: PartyName, satoshis: bigint): Promise<Utxo> =>

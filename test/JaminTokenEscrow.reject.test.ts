@@ -1,6 +1,6 @@
 // CashToken escrow rejections and the seller-wins dispute: each rejection fails if the check it names is removed.
 import { describe, expect, it } from 'vitest';
-import { TERMS, Status, entry, lockOf, lockTimeNow, satsAt, statusOf, tokensAt, tooEarly } from './helpers/escrow.js';
+import { TERMS, Status, entry, lockOf, lockTimeNow, panelSigs, satsAt, statusOf, tokensAt, tooEarly } from './helpers/escrow.js';
 import { TOKEN, disputedToken, openToken, paidToken, tokenWorld, type TokenWorld, waitOut } from './helpers/flows.js';
 
 const AMOUNT = TOKEN.amount;
@@ -37,7 +37,7 @@ describe('JaminTokenEscrow (CashToken) rejections', () => {
       const w = await tokenWorld();
       const signer = w.roles[role];
       const sc = await disputed(w);
-      await expect(entry(sc.connect(signer), 'resolveDispute', w.sig(signer), w.category, true).send())
+      await expect(entry(sc.connect(signer), 'resolveDispute', w.ecdsa(signer), w.ecdsa(signer), w.category, true).send())
         .rejects.toThrow(/NotArbitrator/);
       expect(await statusOf(sc)).toBe(Status.Disputed);
     });
@@ -93,7 +93,7 @@ describe('JaminTokenEscrow (CashToken) rejections', () => {
     await entry(sc.connect(seller), 'openDispute', w.sig(seller), false).withValue(TERMS.disputeFee).send();
     const sellerSats = await satsAt(w.provider, seller.address);
     const feeSats = await satsAt(w.provider, fees.address);
-    await entry(sc.connect(arbitrator), 'resolveDispute', w.sig(arbitrator), w.category, false).send();
+    await entry(sc.connect(arbitrator), 'resolveDispute', ...panelSigs(w), w.category, false).send();
     expect(await statusOf(sc)).toBe(Status.Resolved);
     expect(await tokensAt(w.provider, seller.address, w.category)).toBe(AMOUNT + FEE);
     expect(await tokensAt(w.provider, fees.address, w.category)).toBe(0n);

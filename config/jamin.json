@@ -35,7 +35,9 @@
       "seller": 0,
       "buyer": 1,
       "arbitrator": 2,
-      "feeRecipient": 3
+      "feeRecipient": 3,
+      "arbiterB": 4,
+      "arbiterC": 5
     },
     "receiveIndex": 0
   },

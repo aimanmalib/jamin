@@ -63,6 +63,7 @@ export async function walletContext(o: WalletOptions): Promise<WalletRun> {
   const parties: Record<PartyName, Party> = {
     seller: party(o.keys.seller, provider), buyer: party(o.keys.buyer, provider),
     arbitrator: party(o.keys.arbitrator, provider), fees: party(o.keys.fees, provider),
+    arbiterB: party(o.keys.arbiterB, provider), arbiterC: party(o.keys.arbiterC, provider),
   };
   const { seller } = parties;
   const steps: Step[] = [];
