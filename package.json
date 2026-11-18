@@ -51,5 +51,37 @@
     "typescript-eslint": "8.73.0",
     "vite": "8.3.8",
     "vitest": "5.1.0"
+  },
+  "overrides": {
+    "@mem-cash/core": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@mem-cash/electrum": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@mem-cash/server": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@mem-cash/storage": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@mem-cash/types": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@mem-cash/validation": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@solidcash/solidc": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@solidcash/solidcash": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@solidcash/testing": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    },
+    "@solidcash/utils": {
+      "@bitauth/libauth": "file:vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz"
+    }
   }
 }

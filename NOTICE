@@ -36,3 +36,17 @@ The MIT License text that applies to the original:
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
   IN THE SOFTWARE.
+
+This project ships a third-party package in vendor/:
+
+@bitauth/libauth 3.1.0-next.8 (mainnet-pat fork)
+  Source:  https://github.com/mainnet-pat/libauth (fork of
+           https://github.com/bitauth/libauth)
+  Commit:  1cf4b432864b3a4ed9f33d1992355d7286f3dab8
+  File:    vendor/bitauth-libauth-3.1.0-next.8-mainnet-pat-1cf4b43.tgz
+  License: MIT, Copyright (c) Jason Dreyzehner (LICENSE inside the tarball)
+  Authors: Jason Dreyzehner, the libauth contributors and the fork's authors
+
+The tarball is the package as npm builds it from that commit, unmodified.
+SolidCash and mem-cash depend on it; vendor/README.md records how it was
+built and its sha512. The MIT License text above applies to it as well.
