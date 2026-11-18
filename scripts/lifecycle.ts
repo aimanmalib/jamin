@@ -3,6 +3,7 @@
 // docs/decisions/0015) run when named.
 //   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E,W,R]
 //   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E,W,R]   (test wallet, spending gate; see below)
+//   npx tsx scripts/lifecycle.ts --network mainnet --branches ''   (only records the block of steps still unmined)
 // Regtest needs a node: bash scripts/regtest-node.sh start (and stop afterwards). Mainnet: scripts/lifecycle-mainnet.ts.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { loadConfig, repoRoot } from '../src/config.js';
@@ -20,7 +21,7 @@ function arg(name: string, fallback: string): string {
 }
 
 const network = arg('network', '');
-const wanted = new Set(arg('branches', 'A,B,C,D,E').split(','));
+const wanted = new Set(arg('branches', 'A,B,C,D,E').split(',').filter((b) => b !== ''));
 if (network === 'mainnet') process.exit(await mainnetRun([...wanted]));
 if (network !== 'regtest') {
   console.error('usage: tsx scripts/lifecycle.ts --network regtest|mainnet [--branches A,B,C,D,E,W]');

@@ -42,8 +42,11 @@ export interface JaminConfig {
     partyFloatSats: number;
     /** Token units traded in branch B (PUSD has two decimals: 100 = 1.00 PUSD). */
     tokenAmount: number;
-    /** Funding floor of a run of branch B alone: it needs fees and container reserves, not the BCH escrows. */
-    tokenRunMinFundingSats: number;
+    /**
+     * Funding floors of branches that need less than `minFundingSats` (decisions 0012, 0016). A run whose branches
+     * all have one starts at the highest of them; a run with any other branch keeps `minFundingSats`.
+     */
+    branchFloorSats: Record<string, number>;
     /** Buying the branch B token from Cauldron pools (docs/decisions/0012). */
     tokenPurchase: {
       /** Active pool list of a token; {category} is replaced. The answer is checked against the chain. */

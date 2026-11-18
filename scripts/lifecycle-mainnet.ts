@@ -18,7 +18,7 @@ import { addSteps, loadPending, readRecord, unmined, withHeights, writeRecord } 
 import { childPath, deriveKey } from '../src/wallet/keys.js';
 import { readEnvValue } from '../src/wallet/env-file.js';
 
-const ROLE_OF: Record<PartyName, Role> = {
+export const ROLE_OF: Record<PartyName, Role> = {
   seller: 'seller', buyer: 'buyer', arbitrator: 'arbitrator', arbiterB: 'arbiterB', arbiterC: 'arbiterC',
   fees: 'feeRecipient' };
 
@@ -36,10 +36,27 @@ async function heightOf(electrum: ElectrumNetworkProvider, txid: string, tip: nu
   }
 }
 
-/** The seller balance a run must start with: a run of branch B alone pays fees and reserves only (decision 0012). */
-export function fundingFloor(m: Pick<JaminConfig['mainnet'], 'minFundingSats' | 'tokenRunMinFundingSats'>,
+/** Gives the steps an earlier run left in the mempool their block height. Broadcasts nothing. */
+async function recordHeights(electrum: ElectrumNetworkProvider, recordFile: string): Promise<number> {
+  const record = readRecord(recordFile);
+  const tip = await (electrum as unknown as NetworkProvider).getBlockHeight();
+  const heights = new Map<string, number>();
+  const waiting = unmined(record);
+  for (const txid of waiting) {
+    const h = await heightOf(electrum, txid, tip);
+    if (h !== undefined) heights.set(txid, h);
+  }
+  writeRecord(recordFile, withHeights(record, heights));
+  console.log(`tip ${tip}: ${heights.size} of ${waiting.length} unmined steps now in a block`);
+  return 0;
+}
+
+/** The seller balance a run must start with: branches with a floor of their own need less (decisions 0012, 0016). */
+export function fundingFloor(m: Pick<JaminConfig['mainnet'], 'minFundingSats' | 'branchFloorSats'>,
   wanted: string[]): number {
-  return wanted.length > 0 && wanted.every((b) => b === 'B') ? m.tokenRunMinFundingSats : m.minFundingSats;
+  const own = wanted.map((b) => m.branchFloorSats[b]);
+  if (wanted.length === 0 || own.some((f) => f === undefined)) return m.minFundingSats;
+  return Math.max(...(own as number[]));
 }
 
 export async function mainnetRun(wanted: string[]): Promise<number> {
@@ -60,6 +77,7 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
   const raw = electrum as unknown as NetworkProvider;
   await electrum.connect();
   try {
+    if (wanted.length === 0) return await recordHeights(electrum, join(repoRoot, cfg.mainnetExamples));
     const held = await satsAt(raw, derived.seller.address);
     console.log(`seller ${derived.seller.address} holds ${held} sat (${server.hostname})`);
     const floor = fundingFloor(cfg.mainnet, wanted);
@@ -93,15 +111,9 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
       console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
     }
     const recordFile = join(repoRoot, cfg.mainnetExamples);
-    const record = addSteps(readRecord(recordFile), measured, ctx.refused);
+    writeRecord(recordFile, addSteps(readRecord(recordFile), measured, ctx.refused));
     for (const r of ctx.refused) console.log(`${r.branch} ${r.step} by ${r.by} REFUSED ${r.rawTxHash}: ${r.serverError}`);
-    // Steps an earlier run left in the mempool get their block height now.
-    const heights = new Map<string, number>();
-    for (const txid of unmined(record)) {
-      const h = await heightOf(electrum, txid, tip);
-      if (h !== undefined) heights.set(txid, h);
-    }
-    writeRecord(recordFile, withHeights(record, heights));
+    await recordHeights(electrum, recordFile);
     const spent = totalSpent(readLedger(ledgerFile));
     const at = new Date().toISOString();
     const dir = join(repoRoot, cfg.mainnet.outputDir);

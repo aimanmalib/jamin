@@ -1,11 +1,13 @@
 // Test wallet tool. Prints public addresses, balances and txids only; never the phrase or a private key.
 //   npm run wallet -- init      create .env with a new phrase (0600) when none exists
 //   npm run wallet -- address   print the receive address (and role addresses) with the balance
+//   npm run wallet -- gather    move spare plain coins of the other roles to the seller, behind the spending gate
 import { join } from 'node:path';
 import { loadConfig, repoRoot, type Role } from '../src/config.js';
 import { childPath, deriveKey, newMnemonic } from '../src/wallet/keys.js';
 import { readEnvValue, writeEnvValueOnce } from '../src/wallet/env-file.js';
 import { fetchBalance } from '../src/wallet/electrum.js';
+import { gatherToSeller } from './wallet-gather.js';
 
 const config = loadConfig();
 const envFile = join(repoRoot, config.wallet.envFile);
@@ -41,7 +43,11 @@ async function main(command: string | undefined): Promise<void> {
     console.log(`balance confirmed=${balance.confirmed} unconfirmed=${balance.unconfirmed} sat (${config.electrum.mainnet.hostname})`);
     return;
   }
-  throw new Error('usage: npm run wallet -- init | address [--offline]');
+  if (command === 'gather') {
+    process.exitCode = await gatherToSeller(mnemonic());
+    return;
+  }
+  throw new Error('usage: npm run wallet -- init | address [--offline] | gather');
 }
 
 main(process.argv[2]).catch((error: unknown) => {

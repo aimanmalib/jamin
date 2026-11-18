@@ -53,8 +53,8 @@ test('lifecycle: lists every mainnet escrow with its txids, and the regtest run'
 });
 
 test('lifecycle: calls the network refused show the rejection text verbatim, in both languages', async ({ page }) => {
-  const refused = [...(regtest.refused?.steps ?? []), ...mainnet.escrows.flatMap((e) => e.steps)]
-    .filter((s) => 'refused' in s && s.refused);
+  const steps: object[] = [...(regtest.refused?.steps ?? []), ...mainnet.escrows.flatMap((e): object[] => [...e.steps])];
+  const refused = steps.filter((s) => 'refused' in s && s.refused === true);
   expect(refused.length).toBeGreaterThanOrEqual(2);
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto('/#/lifecycle');

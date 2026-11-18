@@ -57,7 +57,10 @@
     "genesisCoinSats": 50000,
     "partyFloatSats": 40000,
     "tokenAmount": 10,
-    "tokenRunMinFundingSats": 40000,
+    "branchFloorSats": {
+      "B": 40000,
+      "R": 60000
+    },
     "tokenPurchase": {
       "indexerUrl": "https://indexer.cauldron.quest/cauldron/pool/active?token={category}",
       "maxUnits": 200,
