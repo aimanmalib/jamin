@@ -4,7 +4,7 @@
 // Cashonize runs in Playwright with its own phrase (`mainnet.thirdPartyWallet.mnemonicEnv` in .env, made here once
 // and never printed), and connects to the page over WizardConnect. The project's test wallet funds it once through
 // the spending gate and its buyer key marks the trade paid; the page builds and broadcasts the seller's steps.
-// `--dry` stops after the role key request (no funds move). Prints addresses, txids and file names only; the pairing
+// Screenshots go to $JAMIN_SHOTS_DIR, else to mainnet.outputDir. `--dry` stops after the role key request (no funds move). Prints addresses, txids and file names only; the pairing
 // link and the phrase are never printed, and screenshots show only Cashonize's sign dialog and the page after it.
 import { createServer } from 'node:http';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -34,7 +34,7 @@ const PORT = Number(arg('--port') ?? 9052);
 const DRY = process.argv.includes('--dry');
 const RESUME = arg('--trade') !== undefined ? { trade: arg('--trade') ?? '', escrow: arg('--escrow') ?? '',
   created: arg('--created') ?? '', funded: arg('--funded') ?? '', paid: arg('--paid') } : undefined;
-const SHOTS = process.env.AUTOPILOT_BUKTI_DIR ?? join(repoRoot, cfg.mainnet.outputDir);
+const SHOTS = process.env.JAMIN_SHOTS_DIR ?? join(repoRoot, cfg.mainnet.outputDir);
 const ENV = join(repoRoot, cfg.wallet.envFile);
 const log = (m: string): void => { console.log(`[${new Date().toISOString().slice(11, 19)}] ${m}`); };
 if (!SPA) { console.error('usage: tsx scripts/third-party-wallet.ts --cashonize <dir> [--site url] [--dry]'); process.exit(2); }
