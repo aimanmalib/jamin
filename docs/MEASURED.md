@@ -315,3 +315,69 @@ the SDK broadcast through `sendPreparedTransaction` (F9).
   `bitcoincash:qqjjt27z8wc44lkdd9x8jm3e2az8a5xleu92s5nusl` holds 382,954 sats confirmed, 0 unconfirmed. This is below
   `mainnet.minFundingSats` (1,000,000) in `config/jamin.json`, so `npm run lifecycle -- --network mainnet` still
   broadcasts nothing. No mainnet contract transaction has been sent.
+
+## Mainnet
+
+Measured 2026-11-18 on Bitcoin Cash mainnet through `bch.imaginary.cash`, with the contracts that have the 2-of-3
+arbitration panel (decision 0008, the same build as the regtest run above). Seller, buyer, the three panel members and
+the fee recipient are HD paths of the project's test wallet, so every payout went back to the wallet. Commands:
+
+```
+npm run lifecycle -- --network mainnet --branches A,C,D,E,W   # 13:29 UTC
+npm run lifecycle -- --network mainnet --branches D           # 14:16 UTC, after the waiting time
+```
+
+The first run sent 19 transactions: branches A (release), C (buyer cancel), E (dispute, decided by panel members A
+and B signing together) and W (the seller trades from a wallet: the protocol test wallet signs the seller's inputs
+over `bch_signTransaction`, decision 0009) in full, and opened and funded the D escrow. Branch D waited for its
+seller-cancel time (`escrow.sellerWaitingTimeSeconds`, 3,600 s, against the median time past) and exited 75 with
+"retry after 2026-11-18 14:15 UTC". The second run attached to the D escrow from its address and cancelled it. Every
+step passed the run's own checks (payout amounts and final status). Raw runs: `state/mainnet/run-*.json` (not tracked);
+the record the web app reads: `examples/mainnet.json`.
+
+Before the run, `mainnet.minFundingSats` was lowered from 1,000,000 to 300,000 sats (decision 0011); the budget of
+2,000,000 sats is unchanged. The spending gate's ledger counted 238,950 sats taken out of the wallet (it counts
+deposits into escrows and does not credit payouts back, so it overstates).
+
+| Branch | Escrow address |
+| --- | --- |
+| A | `bitcoincash:p0rzhffazzlqrwavmdx3xz3vg8j83zwa3h8jr0y9dknxldnqv5uvsqkjn7f9p` |
+| C | `bitcoincash:pv5u2cj7qfs23x0zv64g8re5a2glfz93eu53aaae9v88hr9uz9mhzp606egex` |
+| D | `bitcoincash:pvflen00umg0ufq4pkcncam0rfz24m387epgfhgzch9m3dpx383hupa2yldy8` |
+| E | `bitcoincash:pd0htct8fexeqr9raun4zljmauspwxs8f38cazxwjv55nchpx9gg5nf6cncfv` |
+| W | `bitcoincash:pw3qm4hjgz5xgp0eke5sq7mf2rjdrye95kkqxjws7mklr2uwfqtf5g0cmgl8w` |
+
+| Branch | Step | Txid | Size (B) | Miner fee (sat) | Block | Signed by the wallet |
+| --- | --- | --- | --- | --- | --- | --- |
+| A | createEscrow | `036a658da39d983d739594cdc7dee42a14b0faf21cdb8c23f499fd9534ebfde8` | 758 | 1,758 | 977889 |  |
+| A | fund | `96f2b3fc8d4a73a9cfebeda07df4fc32d89b8b49b2a825a82f5e1aae8d98d206` | 6,872 | 7,062 | 977889 |  |
+| A | markAsPaid | `6c1d907e6ae0a94dd55b8d1d3f7840a2092e7909815af273f4052945cd52ea92` | 6,168 | 6,358 | 977889 |  |
+| A | release | `2a89adc5b28aa0ffb1bfd43de212a24d0800d2c4bfbc480328c8f03609406311` | 7,225 | 7,415 | 977889 |  |
+| C | createEscrow | `786a758bdad28ecd3e1f75be31445cb658f9b0b5dd491c537ee85ca63c238362` | 758 | 1,758 | 977889 |  |
+| C | fund | `1c063be47cc40144463424de8880389e629cbbd112b5ae844674bdf2c23a57c1` | 6,872 | 7,062 | 977889 |  |
+| C | markAsPaid | `d2bd1c158d8ddefca2d4954ef32bf4d5cb91b41dba9dc73df8d673a66d3973fe` | 6,168 | 6,358 | 977889 |  |
+| C | buyerCancel | `55aee198c4e943547f40a24e346915973d1a98dbc985fcbcbf0466550d78720f` | 7,047 | 7,237 | 977889 |  |
+| D | createEscrow | `f7dd726c5456786bf48b667b636d2f7f53038fed578222ff3befa014d87bf619` | 758 | 1,758 | 977889 |  |
+| D | fund | `9847ee3724f3ab166d4f04ee111b4ca5c48d1d03ebead3ff61b57b7bce0e0c60` | 6,872 | 7,062 | 977889 |  |
+| D | sellerCancel | `be0141d852260df7e55106f0590260c6f2780f134bc2c5fccfea77892557db5e` | 7,047 | 7,237 | mempool |  |
+| E | createEscrow | `544af7b142238b2115792ad6bf6bae6d41d3f4b04df331bf9bb64229639e85d9` | 758 | 1,758 | 977889 |  |
+| E | fund | `309372d30678f74f73e9e55708ca1595f01f5c15f3508ba52006ce8bb10de6b6` | 6,872 | 7,062 | 977889 |  |
+| E | markAsPaid | `8eac9c8bcb988c72478865f33beedc098c5658ecb7d218d9d71e1d2c6b515f67` | 6,168 | 6,358 | 977889 |  |
+| E | openDispute | `28cbb8cc839fcc3726dc84adfc58eec527cb3fac5d3540582cf16e1840d19636` | 7,236 | 7,426 | 977889 |  |
+| E | resolveDispute | `48088fcbef115f0e074b7e642b6f664476ac091e0f88cfa9c140a8a7bdaad1d4` | 7,664 | 7,855 | 977889 |  |
+| W | createEscrow | `1699538391ba4dfc51ba49c1d2e3a35d2f807bc6195fee7c888d0318b1cc3a16` | 758 | 1,758 | 977889 | yes |
+| W | fund | `c205bd65fecfe28f48446be5b65c25039dcdb4762225099ca655b96109b71eae` | 6,872 | 7,055 | 977889 | yes |
+| W | markAsPaid | `95814a33ee37ac5d997bcb98e498e36aec129b1ee485a270f128d64e1c61875d` | 6,168 | 6,358 | 977889 |  |
+| W | release | `2d96b99c5bab24fe2d8a246b21d260b4cd27d1ce21cb73607ba952f01a386f8e` | 7,225 | 7,408 | 977889 | yes |
+
+20 transactions; miner fees for them 114,103 sats, about 1.03 sat per byte, the same per call as on regtest. Three
+txids were opened on blockchair.com (`036a658d...` createEscrow A, `48088fcb...` resolveDispute E, `2d96b99c...`
+release W): each in block 977889 with the size and fee in the table.
+
+Where the wallet's coins went, measured at 14:20 UTC through the same Electrum server: the six wallet addresses held
+208,582 sats, down from 382,954. The difference of 174,372 sats is the 114,103 sats of fees above, 3,489 sats of fees
+for the wallet's own payments before the branches (topping up the buyer and the arbitrator, the coin each deployment
+spends), and 56,780 sats left in 50 coins at 40 contract addresses. Each deployment opens several token container coins,
+most of 1,200 sats, besides the satoshi reserve, and each call adds one (for example createEscrow A:
+seven contract outputs; fund and release one new 1,200 sat coin each). The run has no call that spends them, so on
+mainnet each escrow cost about 11,356 sats of locked coins on top of its miner fees.

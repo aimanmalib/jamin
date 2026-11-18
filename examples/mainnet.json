@@ -1,4 +1,182 @@
 {
   "network": "mainnet",
-  "escrows": []
+  "escrows": [
+    {
+      "branch": "A",
+      "asset": "BCH",
+      "address": "bitcoincash:p0rzhffazzlqrwavmdx3xz3vg8j83zwa3h8jr0y9dknxldnqv5uvsqkjn7f9p",
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "036a658da39d983d739594cdc7dee42a14b0faf21cdb8c23f499fd9534ebfde8",
+          "txBytes": 758,
+          "feeSats": 1758,
+          "height": 977889
+        },
+        {
+          "step": "fund",
+          "txid": "96f2b3fc8d4a73a9cfebeda07df4fc32d89b8b49b2a825a82f5e1aae8d98d206",
+          "txBytes": 6872,
+          "feeSats": 7062,
+          "height": 977889
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "6c1d907e6ae0a94dd55b8d1d3f7840a2092e7909815af273f4052945cd52ea92",
+          "txBytes": 6168,
+          "feeSats": 6358,
+          "height": 977889
+        },
+        {
+          "step": "release",
+          "txid": "2a89adc5b28aa0ffb1bfd43de212a24d0800d2c4bfbc480328c8f03609406311",
+          "txBytes": 7225,
+          "feeSats": 7415,
+          "height": 977889
+        }
+      ]
+    },
+    {
+      "branch": "C",
+      "asset": "BCH",
+      "address": "bitcoincash:pv5u2cj7qfs23x0zv64g8re5a2glfz93eu53aaae9v88hr9uz9mhzp606egex",
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "786a758bdad28ecd3e1f75be31445cb658f9b0b5dd491c537ee85ca63c238362",
+          "txBytes": 758,
+          "feeSats": 1758,
+          "height": 977889
+        },
+        {
+          "step": "fund",
+          "txid": "1c063be47cc40144463424de8880389e629cbbd112b5ae844674bdf2c23a57c1",
+          "txBytes": 6872,
+          "feeSats": 7062,
+          "height": 977889
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "d2bd1c158d8ddefca2d4954ef32bf4d5cb91b41dba9dc73df8d673a66d3973fe",
+          "txBytes": 6168,
+          "feeSats": 6358,
+          "height": 977889
+        },
+        {
+          "step": "buyerCancel",
+          "txid": "55aee198c4e943547f40a24e346915973d1a98dbc985fcbcbf0466550d78720f",
+          "txBytes": 7047,
+          "feeSats": 7237,
+          "height": 977889
+        }
+      ]
+    },
+    {
+      "branch": "D",
+      "asset": "BCH",
+      "address": "bitcoincash:pvflen00umg0ufq4pkcncam0rfz24m387epgfhgzch9m3dpx383hupa2yldy8",
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "f7dd726c5456786bf48b667b636d2f7f53038fed578222ff3befa014d87bf619",
+          "txBytes": 758,
+          "feeSats": 1758,
+          "height": 977889
+        },
+        {
+          "step": "fund",
+          "txid": "9847ee3724f3ab166d4f04ee111b4ca5c48d1d03ebead3ff61b57b7bce0e0c60",
+          "txBytes": 6872,
+          "feeSats": 7062,
+          "height": 977889
+        },
+        {
+          "step": "sellerCancel",
+          "txid": "be0141d852260df7e55106f0590260c6f2780f134bc2c5fccfea77892557db5e",
+          "txBytes": 7047,
+          "feeSats": 7237
+        }
+      ]
+    },
+    {
+      "branch": "E",
+      "asset": "BCH",
+      "address": "bitcoincash:pd0htct8fexeqr9raun4zljmauspwxs8f38cazxwjv55nchpx9gg5nf6cncfv",
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "544af7b142238b2115792ad6bf6bae6d41d3f4b04df331bf9bb64229639e85d9",
+          "txBytes": 758,
+          "feeSats": 1758,
+          "height": 977889
+        },
+        {
+          "step": "fund",
+          "txid": "309372d30678f74f73e9e55708ca1595f01f5c15f3508ba52006ce8bb10de6b6",
+          "txBytes": 6872,
+          "feeSats": 7062,
+          "height": 977889
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "8eac9c8bcb988c72478865f33beedc098c5658ecb7d218d9d71e1d2c6b515f67",
+          "txBytes": 6168,
+          "feeSats": 6358,
+          "height": 977889
+        },
+        {
+          "step": "openDispute",
+          "txid": "28cbb8cc839fcc3726dc84adfc58eec527cb3fac5d3540582cf16e1840d19636",
+          "txBytes": 7236,
+          "feeSats": 7426,
+          "height": 977889
+        },
+        {
+          "step": "resolveDispute",
+          "txid": "48088fcbef115f0e074b7e642b6f664476ac091e0f88cfa9c140a8a7bdaad1d4",
+          "txBytes": 7664,
+          "feeSats": 7855,
+          "height": 977889
+        }
+      ]
+    },
+    {
+      "branch": "W",
+      "asset": "BCH",
+      "address": "bitcoincash:pw3qm4hjgz5xgp0eke5sq7mf2rjdrye95kkqxjws7mklr2uwfqtf5g0cmgl8w",
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "1699538391ba4dfc51ba49c1d2e3a35d2f807bc6195fee7c888d0318b1cc3a16",
+          "signer": "wallet",
+          "txBytes": 758,
+          "feeSats": 1758,
+          "height": 977889
+        },
+        {
+          "step": "fund",
+          "txid": "c205bd65fecfe28f48446be5b65c25039dcdb4762225099ca655b96109b71eae",
+          "signer": "wallet",
+          "txBytes": 6872,
+          "feeSats": 7055,
+          "height": 977889
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "95814a33ee37ac5d997bcb98e498e36aec129b1ee485a270f128d64e1c61875d",
+          "txBytes": 6168,
+          "feeSats": 6358,
+          "height": 977889
+        },
+        {
+          "step": "release",
+          "txid": "2d96b99c5bab24fe2d8a246b21d260b4cd27d1ce21cb73607ba952f01a386f8e",
+          "signer": "wallet",
+          "txBytes": 7225,
+          "feeSats": 7408,
+          "height": 977889
+        }
+      ]
+    }
+  ]
 }

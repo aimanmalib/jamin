@@ -8,11 +8,16 @@ const regtest = JSON.parse(readFileSync('examples/regtest.json', 'utf8')) as {
   transactions: Array<{ branch: string; step: string; txBytes: number; largestUnlockBytes: number; feeSats?: number }>;
 };
 
+const mainnet = JSON.parse(readFileSync('examples/mainnet.json', 'utf8')) as {
+  escrows: Array<{ branch: string; steps: Array<{ step: string; feeSats?: number }> }>;
+};
+
 const num = (s: string): number => Number(s.replace(/,/g, ''));
 const section = readme.slice(readme.indexOf('## Size and cost'), readme.indexOf('## Upstream contributions'));
-const rows = [...section.matchAll(/^\| (Jamin\w+) \| `(\w+)` \| (\w+) \| ([\d,]+) \| ([\d,]+) \| ([^|]+) \|/gm)]
-  .map(([, contract = '', step = '', branch = '', unlock = '', tx = '', fee = '']) =>
-    ({ contract, step, branch, unlock: num(unlock), tx: num(tx), fee: fee.trim() }));
+const rows = [...section.matchAll(
+  /^\| (Jamin\w+) \| `(\w+)` \| (\w+) \| ([\d,]+) \| ([\d,]+) \| ([^|]+) \| ([^|]+) \|/gm)]
+  .map(([, contract = '', step = '', branch = '', unlock = '', tx = '', fee = '', mainnetFee = '']) =>
+    ({ contract, step, branch, unlock: num(unlock), tx: num(tx), fee: fee.trim(), mainnetFee: mainnetFee.trim() }));
 
 describe('README size and cost', () => {
   it('lists every function of both contracts that was measured', () => {
@@ -33,6 +38,15 @@ describe('README size and cost', () => {
       const line = `| ${r.contract} | ${r.step} | ${r.tx.toLocaleString('en')} |`;
       expect(sizes, line).toContain(line);
       expect(sizes).toContain(`${r.unlock.toLocaleString('en')} / 10,000`);
+    }
+  });
+
+  it('takes the mainnet fee of each BCH escrow call from examples/mainnet.json', () => {
+    for (const r of rows) {
+      const step = r.contract === 'JaminEscrow'
+        ? mainnet.escrows.find((e) => e.branch === r.branch)?.steps.find((s) => s.step === r.step) : undefined;
+      if (step?.feeSats === undefined) expect(r.mainnetFee, `${r.contract} ${r.step}`).toBe('not run on mainnet');
+      else expect(num(r.mainnetFee), `${r.contract} ${r.step}`).toBe(step.feeSats);
     }
   });
 });

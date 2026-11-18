@@ -26,7 +26,9 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 - **Trading from a wallet:** a seller whose wallet signs over the BCH WalletConnect methods created, funded and
   released an escrow on the same regtest node, every seller input signed by the wallet (branch W, 4 transactions,
   `docs/MEASURED.md`, "Wallet signing"; `docs/decisions/0009-wallet-connection.md`).
-- **Mainnet:** not run yet (see "Known limits").
+- **Mainnet:** branches A, C, D and E, and branch W from a seller wallet, ran on Bitcoin Cash mainnet from the
+  project's test wallet: 20 transactions, the dispute decided by two of the three panel members (`docs/MEASURED.md`,
+  "Mainnet"; `examples/mainnet.json`; the Lifecycle tab links each txid to an explorer).
 - **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Upstream:** three fixes found while building this are open as pull requests to SolidCash (#8, #9, #10;
   "Upstream contributions").
@@ -106,7 +108,7 @@ keeps its references honest.
 | Size and miner fee of each call on regtest | "Size and cost" below, `examples/regtest.json` |
 | Five branches on stock BCHN 29.0.0 regtest, 20 txids | `docs/MEASURED.md`, `examples/regtest.json` |
 | Web app end-to-end tests on Chromium and WebKit (iPhone 13), and on the public URL | `e2e/`, `docs/MEASURED.md` |
-| Mainnet run | not yet, see "Known limits" |
+| Mainnet run: branches A, C, D, E and W, 20 txids | `docs/MEASURED.md` "Mainnet", `examples/mainnet.json` |
 
 ## Size and cost
 
@@ -119,24 +121,25 @@ token branch does not open a dispute. Sources: `docs/MEASURED.md`, sections "Reg
 
 | Contract | Function | Branch | Largest unlocking script (B) | Transaction (B) | Miner fee, regtest (sat) | Miner fee, mainnet (sat) |
 | --- | --- | --- | --- | --- | --- | --- |
-| JaminEscrow | `createEscrow` | A | 100 | 758 | 1,758 | not run yet |
-| JaminEscrow | `fund` | A | 5,418 | 6,872 | 7,062 | not run yet |
-| JaminEscrow | `markAsPaid` | A | 5,418 | 6,168 | 6,358 | not run yet |
-| JaminEscrow | `release` | A | 5,418 | 7,225 | 7,415 | not run yet |
-| JaminEscrow | `buyerCancel` | C | 5,418 | 7,047 | 7,237 | not run yet |
-| JaminEscrow | `sellerCancel` | D | 5,418 | 7,047 | 7,237 | not run yet |
-| JaminEscrow | `openDispute` | E | 5,419 | 7,236 | 7,426 | not run yet |
-| JaminEscrow | `resolveDispute` | E | 5,499 | 7,666 | 7,855 | not run yet |
-| JaminTokenEscrow | `createEscrow` | B | 100 | 754 | 1,754 | not run yet |
-| JaminTokenEscrow | `deposit` | B | 6,888 | 8,420 | 8,610 | not run yet |
-| JaminTokenEscrow | `markAsPaid` | B | 6,888 | 7,638 | 7,828 | not run yet |
-| JaminTokenEscrow | `release` | B | 6,888 | 8,748 | 8,938 | not run yet |
-| JaminTokenEscrow | `openDispute` | mock | 6,856 | 8,671 | not run on regtest | not run yet |
-| JaminTokenEscrow | `resolveDispute` | mock | 6,967 | 9,840 | not run on regtest | not run yet |
+| JaminEscrow | `createEscrow` | A | 100 | 758 | 1,758 | 1,758 |
+| JaminEscrow | `fund` | A | 5,418 | 6,872 | 7,062 | 7,062 |
+| JaminEscrow | `markAsPaid` | A | 5,418 | 6,168 | 6,358 | 6,358 |
+| JaminEscrow | `release` | A | 5,418 | 7,225 | 7,415 | 7,415 |
+| JaminEscrow | `buyerCancel` | C | 5,418 | 7,047 | 7,237 | 7,237 |
+| JaminEscrow | `sellerCancel` | D | 5,418 | 7,047 | 7,237 | 7,237 |
+| JaminEscrow | `openDispute` | E | 5,419 | 7,236 | 7,426 | 7,426 |
+| JaminEscrow | `resolveDispute` | E | 5,499 | 7,666 | 7,855 | 7,855 |
+| JaminTokenEscrow | `createEscrow` | B | 100 | 754 | 1,754 | not run on mainnet |
+| JaminTokenEscrow | `deposit` | B | 6,888 | 8,420 | 8,610 | not run on mainnet |
+| JaminTokenEscrow | `markAsPaid` | B | 6,888 | 7,638 | 7,828 | not run on mainnet |
+| JaminTokenEscrow | `release` | B | 6,888 | 8,748 | 8,938 | not run on mainnet |
+| JaminTokenEscrow | `openDispute` | mock | 6,856 | 8,671 | not run on regtest | not run on mainnet |
+| JaminTokenEscrow | `resolveDispute` | mock | 6,967 | 9,840 | not run on regtest | not run on mainnet |
 
 The token escrow's `buyerCancel` and `sellerCancel` have tests but no size measurement yet. A contract call pays
 about 1.03 sat per byte. `createEscrow` pays 1,000 sats more than its size, a margin the SDK's
-deployment adds when no fee is given. Fees on mainnet are added here after the mainnet run (see "Known limits").
+deployment adds when no fee is given. The mainnet column is the same call in the mainnet run (`examples/mainnet.json`):
+the token escrow has not run on mainnet (see "Known limits").
 Sizes vary by a few bytes between runs (signature length) and by the number of coins the caller's wallet adds.
 
 ## Upstream contributions
@@ -156,12 +159,12 @@ The reasons the other seven are not are in the same file.
 
 ## Known limits
 
-- **Mainnet:** the lifecycle has not been run on mainnet yet: the test wallet is not funded. The mainnet run
-  (`npm run lifecycle -- --network mainnet`, `docs/decisions/0007-mainnet-run.md`) is tested on the mock network
-  behind the spending gate. The same branches ran on a stock BCHN regtest node with mainnet relay rules
-  (`docs/MEASURED.md`).
-- **Reserve left behind:** a single satoshi container cannot be emptied by a call, so each escrow keeps the reserve
-  it was opened with (1,000 sats). A token escrow also keeps one base unit (0.01 PUSD) and its token container's
+- **Mainnet:** the BCH escrow ran on mainnet (branches A, C, D, E, W). The token escrow (branch B, PUSD) has run on
+  regtest and the mock network only; the test wallet holds no PUSD.
+- **Coins left behind:** a single satoshi container cannot be emptied by a call, so each escrow keeps the reserve
+  it was opened with (1,000 sats). The contract's state lives in token container coins that stay on chain as well:
+  on mainnet each escrow left about 11,356 sats in such coins on top of its miner fees (`docs/MEASURED.md`,
+  "Mainnet"). A token escrow also keeps one base unit (0.01 PUSD) and its token container's
   satoshis.
 - **No release or cancel during a dispute:** once a dispute is open only the arbitration panel settles it. The original
   OpenPeer escrow still allowed release and buyer cancel then.
