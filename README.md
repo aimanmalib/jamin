@@ -186,6 +186,11 @@ The reasons the other ten are not are in the same file.
   the closing transaction is about 7,000 bytes, under the relay minimum of 1 sat per byte; and at that size a close
   would cost more than the about 5,800 sats it returns (SolidCash findings F11 to F13). New escrows therefore also
   keep their master, state and container coins.
+- **Contract frozen at the mainnet build:** a refund anyone may trigger for an escrow the buyer never marked as paid,
+  and a payment reference the buyer signs for `checkDataSig`, were considered and not added, so that the contracts
+  stay the builds every mainnet escrow ran (`docs/decisions/0018-contract-frozen-at-the-mainnet-build.md`). The
+  refund would have added 249 bytes to every BCH escrow call and 429 to every token escrow call; a seller who stays
+  offline leaves an unpaid escrow locked until they sign a `sellerCancel`.
 - **No release or cancel during a dispute:** once a dispute is open only the arbitration panel settles it. The original
   OpenPeer escrow still allowed release and buyer cancel then.
 - **Absolute waiting time:** the seller passes `cancelAfter` as a timestamp, because a SolidCash constructor cannot
