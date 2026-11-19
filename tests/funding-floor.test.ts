@@ -23,6 +23,9 @@ describe('mainnet funding floor', () => {
     for (const f of Object.values(cfg.branchFloorSats)) expect(f).toBeLessThan(cfg.minFundingSats);
     // Branch R pays its genesis coin first, then the escrow amount and reserve (src/lifecycle/mainnet.ts).
     expect(cfg.branchFloorSats.R).toBeGreaterThan(cfg.genesisCoinSats + 3_000);
+    // Branch T tops up the buyer, then pays its own genesis coin (decision 0019, branchTerms).
+    const t = cfg.branchTerms.T;
+    expect(cfg.branchFloorSats.T).toBeGreaterThan((t?.genesisCoinSats ?? 0) + (t?.partyFloatSats ?? 0) + 3_000);
     expect(cfg.tokenPurchase.maxUnits).toBeLessThanOrEqual(200);
     expect(cfg.tokenPurchase.maxSupplySats).toBeLessThan(cfg.budgetSats);
     expect(cfg.tokenPurchase.indexerUrl).toContain('{category}');

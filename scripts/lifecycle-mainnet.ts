@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { binToHex } from '@bitauth/libauth';
 import { ElectrumNetworkProvider } from '@solidcash/solidcash/network/electrum';
 import { Network, type NetworkProvider } from '@solidcash/solidcash';
-import { loadConfig, repoRoot, type JaminConfig, type Role } from '../src/config.js';
+import { loadConfig, repoRoot, type BranchTerms, type JaminConfig, type Role } from '../src/config.js';
 import { gateProvider } from '../src/budget/gate.js';
 import { readLedger, totalSpent } from '../src/budget/ledger.js';
 import { lockOf, satsAt, type PartyName, type Terms } from '../src/lifecycle/context.js';
@@ -16,6 +16,7 @@ import { walletContext } from '../src/lifecycle/mainnet.js';
 import { runBranches } from '../src/lifecycle/mainnet-run.js';
 import { addSteps, loadPending, readRecord, unmined, withHeights, writeRecord } from '../src/lifecycle/record.js';
 import { childPath, deriveKey } from '../src/wallet/keys.js';
+import { relayProcess } from './relay-process.js';
 import { readEnvValue } from '../src/wallet/env-file.js';
 
 export const ROLE_OF: Record<PartyName, Role> = {
@@ -59,7 +60,16 @@ export function fundingFloor(m: Pick<JaminConfig['mainnet'], 'minFundingSats' | 
   return Math.max(...(own as number[]));
 }
 
-export async function mainnetRun(wanted: string[]): Promise<number> {
+/** The run settings: a run of exactly one branch with `branchTerms` takes its replacements, any other the defaults. */
+export function runSettings(m: Pick<JaminConfig['mainnet'], 'tokenAmount' | 'genesisCoinSats' | 'partyFloatSats'
+  | 'branchTerms'>, wanted: string[]): Required<BranchTerms> {
+  const own = wanted.length === 1 ? m.branchTerms[wanted[0] as string] : undefined;
+  return { tokenAmount: own?.tokenAmount ?? m.tokenAmount, genesisCoinSats: own?.genesisCoinSats ?? m.genesisCoinSats,
+    partyFloatSats: own?.partyFloatSats ?? m.partyFloatSats, floatParties: own?.floatParties ?? ['buyer', 'arbitrator'] };
+}
+
+/** `relay`: a step written to files and broadcast by scripts/relay.ts as its own process (branch T: buyerCancel). */
+export async function mainnetRun(wanted: string[], relay = ''): Promise<number> {
   const cfg = loadConfig();
   const server = cfg.electrum.mainnet;
   if (!cfg.mainnet.broadcastHosts.includes(server.hostname)) {
@@ -90,16 +100,19 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
       ledgerFile, budgetSats: cfg.mainnet.budgetSats, note: 'lifecycle mainnet',
       walletLocks: new Set(Object.values(derived).map((k) => binToHex(lockOf(k.address)))),
     });
+    const set = runSettings(cfg.mainnet, wanted);
     const terms: Terms = {
-      amount: BigInt(cfg.mainnet.escrowAmountSats), tokenAmount: BigInt(cfg.mainnet.tokenAmount),
+      amount: BigInt(cfg.mainnet.escrowAmountSats), tokenAmount: BigInt(set.tokenAmount),
       feeBps: BigInt(cfg.escrow.feeBps), disputeFee: BigInt(cfg.escrow.disputeFeeSats),
       waitSeconds: BigInt(cfg.escrow.sellerWaitingTimeSeconds), reserve: BigInt(cfg.escrow.containerReserveSats),
     };
     const keys = Object.fromEntries(Object.entries(derived).map(([p, k]) => [p, k.privateKey])) as
       Record<PartyName, Uint8Array>;
     const { ctx, steps } = await walletContext({ network: 'mainnet', provider, keys, terms,
-      tokenCategory: cfg.tokens.pusd.category, genesisCoinSats: BigInt(cfg.mainnet.genesisCoinSats),
-      partyFloatSats: BigInt(cfg.mainnet.partyFloatSats), feeRate: cfg.mainnet.feeRateSatsPerByte });
+      tokenCategory: cfg.tokens.pusd.category, genesisCoinSats: BigInt(set.genesisCoinSats),
+      partyFloatSats: BigInt(set.partyFloatSats), floatParties: set.floatParties, feeRate: cfg.mainnet.feeRateSatsPerByte });
+    if (relay !== '') ctx.relayer = relayProcess(join(repoRoot, cfg.mainnet.outputDir,
+      `relay-${new Date().toISOString().replace(/[:.]/g, '-')}`), 'mainnet');
     const result = await runBranches(ctx, steps, wanted, join(repoRoot, cfg.mainnet.pendingFile));
 
     const tip = await raw.getBlockHeight();
@@ -108,7 +121,7 @@ export async function mainnetRun(wanted: string[]): Promise<number> {
       const m = await measure(raw, s);
       const height = await heightOf(electrum, s.txid, tip);
       measured.push({ ...m, ...(height === undefined ? {} : { height }) });
-      console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
+      console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid}${s.relayed ? ' relayed' : ''} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
     }
     const recordFile = join(repoRoot, cfg.mainnetExamples);
     writeRecord(recordFile, addSteps(readRecord(recordFile), measured, ctx.refused));

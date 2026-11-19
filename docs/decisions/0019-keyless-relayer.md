@@ -40,3 +40,9 @@ signer, phrase or environment file.
   its own process (`scripts/relay-process.ts`), checks and sends them. On regtest it sends to the node over JSON-RPC
   and mines one block; it has run there (`docs/MEASURED.md`, "Relayed token cancel on regtest").
 - No relayed transaction has been broadcast on mainnet; the mainnet runs broadcast their own transactions.
+- The mainnet run takes branch T too (`scripts/lifecycle.ts --network mainnet --branches T --relay buyerCancel`):
+  the relayer process sends through the spending gate to the configured server. Before the escrow is created, the
+  token units earlier branches left at the buyer and the fee recipient are moved back to the seller in one coin
+  (each role is a path of the same test wallet and signs its own input). A run of branch T alone uses
+  `mainnet.branchTerms.T`: the units the wallet holds (9 traded, 1 fee, 1 reserve), a smaller genesis coin and a
+  buyer-only float, so the run starts at `mainnet.branchFloorSats.T`. The record marks the step `"relayed": true`.

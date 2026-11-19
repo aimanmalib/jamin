@@ -11,6 +11,14 @@ export interface ElectrumServer {
 /** `arbitrator`, `arbiterB` and `arbiterC` are the arbitration panel, in contract key order. */
 export type Role = 'seller' | 'buyer' | 'arbitrator' | 'arbiterB' | 'arbiterC' | 'feeRecipient';
 
+/** Per-branch replacements of the mainnet run settings; a missing field keeps the default. */
+export interface BranchTerms {
+  tokenAmount?: number;
+  genesisCoinSats?: number;
+  partyFloatSats?: number;
+  floatParties?: Array<'buyer' | 'arbitrator'>;
+}
+
 export interface JaminConfig {
   site: { url: string; defaultLanguage: string; languages: string[] };
   electrum: { mainnet: ElectrumServer };
@@ -53,6 +61,8 @@ export interface JaminConfig {
      * all have one starts at the highest of them; a run with any other branch keeps `minFundingSats`.
      */
     branchFloorSats: Record<string, number>;
+    /** Settings a run of one branch uses instead of the defaults above (branch T: the units the wallet holds). */
+    branchTerms: Record<string, BranchTerms>;
     /** Buying the branch B token from Cauldron pools (docs/decisions/0012). */
     tokenPurchase: {
       /** Active pool list of a token; {category} is replaced. The answer is checked against the chain. */

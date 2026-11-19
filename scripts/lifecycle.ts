@@ -4,7 +4,8 @@
 // docs/decisions/0019) needs --relay buyerCancel: the buyer's signed transaction and intent are written to files and
 // scripts/relay.ts, run as its own process, broadcasts them.
 //   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E,W,R] [--branches T --relay buyerCancel]
-//   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E,W,R]   (test wallet, spending gate; see below)
+//   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E,W,R] [--branches T --relay buyerCancel]
+//     (test wallet, spending gate; see below)
 //   npx tsx scripts/lifecycle.ts --network mainnet --branches ''   (only records the block of steps still unmined)
 // Regtest needs a node: bash scripts/regtest-node.sh start (and stop afterwards). Mainnet: scripts/lifecycle-mainnet.ts.
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -26,7 +27,9 @@ function arg(name: string, fallback: string): string {
 
 const network = arg('network', '');
 const wanted = new Set(arg('branches', 'A,B,C,D,E').split(',').filter((b) => b !== ''));
-if (network === 'mainnet') process.exit(await mainnetRun([...wanted]));
+const relayStep = arg('relay', '');
+if (relayStep !== '' && relayStep !== 'buyerCancel') { console.error('--relay supports buyerCancel (branch T)'); process.exit(2); }
+if (network === 'mainnet') process.exit(await mainnetRun([...wanted], relayStep));
 if (network !== 'regtest') {
   console.error('usage: tsx scripts/lifecycle.ts --network regtest|mainnet [--branches A,B,C,D,E,W]');
   process.exit(2);
@@ -41,8 +44,7 @@ const terms: Terms = {
 
 const { ctx, steps, rpc } = await regtestContext(terms);
 const at = new Date().toISOString();
-if (arg('relay', '') !== '') {
-  if (arg('relay', '') !== 'buyerCancel') { console.error('--relay supports buyerCancel (branch T)'); process.exit(2); }
+if (relayStep !== '') {
   ctx.relayer = relayProcess(`${repoRoot}${cfg.regtest.outputDir}/relay-${at.replace(/[:.]/g, '-')}`, 'regtest');
 }
 const node = await rpc('getnetworkinfo') as { subversion: string };

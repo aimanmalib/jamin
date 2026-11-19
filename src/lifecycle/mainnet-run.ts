@@ -5,6 +5,7 @@ import { branchA, branchB, branchC, branchE, finishD, pendingD, resumeD, startD 
 import type { Ctx, Step } from './context.js';
 import { branchW } from './wallet-branch.js';
 import { branchR } from './refused.js';
+import { branchT } from './relayed.js';
 import { NoTokenError, WaitError } from './mainnet.js';
 import { clearPending, loadPending, savePending } from './record.js';
 
@@ -18,7 +19,7 @@ export interface RunResult {
 }
 
 const BODIES: Record<string, (c: Ctx) => Promise<void>> = { A: branchA, B: branchB, C: branchC, E: branchE,
-  W: (c) => branchW(c), R: branchR };
+  W: (c) => branchW(c), R: branchR, T: branchT };
 
 /** Runs the wanted branches; `steps` is the context's own step list, which the branches append to. */
 export async function runBranches(ctx: Ctx, steps: Step[], wanted: string[], pendingFile: string): Promise<RunResult> {

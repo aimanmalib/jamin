@@ -29,6 +29,8 @@ export interface WalletOptions {
   genesisCoinSats: bigint;
   partyFloatSats: bigint;
   feeRate: number;
+  /** Parties topped up to `partyFloatSats` before the run (default: the buyer and the arbitrator). */
+  floatParties?: Array<'buyer' | 'arbitrator'>;
 }
 
 /** Margin over the outputs a payment gathers, for the fee of a few inputs and outputs. */
@@ -56,6 +58,39 @@ export async function pay(provider: NetworkProvider, from: Party, outputs: Outpu
   return (await tx.send()).txid;
 }
 
+/** Token coins of `category` (no NFT) held at `address`. */
+async function tokenCoins(provider: NetworkProvider, address: string, category: string): Promise<Utxo[]> {
+  return (await provider.getUtxos(address)).filter((u) => u.token?.category === category && u.token.nft === undefined);
+}
+
+/**
+ * Moves every coin of `category` the other parties hold into one coin of the seller. All parties are paths of the
+ * same test wallet, so each signs its own input; the token coins' satoshis pay the fee and the change goes to the
+ * seller. Returns false when the wallet as a whole holds fewer than `wanted` units.
+ */
+export async function gatherTokens(provider: NetworkProvider, parties: Record<PartyName, Party>, category: string,
+  wanted: bigint, feeRate: number): Promise<boolean> {
+  const { seller } = parties;
+  const inputs: Array<[Utxo, Party]> = [];
+  for (const p of Object.values(parties)) {
+    for (const coin of await tokenCoins(provider, p.address, category)) inputs.push([coin, p]);
+  }
+  const units = inputs.reduce((a, [c]) => a + (c.token?.amount ?? 0n), 0n);
+  if (units < wanted) return false;
+  const tx = new TransactionBuilder({ provider });
+  for (const [coin, p] of inputs) tx.addInput(coin, p.signer.unlockP2PKH());
+  const sats = inputs.reduce((a, [c]) => a + c.satoshis, 0n);
+  if (sats < TOKEN_COIN_SATS + FEE_MARGIN) {
+    const [fee] = plain(await provider.getUtxos(seller.address));
+    if (!fee) throw new Error(`${seller.address} holds no plain coin for the token gathering fee`);
+    tx.addInput(fee, seller.signer.unlockP2PKH());
+  }
+  tx.addOutput({ to: lockOf(seller.address), amount: TOKEN_COIN_SATS, token: { category, amount: units } })
+    .addBchChangeOutputIfNeeded({ to: seller.address, feeRate });
+  await tx.send();
+  return true;
+}
+
 export interface WalletRun { ctx: Ctx; steps: Step[] }
 
 export async function walletContext(o: WalletOptions): Promise<WalletRun> {
@@ -70,7 +105,7 @@ export async function walletContext(o: WalletOptions): Promise<WalletRun> {
 
   // The buyer and the arbitrator pay their own transaction fees (and the buyer a dispute fee): top them up once.
   const topUps: Output[] = [];
-  for (const p of ['buyer', 'arbitrator'] as const) {
+  for (const p of o.floatParties ?? ['buyer', 'arbitrator'] as const) {
     const has = await satsAt(provider, parties[p].address);
     if (has * 2n < o.partyFloatSats) topUps.push({ to: lockOf(parties[p].address), amount: o.partyFloatSats - has });
   }
@@ -88,8 +123,12 @@ export async function walletContext(o: WalletOptions): Promise<WalletRun> {
     },
     tokenCoin: async (amount) => {
       const category = o.tokenCategory;
-      const coins = (await provider.getUtxos(seller.address))
-        .filter((u) => u.token?.category === category && u.token.nft === undefined);
+      let coins = await tokenCoins(provider, seller.address, category);
+      if (coins.reduce((a, u) => a + (u.token?.amount ?? 0n), 0n) < amount) {
+        // Units left at other roles by earlier branches (the buyer's and the fee recipient's) come back first.
+        if (!await gatherTokens(provider, parties, category, amount, o.feeRate)) throw new NoTokenError(category, amount);
+        coins = await tokenCoins(provider, seller.address, category);
+      }
       const exact = coins.find((u) => u.token?.amount === amount);
       if (exact) return { category, coin: exact };
       const bigger = coins.find((u) => (u.token?.amount ?? 0n) > amount);

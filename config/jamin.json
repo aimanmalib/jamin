@@ -59,7 +59,18 @@
     "tokenAmount": 10,
     "branchFloorSats": {
       "B": 40000,
-      "R": 60000
+      "R": 60000,
+      "T": 40000
+    },
+    "branchTerms": {
+      "T": {
+        "tokenAmount": 9,
+        "genesisCoinSats": 20000,
+        "partyFloatSats": 15000,
+        "floatParties": [
+          "buyer"
+        ]
+      }
     },
     "tokenPurchase": {
       "indexerUrl": "https://indexer.cauldron.quest/cauldron/pool/active?token={category}",
