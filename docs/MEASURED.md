@@ -620,7 +620,7 @@ Ways to spend each kind of coin, tried on the mirror for every escrow (same resu
 | | | | `release` as seller, `resolveDispute` as panel A+B | refused by the SDK before evaluation: `Total transfer amount (2000) exceeds satoshi container balance (1000)` (B: `Total fungible token transfer amount (2) exceeds token container balance (1)`) |
 | Event records (one per call, no capability NFT) | 28 | 33,600 | the event covenant's cleanup spend, sequence 144, to the wallet | accepted on the mirror; on the chain anyone may spend them 144 blocks after they were mined: from block 978033 (A, C, D, E, W), 978045 (B), 978062 (R) |
 | | | | the same spend for A's four records sent at tip 977927 (`--early A`) | refused by the server: `the transaction was rejected by network rules. non-BIP68-final (code 64)` (raw hash `ab5b16a1642b3171a623dca70a5f8f3fb03fc902ea683580ceecc614a5febdfe`, ledger entry of 0 sats) |
-| B's filler (576 sats at the shared filler lock) | 1 | 576 | the filler script's spend, sequence 144, to the wallet, in B's sweep | spendable from block 978045 (mined at 977901); measured on the mock network, not yet on the chain |
+| B's filler (576 sats at the shared filler lock) | 1 | 576 | the filler script's spend, sequence 144, to the wallet, in B's sweep | spendable from block 978045 (mined at 977901); measured on the mock network, then swept on mainnet in B's sweep (below) |
 | Identity (the category's metadata authhead, owned by the seller's lock) | 7 | 5,292 | `publishMetadata` with `action: burn` as owner | accepted on the mirror, then claimed on mainnet (below) |
 
 Identity burns sent with `--claim`, each through the spending gate (0 sats counted, the change returns to the seller):
@@ -637,6 +637,18 @@ So, of the 75,976 sats left in contract coins: 33,600 (event records) and 576 (B
 anyone from the blocks above; 41,800 cannot be spent by any entry point of these builds, because every entry point
 checks a status the finished escrow has left. A function that closes a finished escrow would not reach these seven; for
 new escrows it was measured and left out (see "Closing an escrow" below).
+
+Event sweeps sent with `--claim` on 2026-11-19 at tip 978066, each through the spending gate (0 sats counted, every
+output pays the seller): A `ab5b16a1642b3171a623dca70a5f8f3fb03fc902ea683580ceecc614a5febdfe` (4 records, 4,800),
+C `fdb7682c552d48653743ba15203aec38123dbd70a966ea7ddf104686b2677387` (4, 4,800),
+D `10e03ea1a197d8219628a6866b94ee23844a0ca6ddecd950742d9f5f0f1c8d81` (3, 3,600),
+E `9c72bab1b402903ce9c72f4e77115df3548ab7fee6ac17dc393739df9f05cf05` (5, 6,000),
+W `72249d6142d00840f6d67107f1e6262bb99cd2a754ce93af96202bf53d130756` (4, 4,800),
+B `fae2978fd57afda262d2b5655a02ab01ca4f852130a4ae6f71306479fdf0f5e0` (5 records and the 576-sat filler, 5,376),
+R `51efccea1645bfde478c5e4f77d70a4880a935db6cc8a3d41882e6f087652bdc` (4, 4,800). Together 29 records and one filler,
+34,176 sats; A's sweep is the transaction the server refused at tip 977927 (same raw hash), now accepted. The test
+wallet addresses held 23,505 sats (`listunspent`) before the sweeps and 54,189 after. What stays in the seven
+escrows' contract coins is the 41,800 sats no entry point can spend.
 
 The wallet, every satoshi:
 

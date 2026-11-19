@@ -180,10 +180,10 @@ other ten are not are in the same file.
   The token escrow's cancel and dispute paths ran on regtest or the mock network only.
 - **Coins left behind:** no entry point of these contracts spends a finished escrow's coins: each one checks a status
   the escrow has left (`docs/MEASURED.md`, "Final state", tried for all seven mainnet escrows). After the claims below,
-  the seven escrows hold 75,976 sats in contract coins. 41,800 of them (the master and state NFTs, the 1,000-sat
-  reserve, and B's token container with 1 unit, 0.01 PUSD) cannot be spent. 33,600 are event records, which anyone
-  may sweep 144 blocks after they were mined. A further 576 sats are an SDK filler output (F14), which anyone may also
-  sweep after 144 blocks. Each
+  the seven escrows held 75,976 sats in contract coins. 41,800 of them (the master and state NFTs, the 1,000-sat
+  reserve, and B's token container with 1 unit, 0.01 PUSD) cannot be spent. 33,600 were event records, which anyone
+  may sweep 144 blocks after they were mined, and 576 sats an SDK filler output (F14), which anyone may also sweep
+  after 144 blocks; the wallet swept all 34,176 back on mainnet in seven transactions (`docs/MEASURED.md`). Each
   escrow's metadata identity (756 sats) was burned by its owner, which returned 78 sats net after the fee. Every
   satoshi of the test wallet is accounted for, with 0 unexplained.
 - **Public demo keys:** the "Release on mainnet" card signs with keys published in `config/demo.json` on purpose.
