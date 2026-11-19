@@ -29,7 +29,7 @@
         { "text": "Open jamin.sasateguh.com and choose Try it. The compiled contracts run on the SolidCash mock network in your browser." },
         { "text": "Play seller, buyer, arbitrator or an outsider through release, buyer cancel, seller cancel and dispute. Each step shows the transaction or the contract's named error." },
         { "text": "Let one panel member decide a dispute alone. The contract refuses until a second member signs." },
-        { "text": "Switch the seller to the demo wallet: the wallet pays and signs the seller's coins. The page is in English and Bahasa Melayu." }
+        { "text": "Switch the seller to the demo wallet, or open the Wallet tab and sell from your own wallet over WizardConnect. The page is in English and Bahasa Melayu." }
       ]
     },
     {
@@ -40,7 +40,7 @@
         { "text": "In a peer-to-peer trade one side has to send first, or both trust an exchange that holds the coins." },
         { "text": "OpenPeer answered this on EVM with an MIT-licensed escrow contract. Jamin ports it to the Bitcoin Cash UTXO model in SolidCash." },
         { "text": "Each escrow is a stateful contract: its state lives in the coin, and covenant rules fix every payout." },
-        { "text": "Building it turned up ten SolidCash issues. Three fixes are open as pull requests: #8, #9 and #10.", "source": "docs/SOLIDCASH-FINDINGS.md#Fixes submitted upstream" }
+        { "text": "Building it turned up thirteen SolidCash issues. Three fixes are open as pull requests: #8, #9 and #10.", "source": "docs/SOLIDCASH-FINDINGS.md#Fixes submitted upstream" }
       ]
     },
     {
@@ -52,7 +52,7 @@
         { "text": "A dispute costs a fee from the side that opens it, and two of three named arbitrators decide it (checkMultiSig)." },
         { "text": "The seller can cancel only after the waiting time and only while the buyer has not marked the trade paid." },
         { "text": "The same rules hold for BCH and for CashTokens such as PUSD." },
-        { "text": "92 SolidHat tests in 10 files. Removing a check from a copy of a contract makes its named test fail.", "source": "docs/MEASURED.md#Test count" }
+        { "text": "99 SolidHat tests in 11 files. Removing a check from a copy of a contract makes its named test fail.", "source": "docs/MEASURED.md#Test count" }
       ]
     },
     {
@@ -60,10 +60,11 @@
       "kind": "list",
       "title": "BCH Usage",
       "items": [
-        { "text": "All five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with mainnet relay rules: 20 transactions mined.", "source": "docs/MEASURED.md#Regtest (real consensus limits)" },
-        { "text": "Largest unlocking script 6,888 of 10,000 bytes. Miner fees for all 20 transactions: 118,654 sats.", "source": "docs/MEASURED.md#Regtest (real consensus limits)" },
-        { "text": "A seller wallet signing over the BCH WalletConnect methods created, funded and released an escrow on the same node.", "source": "docs/MEASURED.md#Wallet signing (branch W)" },
-        { "text": "On mainnet from the project's test wallet: release, buyer cancel, seller cancel, a dispute decided by two of three panel members, and a release from a seller wallet, 20 transactions.", "source": "docs/MEASURED.md#Mainnet" }
+        { "text": "Five branches on a stock Bitcoin Cash Node 29.0.0 regtest node: 20 transactions mined, largest unlocking script 6,888 of 10,000 bytes.", "source": "docs/MEASURED.md#Regtest (real consensus limits)" },
+        { "text": "Mainnet, from the project's test wallet: release, buyer cancel, seller cancel, a dispute decided by two of three panel members and a wallet seller, 20 transactions.", "source": "docs/MEASURED.md#Mainnet" },
+        { "text": "A PUSD escrow on mainnet: 12 units bought from Cauldron pools, 10 released to the buyer and 1 paid as the fee.", "source": "docs/MEASURED.md#Mainnet" },
+        { "text": "Cashonize v0.15.2, a third-party wallet, signed the seller's creation, deposit and release of a mainnet escrow over WizardConnect.", "source": "docs/MEASURED.md#Third-party wallet on mainnet (branch X)" },
+        { "text": "The network refused an early seller cancel and a release signed by the buyer.", "source": "docs/MEASURED.md#Mainnet" }
       ]
     },
     {
@@ -71,8 +72,8 @@
       "kind": "list",
       "title": "The Vision for Jamin",
       "items": [
-        { "text": "Run the token escrow on mainnet with PUSD, as it ran on regtest." },
-        { "text": "Let buyer and seller trade from their own phone wallets over WalletConnect." },
+        { "text": "Trade from phone wallets on the Wallet tab, with a person approving each request." },
+        { "text": "Spend the coins each escrow leaves at its contract addresses, so a finished trade returns everything." },
         { "text": "A refund to the seller that anyone can trigger after a long deadline, so coins never stay locked." },
         { "text": "A signed payment reference from the buyer that the arbitrators can check in a dispute." }
       ]
