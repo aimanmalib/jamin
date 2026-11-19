@@ -52,7 +52,7 @@
         { "text": "A dispute costs a fee from the side that opens it, and two of three named arbitrators decide it (checkMultiSig)." },
         { "text": "The seller can cancel only after the waiting time and only while the buyer has not marked the trade paid." },
         { "text": "The same rules hold for BCH and for CashTokens such as PUSD." },
-        { "text": "99 SolidHat tests in 11 files. Removing a check from a copy of a contract makes its named test fail.", "source": "docs/MEASURED.md#Test count" }
+        { "text": "102 SolidHat tests in 12 files. Removing a check from a copy of a contract makes its named test fail.", "source": "docs/MEASURED.md#Test count" }
       ]
     },
     {
