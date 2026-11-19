@@ -39,7 +39,7 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   the buyer were sent as raw transactions past the SDK's own checks, and the network refused both; the server's text
   is recorded verbatim, the escrow's coins stayed unspent, and the seller's valid release followed (4 more escrow
   transactions; `docs/MEASURED.md`, "Refused on mainnet").
-- **SolidCash features used:** 21, each with the test that exercises it, in `docs/FEATURES.md`.
+- **SolidCash features used:** 26, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Upstream:** three fixes found while building this are open as pull requests to SolidCash (#8, #9, #10;
   "Upstream contributions").
 - **Slides:** https://jamin.sasateguh.com/deck.pdf, eight slides printed from `tools/deck/slides.json`

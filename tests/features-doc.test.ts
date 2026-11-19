@@ -72,6 +72,11 @@ describe('docs/FEATURES.md', () => {
     expect(rows.map((r) => Number(r[1]))).toEqual(rows.map((_, i) => i + 1));
   });
 
+  it('is counted the same in the README', () => {
+    const readme = readFileSync('README.md', 'utf8');
+    expect(readme).toContain(`**SolidCash features used:** ${rows.length},`);
+  });
+
   it('points every file:line at the code it names', () => {
     const named = rows.flatMap((r) => references(r[3] ?? ''));
     expect(named.length).toBeGreaterThan(0);
