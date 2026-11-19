@@ -284,6 +284,27 @@ decision 0004):
 - The same run on the SolidCash mock network with the production profile gave the same sizes (release 7,191 bytes)
   and the same result; `tests/demo.test.ts` repeats it and checks that the dry release calls no broadcast method.
 
+On mainnet, staged 2026-11-19 20:07 UTC with `scripts/demo-escrow.ts --network mainnet --stage` through
+`bch.imaginary.cash` and the spending gate (no release is sent by the script; a visitor sends it). Escrow
+`bitcoincash:pwhpw9f4mvvavdjwlwykzlfurq93h24xlkd7t6h35y5s6za5v4f42fz36zzus`:
+
+| Step | Txid | Tx bytes | Miner fee (sats) |
+|---|---|---:|---:|
+| createEscrow | `fdf9c848e9726c020e527899d28794abd2396140f9a3a5721c90119537fbb3d0` | 758 | 1,758 |
+| fund | `e206e84283673f2f7f21d143aa598d37098dc490f528200af410190edefc2b15` | 6,872 | 7,062 |
+| markAsPaid | `6f093acbc7a0a7ad2aa071909305d0516695d71324378d13a7616c0bd298d079` | 6,168 | 6,358 |
+
+- Around them: the wallet gathered its role addresses' plain coins at the seller
+  (`4cb75a394a9ac073efe70701f2b2d596038f6ab97b20600c47c70f2a8314b0ed`), paid the demo seller 30,000
+  (`cee70f12cc1ee0ab7eda28c252fd6fc20f440d0bec6f6b4120bbaa4ebff68c0a`) and the demo buyer 10,000
+  (`791f7f0661b65318fdb519b7efb02bd78c719d1ceaa15f58bd9cc9f488eaae14`), took the demo keys' change back
+  (`78bc997d8e21c7a9a2cb5b483c55057b9a310d0241baa22396f8e5b26c6a04de`) and paid the seller's three fee coins
+  (`a5b584b1aabe073ec79fbd088d8e5b28bdf99c631a3e6a7354f7c57d4c710050`).
+- Status after staging: `paid`. What the demo keys can spend, read from the chain: 14,546 sats (5,000 + 546 in the
+  escrow, 9,000 in fee coins), under `maxSats` 24,000.
+- The spending gate's ledger went from 442,050 to 493,511 sats counted (budget 2,000,000). It counts every payment to
+  the demo keys in full and never credits the change that came back.
+
 ## Wallet signing (branch W)
 
 Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with

@@ -123,6 +123,7 @@ keeps its references honest.
 | Mainnet run: branches A to E and W, 24 escrow txids, PUSD bought from a Cauldron pool | `docs/MEASURED.md` "Mainnet", `examples/mainnet.json` |
 | Mainnet branch X: Cashonize signs the seller's steps on the Wallet tab over WizardConnect | `docs/MEASURED.md` "Third-party wallet on mainnet", `examples/mainnet.json` |
 | Mainnet branch R: two forbidden calls the network refused (server text, raw hashes), then a valid release | `docs/MEASURED.md` "Refused on mainnet", `examples/mainnet.json` |
+| Mainnet branch P: a public demo escrow created, funded and marked paid, left for a visitor to release from the home page | `docs/MEASURED.md` "Demo escrow", `examples/mainnet.json` |
 
 ## Size and cost
 
@@ -188,8 +189,9 @@ other ten are not are in the same file.
   satoshi of the test wallet is accounted for, with 0 unexplained.
 - **Public demo keys:** the "Release on mainnet" card signs with keys published in `config/demo.json` on purpose.
   Anyone may use them; they guard at most `maxSats` (24,000 sats) and are not derived from any wallet
-  (`docs/decisions/0020-public-demo-escrow.md`). One press releases the demo escrow for good; until it is staged on
-  mainnet the card says so.
+  (`docs/decisions/0020-public-demo-escrow.md`). The demo escrow (branch P in `examples/mainnet.json`) was
+  created, funded and marked paid on mainnet by the test wallet; one press releases it for good, and the card then
+  shows the release instead of the button. It is not staged again after that.
 - **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
   and left out (`docs/decisions/0013-closing-an-escrow.md`). Its covenant caps the miner fee below 2,000 sats, but
   the closing transaction is about 7,000 bytes, under the relay minimum of 1 sat per byte; and at that size a close
