@@ -650,3 +650,17 @@ return. Earlier attempts in the same session, with `close` in the contracts and 
 fee of 7500 is higher than max fee of 2000" (released), 7388 (cancelled by the buyer, cancelled by the seller, open),
 7612 (resolved).
 
+## Installing without git
+
+Measured 2026-11-19 with Node 22.23.1 and npm 10.9.8 on the development host, default npm cache. Command:
+`npm ci --no-audit --no-fund`, counting the `git-clone*` folders npm leaves in `<npm cache>/_cacache/tmp` before
+and after. Decision: `docs/decisions/0010-vendored-libauth-fork.md`.
+
+| Checkout | `git-clone*` before | `git-clone*` after | Packages | `npm ci` time |
+|---|---|---|---|---|
+| Main working tree | 0 | 0 | 233 | 12 s |
+| Fresh `git worktree` of the same commit | 0 | 0 | 233 | 11 s |
+
+`npm ls @bitauth/libauth` exits 0 in both. `vendor/` holds 1,355,097 bytes (the fork tarball is 1,352,548 bytes).
+Root disk at the time: 504G total, 43G free (92% used). Before the change, each install cloned the fork's whole history
+into the cache (about 640 MB a clone).
