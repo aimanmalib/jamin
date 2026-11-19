@@ -4,8 +4,12 @@
 // output.
 import { binToHex, decodeTransaction, encodeTransaction, hexToBin, type TransactionBCH } from '@bitauth/libauth';
 import { describe, expect, it } from 'vitest';
-import { Status, TERMS, entry, satsAt, statusOf, world, type World } from './helpers/escrow.js';
-import { paidBch } from './helpers/flows.js';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { Status, TERMS, entry, satsAt, statusOf, tokensAt, world, type World } from './helpers/escrow.js';
+import { TOKEN, openToken, paidBch, tokenWorld } from './helpers/flows.js';
+import { spendsOf as relaySpends, writeRelayFiles } from '../src/lifecycle/relayed.js';
 import { capture } from '../src/lifecycle/refused.js';
 import { lockOf } from '../src/lifecycle/context.js';
 import { RelayRefused, intentFor, relay, type Outpoint, type RelayIntent } from '../src/relay/relay.js';
@@ -80,5 +84,36 @@ describe('keyless relayer', () => {
     expect(await satsAt(w.provider, w.roles.outsider.address)).toBe(outsider);
     await relay(hex, intent, (h) => w.provider.sendRawTransaction(h));
     expect(await statusOf(sc)).toBe(Status.Released);
+  });
+
+  it('relays a token buyerCancel from the files the buyer wrote, and refuses the same files once the intent is changed', async () => {
+    const w = await tokenWorld();
+    const sc = await openToken(w);
+    const { buyer, seller } = w.roles;
+    const hex = await capture(w.provider, () => entry(sc.connect(buyer), 'buyerCancel', w.sig(buyer), w.category).send());
+    const dir = mkdtempSync(join(tmpdir(), 'jamin-relay-'));
+    try {
+      const [txFile, intentFile] = writeRelayFiles(dir, 'T-buyerCancel', hex, intentFor(hex, relaySpends(hex)));
+      const fromFile = readFileSync(txFile, 'utf8').trim();
+      const intent = JSON.parse(readFileSync(intentFile, 'utf8')) as RelayIntent;
+      const sellerLock = binToHex(lockOf(seller.address));
+      const back = intent.outputs.findIndex((o) => o.lockingBytecode === sellerLock && o.token?.category === w.category);
+      expect(back).toBeGreaterThanOrEqual(0);
+      expect(intent.outputs[back]?.token?.amount).toBe((TOKEN.amount + TOKEN.fee).toString());
+      // The intent changed after signing: the seller's tokens now go to the outsider.
+      const changed: RelayIntent = { ...intent, outputs: intent.outputs.map((o, i) => (i === back
+        ? { ...o, lockingBytecode: binToHex(lockOf(w.roles.outsider.address)) } : o)) };
+      let sends = 0;
+      await expect(relay(fromFile, changed, () => { sends += 1; return Promise.resolve('0'.repeat(64)); }))
+        .rejects.toThrow(/output \d+ differs from the intent/);
+      expect(sends).toBe(0);
+      expect(await statusOf(sc)).toBe(Status.Funded);
+      const before = await tokensAt(w.provider, seller.address, w.category);
+      await relay(fromFile, intent, (h) => w.provider.sendRawTransaction(h));
+      expect(await statusOf(sc)).toBe(Status.CancelledByBuyer);
+      expect(await tokensAt(w.provider, seller.address, w.category) - before).toBe(TOKEN.amount + TOKEN.fee);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });

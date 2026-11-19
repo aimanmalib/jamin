@@ -1,11 +1,14 @@
 // The keyless relayer's checks (docs/decisions/0019) on a hand-built transaction. The escrow case, with a real
 // signature and covenant, is in test/relay.test.ts.
-import { readFileSync, readdirSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { binToHex, encodeTransaction, hashTransaction, type TransactionBCH } from '@bitauth/libauth';
 import { describe, expect, it } from 'vitest';
 import { repoRoot } from '../src/config.js';
 import { RelayRefused, checkRelay, intentFor, relay } from '../src/relay/relay.js';
+import { spendsOf, writeRelayFiles } from '../src/lifecycle/relayed.js';
+import { sentTxid } from '../scripts/relay-process.js';
 
 const ESCROW = 'ab'.repeat(32);
 const FEE_COIN = 'cd'.repeat(32);
@@ -82,6 +85,26 @@ describe('relay', () => {
     for (const f of readdirSync(dir).filter((n) => n.endsWith('.ts'))) {
       const src = readFileSync(join(dir, f), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
       expect(src, f).not.toMatch(/privateKey|SignatureTemplate|Signer|secp256k1|sign[A-Z]\w*\(|mnemonic|deriveKey|env-file|process\.env/i);
+    }
+  });
+});
+
+describe('relay files and process', () => {
+  it('reads the txid from the relayer output and refuses output without one', () => {
+    const txid = 'ab'.repeat(32);
+    expect(sentTxid(`matches the intent: txid ${txid}, 2 outputs\nsent ${txid}\n`)).toBe(txid);
+    expect(() => sentTxid(`refused: output 0 differs from the intent\n`)).toThrow(/printed no txid/);
+  });
+
+  it('writes the signed hex and the intent next to each other, and they still match', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'jamin-relay-'));
+    try {
+      const [txFile, intentFile] = writeRelayFiles(dir, 'T-buyerCancel', HEX, intentFor(HEX, spendsOf(HEX)));
+      const intent = JSON.parse(readFileSync(intentFile, 'utf8')) as typeof INTENT;
+      expect(intent.spends).toEqual([{ txid: ESCROW, vout: 1 }, { txid: FEE_COIN, vout: 0 }]);
+      expect(checkRelay(readFileSync(txFile, 'utf8').trim(), intent)).toEqual([]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
     }
   });
 });

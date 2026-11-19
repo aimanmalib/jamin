@@ -83,24 +83,33 @@ export function tradeFee(amount: bigint, feeBps: bigint, floor: bigint): bigint 
   return fee < floor ? floor : fee;
 }
 
-export async function branchB(ctx: Ctx): Promise<void> {
+/** A token escrow created and holding amount + fee + one reserve unit: branch B releases it, branch T cancels it. */
+export async function openToken(ctx: Ctx, branch: string): Promise<{ sc: Escrow; category: string; fee: bigint }> {
   const amount = ctx.terms.tokenAmount;
   const fee = tradeFee(amount, ctx.terms.feeBps, 1n);
   // amount + fee go out on release; one unit stays in the token container, as the reserve satoshis do.
   const total = amount + fee + 1n;
   // The token escrow binds its category as a constructor parameter, so the token exists before the deployment.
   const { category, coin } = await ctx.tokenCoin(total);
-  const sc = await deploy(ctx, 'B', 'JaminTokenEscrow', [category], amount);
-  check((await stateOf(sc)).terms.fee === fee, 'B: the contract computes the same token fee');
-  const { seller, buyer, fees } = ctx.parties;
-  const before = [await tokensAt(ctx.provider, buyer.address, category), await tokensAt(ctx.provider, fees.address, category)];
-  await run(ctx, 'B', 'deposit', call(sc, seller, 'deposit', category)
+  const sc = await deploy(ctx, branch, 'JaminTokenEscrow', [category], amount);
+  check((await stateOf(sc)).terms.fee === fee, `${branch}: the contract computes the same token fee`);
+  const { seller } = ctx.parties;
+  await run(ctx, branch, 'deposit', call(sc, seller, 'deposit', category)
     .addInput(coin, seller.signer.unlockP2PKH()).tokenContainerDeposit(category, total).send());
+  return { sc, category, fee };
+}
+
+export async function branchB(ctx: Ctx): Promise<void> {
+  const amount = ctx.terms.tokenAmount;
+  const { seller, buyer, fees } = ctx.parties;
+  const read = (address: string, category: string): Promise<bigint> => tokensAt(ctx.provider, address, category);
+  const { sc, category, fee } = await openToken(ctx, 'B');
+  const before = [await read(buyer.address, category), await read(fees.address, category)];
   await markPaid(ctx, 'B', sc, category);
   await run(ctx, 'B', 'release', call(sc, seller, 'release', category).send());
-  check(await tokensAt(ctx.provider, buyer.address, category) - (before[0] ?? 0n) === amount,
+  check(await read(buyer.address, category) - (before[0] ?? 0n) === amount,
     'B: the buyer receives the token amount');
-  check(await tokensAt(ctx.provider, fees.address, category) - (before[1] ?? 0n) === fee,
+  check(await read(fees.address, category) - (before[1] ?? 0n) === fee,
     'B: the fee recipient receives the token fee');
   check(await tokensAt(ctx.provider, sc.getTokenContainerAddress(category), category) === 1n,
     'B: the token container keeps the reserve unit');

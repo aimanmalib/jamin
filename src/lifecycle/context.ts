@@ -44,6 +44,17 @@ export interface Step {
   signer?: 'wallet';
   /** Name and version of a third-party wallet that signed (branch X, decision 0014). */
   wallet?: string;
+  /** Signed by the party and broadcast by the keyless relayer from files (branch T, decision 0019). */
+  relayed?: true;
+}
+
+/**
+ * Hands a signed transaction to the keyless relayer (decision 0019): `dir` is where the party writes `<step>.hex` and
+ * `<step>.intent.json`, and `send` runs the relayer on those two files and returns the txid it broadcast.
+ */
+export interface Relayer {
+  dir: string;
+  send(txFile: string, intentFile: string): Promise<string>;
 }
 
 /**
@@ -80,6 +91,8 @@ export interface Ctx {
   record(step: Step): void;
   /** Attempts the network refused, in order (branch R). */
   refused: RefusedStep[];
+  /** Set when a run relays a step instead of broadcasting it itself (branch T). */
+  relayer?: Relayer;
 }
 
 export function party(privateKey: Uint8Array, provider: NetworkProvider): Party {

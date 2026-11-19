@@ -3,7 +3,8 @@
 // the unchanged bytes go to the configured mainnet server through the spending gate, so the ledger still counts any
 // test wallet coin the transaction spends; the wallet's public locking scripts are derived for that count only and
 // nothing is signed. Prints txids and reasons only.
-//   npx tsx scripts/relay.ts <tx.hex> <intent.json> [--send]
+//   npx tsx scripts/relay.ts <tx.hex> <intent.json> [--send] [--network regtest]
+// With --network regtest the bytes go to the local regtest node (scripts/regtest-node.sh) instead; no gate, no phrase.
 // Exit codes: 0 checked or sent, 1 refused or failed, 2 bad arguments, host not allowed or no phrase.
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -13,15 +14,18 @@ import { Network, type NetworkProvider } from '@solidcash/solidcash';
 import { loadConfig, repoRoot } from '../src/config.js';
 import { gateProvider } from '../src/budget/gate.js';
 import { lockOf } from '../src/lifecycle/context.js';
+import { regtestRpc } from '../src/lifecycle/regtest.js';
 import { RelayRefused, checkRelay, relay, type RelayIntent } from '../src/relay/relay.js';
 import { readEnvValue } from '../src/wallet/env-file.js';
 import { childPath, deriveKey } from '../src/wallet/keys.js';
 
 const args = process.argv.slice(2);
 const send = args.includes('--send');
-const [txFile, intentFile] = args.filter((a) => !a.startsWith('--'));
-if (!txFile || !intentFile) {
-  console.error('usage: tsx scripts/relay.ts <tx.hex> <intent.json> [--send]');
+const netAt = args.indexOf('--network');
+const network = netAt >= 0 ? args[netAt + 1] : 'mainnet';
+const [txFile, intentFile] = args.filter((a, i) => !a.startsWith('--') && args[i - 1] !== '--network');
+if (!txFile || !intentFile || (network !== 'mainnet' && network !== 'regtest')) {
+  console.error('usage: tsx scripts/relay.ts <tx.hex> <intent.json> [--send] [--network regtest]');
   process.exit(2);
 }
 const hex = readFileSync(txFile, 'utf8').trim();
@@ -38,6 +42,20 @@ if (!send) {
 }
 
 const cfg = loadConfig();
+if (network === 'regtest') {
+  // Plain JSON-RPC: send the bytes, then mine one block so the next read sees them confirmed.
+  const rpc = regtestRpc(`http://127.0.0.1:${cfg.regtest.rpcPort}`,
+    process.env.REGTEST_RPC_USER ?? 'user', process.env.REGTEST_RPC_PASSWORD ?? 'password');
+  try {
+    const txid = await relay(hex, intent, async (h) => String(await rpc('sendrawtransaction', [h])));
+    await rpc('generatetoaddress', [1, await rpc('getnewaddress')]);
+    console.log(`sent ${txid}`);
+    process.exit(0);
+  } catch (e) {
+    console.error(`${e instanceof RelayRefused ? '' : 'FAILED '}${(e as Error).message.slice(0, 400)}`);
+    process.exit(1);
+  }
+}
 const server = cfg.electrum.mainnet;
 if (!cfg.mainnet.broadcastHosts.includes(server.hostname)) {
   console.error(`refused: ${server.hostname} is not in mainnet.broadcastHosts`);

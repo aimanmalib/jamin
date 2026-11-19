@@ -1,7 +1,9 @@
 // Runs the five escrow lifecycle branches on a real network and writes every transaction with its sizes. Branch W
 // (branch A with the seller signing through a wallet, docs/decisions/0009) and branch R (calls the network refuses,
-// docs/decisions/0015) run when named.
-//   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E,W,R]
+// docs/decisions/0015) run when named. Branch T (a token escrow the buyer cancels through the keyless relayer,
+// docs/decisions/0019) needs --relay buyerCancel: the buyer's signed transaction and intent are written to files and
+// scripts/relay.ts, run as its own process, broadcasts them.
+//   npx tsx scripts/lifecycle.ts --network regtest [--branches A,B,C,D,E,W,R] [--branches T --relay buyerCancel]
 //   npx tsx scripts/lifecycle.ts --network mainnet [--branches A,B,C,D,E,W,R]   (test wallet, spending gate; see below)
 //   npx tsx scripts/lifecycle.ts --network mainnet --branches ''   (only records the block of steps still unmined)
 // Regtest needs a node: bash scripts/regtest-node.sh start (and stop afterwards). Mainnet: scripts/lifecycle-mainnet.ts.
@@ -13,6 +15,8 @@ import { branchR } from '../src/lifecycle/refused.js';
 import type { Ctx, Terms } from '../src/lifecycle/context.js';
 import { measure } from '../src/lifecycle/inspect.js';
 import { regtestContext } from '../src/lifecycle/regtest.js';
+import { branchT } from '../src/lifecycle/relayed.js';
+import { relayProcess } from './relay-process.js';
 import { mainnetRun } from './lifecycle-mainnet.js';
 
 function arg(name: string, fallback: string): string {
@@ -36,10 +40,15 @@ const terms: Terms = {
 };
 
 const { ctx, steps, rpc } = await regtestContext(terms);
+const at = new Date().toISOString();
+if (arg('relay', '') !== '') {
+  if (arg('relay', '') !== 'buyerCancel') { console.error('--relay supports buyerCancel (branch T)'); process.exit(2); }
+  ctx.relayer = relayProcess(`${repoRoot}${cfg.regtest.outputDir}/relay-${at.replace(/[:.]/g, '-')}`, 'regtest');
+}
 const node = await rpc('getnetworkinfo') as { subversion: string };
 const runs: Array<[string, (c: Ctx) => Promise<void>]> = [
   ['A', branchA], ['B', branchB], ['C', branchC],
-  ['D', async (c) => finishD(c, await startD(c))], ['E', branchE], ['W', (c) => branchW(c)], ['R', branchR],
+  ['D', async (c) => finishD(c, await startD(c))], ['E', branchE], ['W', (c) => branchW(c)], ['R', branchR], ['T', branchT],
 ];
 const failures: string[] = [];
 for (const [name, body] of runs) {
@@ -59,9 +68,9 @@ for (const s of steps) {
   const tx = await rpc('getrawtransaction', [s.txid, true]) as { blockhash?: string };
   const height = tx.blockhash ? (await rpc('getblockheader', [tx.blockhash]) as { height: number }).height : null;
   measured.push({ ...m, height });
-  console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
+  console.log(`${s.branch} ${s.step.padEnd(14)} ${s.txid}${s.relayed ? ' relayed' : ''} tx ${m.txBytes} B, unlock max ${m.maxUnlockingBytes} B, fee ${m.feeSats ?? "?"} sat`);
 }
-const out = { network, node: node.subversion, at: new Date().toISOString(), terms: Object.fromEntries(
+const out = { network, node: node.subversion, at, terms: Object.fromEntries(
   Object.entries(terms).map(([k, v]) => [k, v.toString()])), failures, steps: measured, refused: ctx.refused };
 const dir = `${repoRoot}${cfg.regtest.outputDir}`;
 mkdirSync(dir, { recursive: true });
