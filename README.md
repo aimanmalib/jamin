@@ -169,7 +169,9 @@ passes with the change, and each is open as a pull request:
 - [solidcash/solidcash#10](https://github.com/solidcash/solidcash/pull/10): `MockNetworkProvider` does not
   type-check under `exactOptionalPropertyTypes` (F4).
 
-The reasons the other eleven are not are in the same file.
+F12 (the destroy helper spends event records whose lock has not passed) is addressed by open upstream pull request
+[solidcash/solidcash#13](https://github.com/solidcash/solidcash/pull/13), so no duplicate was opened. The reasons the
+other ten are not are in the same file.
 
 ## Known limits
 

@@ -164,7 +164,8 @@ requests #1 and #4 to #7, issues #2 and #3).
   destruction. A finished escrow's last call always emits an event, so a close right after it always fails.
 - Effect in this project: none beyond F11; the repro leaves the event records out through a provider that hides
   them.
-- Upstream: a small fix (skip records whose lock has not passed, or document the wait); not prepared as a fix.
+- Upstream: the same issue is addressed by open upstream pull request #13
+  (https://github.com/solidcash/solidcash/pull/13), so no duplicate was opened.
 
 ## F13: the destroy helper refuses to burn the tokens of a named token container
 
@@ -188,8 +189,11 @@ requests #1 and #4 to #7, issues #2 and #3).
   defines its own unlocker for the same reason.
 - Effect in this project: `src/coins/filler.ts` writes the lock and its unlock out, and the event sweep adds the
   filler of an escrow's own transactions (the 576 sats of branch B).
-- Upstream: a small helper (an exported filler unlocker, or a sweep beside `fillerOutput`) and a line in the guides;
-  not prepared as a fix.
+- Upstream: fix prepared, not yet submitted. Branch `fix/filler-unlocker` on upstream `master` at `eda85a88d`
+  exports `fillerUnlocker()` and `FILLER_SEQUENCE` beside `fillerOutput` from the stateful entry point, adds a line to
+  `website/docs/guides/stateful-guide.md`, and has `test/e2e/DrainFiller.test.ts` use the export in place of its own
+  unlocker. `packages/solidcash/test/unit/FillerUnlocker.test.ts` and the drain test fail on `master` (the export is
+  missing) and pass with the change.
 
 ## Fixes submitted upstream
 
@@ -210,4 +214,5 @@ compile; a framed payment to a P2PKH output was not run on a network in this pro
 The others are not prepared as fixes: F2 and F5 change how calls are derived or compiled, which is larger than a
 small patch and needs the maintainers' view first; F3 may be intended; F6 is fixed by open pull request #6; F7 is how
 BCH time locks fail; F9 is a documentation point; F10 needs an asynchronous signing step in the SDK;
-F11 to F14 were found after the pull requests were opened, and each section names the change it would take.
+F11 and F13 were found after the pull requests were opened, and each section names the change it would take;
+F12 is addressed by open pull request #13; F14 has a fix prepared but not yet submitted.
