@@ -403,6 +403,10 @@ creation transaction) is derived from Cashonize's signature over the role key re
 
 ## Test count
 
+`npm run gate` on Depot CI on 2026-11-19 21:37 UTC (run `ss56n4c03m`, commit 49cedeb, after `npm ci`): lint,
+typecheck, `solidhat test` 12 files, 103 tests, all passing; vitest 31 files, 157 tests; build passed. The new
+SolidHat test is the relayed token cancel in `test/relay.test.ts` (branch T).
+
 `npm run gate` on Depot CI on 2026-11-19 (run `9j7fwrvvfd`, commit b2ff2c5, after `npm ci`): `solidhat test` 12
 files, 102 tests, all passing; vitest 26 files, 132 tests; build passed. The three new SolidHat tests are the
 keyless relayer tests in `test/relay.test.ts` (decision 0019).
