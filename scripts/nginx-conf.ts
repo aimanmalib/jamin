@@ -14,4 +14,5 @@ const config = loadConfig();
 process.stdout.write(renderTemplate(readFileSync(templatePath, 'utf8'), {
   CSP: cspHeader(config.deploy.contentSecurityPolicy, config.electrum.mainnet),
   ASSET_MAX_AGE: String(config.deploy.assetMaxAgeSeconds),
+  MEDIA_MAX_AGE: String(config.deploy.mediaMaxAgeSeconds),
 }));

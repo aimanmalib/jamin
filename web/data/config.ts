@@ -7,7 +7,10 @@ export interface WebConfig {
   electrum: { mainnet: { hostname: string; port: number; scheme: 'wss' | 'ws'; timeoutMs: number } };
   escrow: { feeBps: number; disputeFeeSats: number; sellerWaitingTimeSeconds: number; containerReserveSats: number };
   simulator: { bchAmountSats: number; tokenAmount: number; tokenSymbol: string; tokenDecimals: number };
-  banner: { event: string; bounty: string; repoUrl: string; prizeAddress: string; deckUrl: string };
+  banner: {
+    event: string; bounty: string; repoUrl: string; prizeAddress: string; deckUrl: string;
+    videoUrl: string; videoPosterUrl: string; videoSeconds: number;
+  };
   web: { tabs: string[]; contracts: string[]; languageStorageKey: string };
   walletSigning: { roleKeyMessage: string };
   walletTrade: {
@@ -18,6 +21,11 @@ export interface WebConfig {
 }
 
 export const config = raw as WebConfig;
+
+/** The path of an absolute URL on this site, so a page served elsewhere (preview, tests) loads its own copy. */
+export function sitePath(url: string): string {
+  return url ? new URL(url).pathname : '';
+}
 
 /** `template` with `{txid}` / `{address}` replaced. */
 export function explorerLink(template: string, value: string): string {

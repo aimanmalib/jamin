@@ -18,6 +18,7 @@
     "bounty": "Ganjaran: {bounty}",
     "repo": "Kod sumber",
     "deck": "Slaid",
+    "video": "Video demo",
     "prizeAddress": "Alamat hadiah",
     "copy": "Salin",
     "copied": "Disalin"
@@ -51,6 +52,9 @@
     "judge1": "Mula dagangan dan bertindak sebagai setiap peranan. Langkah salah dipulangkan dengan nama ralat kontrak itu sendiri.",
     "judge2": "Lihat transaksi yang direkod pada rangkaian sebenar.",
     "judge3": "Baca kontrak dan setiap ciri SolidCash yang dipakainya, bersama ujian yang menjalankannya.",
+    "videoTitle": "Tonton demo ({seconds} saat)",
+    "videoNote": "Rakaman lawatan laman ini: dagangan yang dipertikai dalam pelayar, kemudian escrow yang dijalankannya di mainnet Bitcoin Cash. Tanpa bunyi.",
+    "videoFallback": "Pelayar anda tidak dapat memainkan video ini. Muat turun di sini.",
     "howTitle": "Bagaimana dagangan berjalan",
     "how1Title": "1. Penjual mengunci syiling",
     "how1": "Penjual mencipta escrow dan mendeposit amaun serta yuran dagangan. Kini hanya kontrak boleh memindahkannya.",

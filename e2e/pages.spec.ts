@@ -21,6 +21,27 @@ test('home: one sentence, one primary button, the banner, no console errors', as
   expect(errors).toEqual([]);
 });
 
+test('home: the demo video loads only on play, answers range requests, and fits 320 px', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto('/');
+  const path = new URL(config.banner.videoUrl).pathname;
+  await expect(page.getByRole('link', { name: 'Demo video' })).toHaveAttribute('href', config.banner.videoUrl);
+  const video = page.locator('.demo-video video');
+  await video.scrollIntoViewIfNeeded();
+  await expect(video).toBeVisible();
+  await expect(video).toHaveAttribute('preload', 'none');
+  await expect(video).toHaveAttribute('poster', new URL(config.banner.videoPosterUrl).pathname);
+  await expect(video.locator('source')).toHaveAttribute('src', path);
+  const range = await page.request.get(path, { headers: { Range: 'bytes=0-1' } });
+  expect(range.status()).toBe(206);
+  expect(range.headers()['content-type']).toBe('video/mp4');
+  const poster = await page.request.get(new URL(config.banner.videoPosterUrl).pathname);
+  expect(poster.status()).toBe(200);
+  await noHorizontalOverflow(page);
+  expect(errors).toEqual([]);
+});
+
 test('language toggle switches to Malay and is remembered', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Bahasa Melayu' }).click();

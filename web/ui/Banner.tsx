@@ -1,5 +1,5 @@
 // The event banner on every page: event name, bounty, source link, prize address with a copy button, slides when
-// config.banner.deckUrl is set. Elements without a value are not shown.
+// config.banner.deckUrl is set, the demo video when config.banner.videoUrl is set. Elements without a value are not shown.
 import { useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config } from '../data/config.js';
@@ -25,6 +25,7 @@ export function Banner(): ReactNode {
         <span>{t('banner.bounty', { bounty: b.bounty })}</span>
         {b.repoUrl && <a href={b.repoUrl}>{t('banner.repo')}</a>}
         {b.deckUrl && <a href={b.deckUrl}>{t('banner.deck')}</a>}
+        {b.videoUrl && <a href={b.videoUrl}>{t('banner.video')}</a>}
         {b.prizeAddress && (
           <span className="prize">
             <span>{t('banner.prizeAddress')}</span>

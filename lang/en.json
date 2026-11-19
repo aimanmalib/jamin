@@ -18,6 +18,7 @@
     "bounty": "Bounty: {bounty}",
     "repo": "Source code",
     "deck": "Slides",
+    "video": "Demo video",
     "prizeAddress": "Prize address",
     "copy": "Copy",
     "copied": "Copied"
@@ -51,6 +52,9 @@
     "judge1": "Start a trade and act as each role. Wrong moves come back with the contract's own error name.",
     "judge2": "See the transactions recorded on a real network.",
     "judge3": "Read the contract and each SolidCash feature it uses, with the test that runs it.",
+    "videoTitle": "Watch the demo ({seconds} seconds)",
+    "videoNote": "A recorded walk through this site: a disputed trade in the browser, then the escrows it ran on Bitcoin Cash mainnet. No sound.",
+    "videoFallback": "Your browser cannot play this video. Download it here.",
     "howTitle": "How a trade goes",
     "how1Title": "1. The seller locks the coins",
     "how1": "The seller creates the escrow and deposits the amount plus the trade fee. Only the contract can move them now.",

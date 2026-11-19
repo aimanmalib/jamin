@@ -12,6 +12,8 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
 
 ## For judges: one minute
 
+- **Demo video (59 seconds, no sound):** https://jamin.sasateguh.com/media/jamin-demo.mp4, also on the
+  home page of the site.
 - **Try it:** https://jamin.sasateguh.com, tab **Try it**. The compiled contracts run on the SolidCash mock network
   in your browser. Play seller, buyer, arbitrator (panel member A, signing with member B or alone, which the contract refuses) or an outsider through all five branches and see each transaction
   or the contract's named error. The seller can also trade through a demo wallet in the page that answers the BCH

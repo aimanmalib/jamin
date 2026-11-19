@@ -84,6 +84,9 @@ section + section { margin-top: 2.5rem; }
   padding: 1rem 1.25rem; }
 .judge ol { margin: 0.5rem 0 0; padding-left: 1.25rem; }
 .steps3 { display: grid; gap: 1rem; }
+.demo-video { display: grid; gap: 0.5rem; max-width: 52rem; }
+.demo-video video { display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9;
+  background: var(--ink); border-radius: var(--radius); }
 @media (min-width: 52rem) {
   .hero { grid-template-columns: 1.3fr 1fr; }
   .steps3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }

@@ -103,7 +103,7 @@ export interface JaminConfig {
     containerReserveSats: number;
   };
   /** Public web server: security policy directives and the cache lifetime of hashed assets. */
-  deploy: { contentSecurityPolicy: Record<string, string[]>; assetMaxAgeSeconds: number };
+  deploy: { contentSecurityPolicy: Record<string, string[]>; assetMaxAgeSeconds: number; mediaMaxAgeSeconds: number };
 }
 
 /** Absolute path of the repository root (this file lives in src/). */

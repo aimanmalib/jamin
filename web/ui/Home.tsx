@@ -1,8 +1,9 @@
-// First screen: one sentence, one action card with one primary button, the judges' strip. Then how it works.
+// First screen: one sentence, one action card with one primary button, the judges' strip. Then the demo video and
+// how it works.
 import type { ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { HeroArt } from './Art.js';
-import { config } from '../data/config.js';
+import { config, sitePath } from '../data/config.js';
 
 export function Home(): ReactNode {
   const { t } = useLang();
@@ -28,6 +29,7 @@ export function Home(): ReactNode {
           <li><a href="#/contract">{t('home.judge3')}</a></li>
         </ol>
       </section>
+      {config.banner.videoUrl && <DemoVideo />}
       <section aria-labelledby="how-title">
         <h2 id="how-title">{t('home.howTitle')}</h2>
         <div className="steps3">
@@ -48,5 +50,22 @@ export function Home(): ReactNode {
         </ul>
       </section>
     </>
+  );
+}
+
+/** The recorded demo. Nothing is downloaded until the visitor presses play. */
+function DemoVideo(): ReactNode {
+  const { t } = useLang();
+  const b = config.banner;
+  const src = sitePath(b.videoUrl);
+  return (
+    <section className="demo-video" aria-labelledby="video-title">
+      <h2 id="video-title" className="h3">{t('home.videoTitle', { seconds: String(b.videoSeconds) })}</h2>
+      <p className="muted small">{t('home.videoNote')}</p>
+      <video controls preload="none" playsInline poster={sitePath(b.videoPosterUrl)} aria-labelledby="video-title">
+        <source src={src} type="video/mp4" />
+        <a href={src}>{t('home.videoFallback')}</a>
+      </video>
+    </section>
   );
 }

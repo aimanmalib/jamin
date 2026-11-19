@@ -107,7 +107,10 @@
     "bounty": "Best SolidCash Application",
     "repoUrl": "https://github.com/aimanmalib/jamin",
     "prizeAddress": "bitcoincash:zplrydnf2z4pj4z9rv7uhmwsuxyrm8hj7uken87e7q",
-    "deckUrl": "https://jamin.sasateguh.com/deck.pdf"
+    "deckUrl": "https://jamin.sasateguh.com/deck.pdf",
+    "videoUrl": "https://jamin.sasateguh.com/media/jamin-demo.mp4",
+    "videoPosterUrl": "https://jamin.sasateguh.com/media/jamin-demo.jpg",
+    "videoSeconds": 59
   },
   "mainnetExamples": "examples/mainnet.json",
   "regtest": {
@@ -180,7 +183,8 @@
         "'none'"
       ]
     },
-    "assetMaxAgeSeconds": 31536000
+    "assetMaxAgeSeconds": 31536000,
+    "mediaMaxAgeSeconds": 3600
   },
   "walletSigning": {
     "roleKeyMessage": "Jamin role key\nSite: {site}\nRole: {role}\nTrade: {trade}"

@@ -36,10 +36,11 @@ describe('content security policy', () => {
 describe('web server template', () => {
   it('fills every placeholder of the deploy template', () => {
     const template = readFileSync(new URL('../deploy/nginx.conf.tmpl', import.meta.url), 'utf8');
-    const out = renderTemplate(template, { CSP: "default-src 'self'", ASSET_MAX_AGE: '60' });
+    const out = renderTemplate(template, { CSP: "default-src 'self'", ASSET_MAX_AGE: '60', MEDIA_MAX_AGE: '30' });
     expect(out).not.toMatch(/@[A-Z_]+@/);
     expect(out).toContain(`set $csp "default-src 'self'";`);
     expect(out).toContain('max-age=60, immutable');
+    expect(out).toContain('max-age=30"');
   });
 
   it('rejects unknown placeholders and values that would break the config', () => {
