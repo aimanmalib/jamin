@@ -180,7 +180,8 @@ requests #1 and #4 to #7, issues #2 and #3).
 ## Fixes submitted upstream
 
 Three findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
-the change. Each was opened as a pull request to `solidcash/solidcash` on 18 November 2026.
+the change. Each was opened as a pull request to `solidcash/solidcash` on 18 November 2026. On 19 November 2026 at
+01:50 UTC all three were open, not drafts, with no review and no maintainer comment yet.
 
 | Finding | Pull request | Branch | Change | Test |
 | --- | --- | --- | --- | --- |
