@@ -305,6 +305,9 @@ creation transaction) is derived from Cashonize's signature over the role key re
 
 ## Test count
 
+On the host on 2026-11-19 from 00:18 UTC, `npm run solidhat:test`: 11 files, 99 tests, all passing in one run (819.58 s
+at a load average of about 20 to 50; exit code 0). The demo video shows this run's output.
+
 On the host on 2026-11-18 23:05 UTC, `npx solidhat test`: 11 files, 99 tests. 98 passed in the full run; one
 token-panel test (`test/JaminTokenEscrow.reject.test.ts`, "resolves a two-sided dispute for the seller") reached the
 120-second limit at a load average of 26 and passed when its file ran alone (11 of 11). The seven new tests are the
