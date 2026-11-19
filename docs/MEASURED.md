@@ -320,6 +320,10 @@ creation transaction) is derived from Cashonize's signature over the role key re
 
 ## Test count
 
+`npm run gate` on Depot CI on 2026-11-19 (run `9j7fwrvvfd`, commit b2ff2c5, after `npm ci`): `solidhat test` 12
+files, 102 tests, all passing; vitest 26 files, 132 tests; build passed. The three new SolidHat tests are the
+keyless relayer tests in `test/relay.test.ts` (decision 0019).
+
 On the host on 2026-11-19 from 00:18 UTC, `npm run solidhat:test`: 11 files, 99 tests, all passing in one run (819.58 s
 at a load average of about 20 to 50; exit code 0). The demo video shows this run's output.
 

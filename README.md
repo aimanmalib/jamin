@@ -18,7 +18,7 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   WalletConnect requests and signs the seller's coins (decision 0009). English and Bahasa Melayu.
 - **Contracts:** `contracts/` (four files, native SolidCash): `EscrowBase.scash`, `JaminEscrow.scash` (BCH),
   `JaminTokenEscrow.scash` (CashTokens such as PUSD), `FeeMath.scash`. Rules: `docs/SPEC.md`.
-- **Tests:** `npm ci && npm run solidhat:test`: 99 SolidHat tests in 11 files on the mock network with the production
+- **Tests:** `npm ci && npm run solidhat:test`: 102 SolidHat tests in 12 files on the mock network with the production
   profile (count in `docs/MEASURED.md`). Every attack in `docs/THREAT_MODEL.md` names the test that runs it.
 - **Real consensus limits:** all five branches ran on a stock Bitcoin Cash Node 29.0.0 regtest node with
   standardness rules on, the dispute decided by two of the three panel members: 20 transactions mined, largest
