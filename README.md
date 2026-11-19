@@ -198,6 +198,8 @@ The reasons the other ten are not are in the same file.
   median time of past blocks.
 - **Error names from the SDK:** a seller cancel before the waiting time is reported as a locktime failure, not
   `TooEarly` (F7), and a failing constructor check is not reported by name (F8).
+- **Relayer:** the keyless relayer is tested on the mock network only; no relayed transaction has been broadcast on
+  mainnet, and a relayer can still decline to send or send late (the party can send the same transaction itself).
 - **Dropped from the original:** meta transactions, the fee discount NFT and partner split, the proxy deployer and
   the seller balance pool (reasons in `docs/PORTING.md`).
 - **Wallets:** a seller can trade from a wallet that signs over the BCH WalletConnect methods: the wallet pays and
@@ -251,6 +253,19 @@ npm run e2e          # Playwright: Chromium desktop and WebKit iPhone 13 against
 The public site is one static container (nginx, read-only, no keys) built from a clean `git archive` of HEAD.
 `deploy/deploy.sh` builds and starts it, then checks `/healthz` and runs the Playwright suite against the public URL,
 rolling back to the previous image if that fails (`--rollback`, `--status`). See `docs/decisions/0006-deployment.md`.
+
+### Relaying a signed call
+
+A party that signs an escrow call but cannot broadcast it can hand the signed transaction and an intent (the escrow
+coin it spends and every output it pays) to anyone. `src/relay/relay.ts` holds no key: it sends the bytes unchanged
+only when they match the intent, and refuses a send that reports another txid. A relayer that changes an output and
+the intent with it is refused by the network, because the party's signature and the covenant cover every output
+(`test/relay.test.ts`; `docs/decisions/0019-keyless-relayer.md`).
+
+```sh
+npx tsx scripts/relay.ts tx.hex intent.json          # check only
+npx tsx scripts/relay.ts tx.hex intent.json --send   # broadcast through the spending budget
+```
 
 ### Test wallet
 

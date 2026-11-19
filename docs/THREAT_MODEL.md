@@ -53,6 +53,7 @@ The contract limits the panel to choosing between two fixed payouts of an open d
 | 28 | seller or buyer | sit on the panel of its own escrow | `PartyOnPanel` | panel "refuses to create an escrow with the seller / buyer in panel slot A / B / C (PartyOnPanel)" |
 | 29 | anyone building a resolution | give the two panel signatures out of key order, or as Schnorr signatures | rejected | panel "refuses two panel signatures out of panel key order", "refuses Schnorr signatures, which OP_CHECKMULTISIG does not accept here" |
 | 30 | a wallet user (seller through a wallet, 0009) | release with the wallet key in place of the role key the escrow names | `NotSeller` | wallet "refuses a release signed with the wallet key instead of the role key" |
+| 31 | a relayer given a signed call (0019) | send it with an output changed, rewriting the intent to match | refused by the relayer when the intent is the signer's; refused by the network when the intent is rewritten | relayer "refuses, before sending, a release whose buyer output was redirected to another address", "a relayer that rewrites the intent too is refused by the network, and the signed release still goes through" |
 
 The payout rules of a dispute (winner's fee returned, loser's fee to the fee recipient) are checked by BCH "resolves
 a two-sided dispute for the buyer" and "... for the seller", BCH "pays the seller back in full when the buyer alone

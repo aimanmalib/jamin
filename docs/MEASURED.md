@@ -143,6 +143,21 @@ the unchanged contracts pass all 18, and all 89 tests of `npx solidhat test`). N
 In the threshold run the Schnorr test and the single-arbitrator refusal still failed for their own reason (a Schnorr
 signature or a key outside the panel in the first slot), and the three valid pairs passed, as they should.
 
+## Sabotage checks of the keyless relayer
+
+Measured 2026-11-19 on the host with Node 22: in the working tree, change one relayer check in
+`src/relay/relay.ts`, run `tests/relay.test.ts` (13 tests; the unchanged module passes all 13), then restore the
+file with git. Not committed.
+
+| Change | Tests that failed |
+|---|---|
+| output comparison removed | 6 of 13: another address, fewer satoshis, fewer token units, tokens taken off, outputs swapped, and "sends nothing when the transaction differs from the intent" |
+| check that the intent's coins are spent removed | 1: "refuses a transaction that does not spend the escrow coin the intent names" |
+| output count check removed | 1: "refuses a transaction with an extra output" |
+| reported txid check removed | 1: "refuses a send that reports another txid than the signed transaction" |
+| token fields left out of the comparison | 2: fewer token units, tokens taken off |
+| a `secp256k1` import added to the module | 1: "holds no key: the relay module imports no signer, key, phrase or environment file" |
+
 ## Regtest (real consensus limits)
 
 Measured 2026-11-18 10:39 UTC on the contracts with the 2-of-3 arbitration panel (decision 0008), on a stock Bitcoin

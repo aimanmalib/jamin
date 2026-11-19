@@ -73,7 +73,9 @@ describe('keyless relayer', () => {
     const tampered = redirect(hex, buyerOutput(w, intent), w.roles.outsider.address);
     const forged = intentFor(tampered, intent.spends);
     const outsider = await satsAt(w.provider, w.roles.outsider.address);
-    await expect(relay(tampered, forged, (h) => w.provider.sendRawTransaction(h))).rejects.toThrow();
+    const err = await relay(tampered, forged, (h) => w.provider.sendRawTransaction(h)).then(() => undefined, (e: unknown) => e);
+    expect(err).toBeInstanceOf(Error);
+    expect(err).not.toBeInstanceOf(RelayRefused);
     expect(await statusOf(sc)).toBe(Status.Paid);
     expect(await satsAt(w.provider, w.roles.outsider.address)).toBe(outsider);
     await relay(hex, intent, (h) => w.provider.sendRawTransaction(h));
