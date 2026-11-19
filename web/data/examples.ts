@@ -36,7 +36,7 @@ export function byBranch<T extends { branch: string }>(rows: T[]): [string, T[]]
   return [...groups.entries()];
 }
 
-/** The address of the public demo escrow on mainnet, once one is recorded. */
+/** The address of the public demo escrow on mainnet, once one is recorded; the latest when it was staged again. */
 export function demoEscrowAddress(run: MainnetRun = mainnet): string | undefined {
-  return run.escrows.find((e) => e.demo === true)?.address;
+  return run.escrows.filter((e) => e.demo === true).at(-1)?.address;
 }

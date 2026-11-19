@@ -220,7 +220,8 @@
       "E": "pertikaian, penimbang tara memutuskan",
       "W": "lepas, penjual berdagang dari dompet",
       "R": "dua panggilan ditolak, kemudian lepas",
-      "X": "lepas, penjual menandatangani dalam dompet pihak ketiga"
+      "X": "lepas, penjual menandatangani dalam dompet pihak ketiga",
+      "P": "demo awam, pelawat melepaskan"
     },
     "colStep": "Langkah",
     "colTx": "Txid",

@@ -54,12 +54,13 @@ export function refusedRow(r: RefusedStep): RefusedRow {
 export function serverText(message: string): string {
   return message.replace(/^Request failed after \d+ attempts?: (?:Error: )?/, '');
 }
-export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: RecordRow[] }
+/** `demo`: the public demo escrow a visitor may release (decision 0020). */
+export interface MainnetEscrow { branch: string; asset: string; address?: string; demo?: boolean; steps: RecordRow[] }
 export interface MainnetRecord { network: 'mainnet'; escrows: MainnetEscrow[] }
 
 /** The asset each branch trades. */
 export const BRANCH_ASSET: Record<string, string> = { A: 'BCH', B: 'PUSD', C: 'BCH', D: 'BCH', E: 'BCH', W: 'BCH',
-  R: 'BCH', X: 'BCH' };
+  R: 'BCH', X: 'BCH', P: 'BCH' };
 
 /**
  * Adds the steps of one escrow to the record. A branch's steps start a new escrow at `createEscrow`; steps without

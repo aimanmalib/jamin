@@ -220,7 +220,8 @@
       "E": "dispute, arbitrator decides",
       "W": "release, seller trades from a wallet",
       "R": "two calls refused, then release",
-      "X": "release, seller signs in a third-party wallet"
+      "X": "release, seller signs in a third-party wallet",
+      "P": "public demo, a visitor releases"
     },
     "colStep": "Step",
     "colTx": "Txid",
