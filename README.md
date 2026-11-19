@@ -209,8 +209,10 @@ other ten are not are in the same file.
   median time of past blocks.
 - **Error names from the SDK:** a seller cancel before the waiting time is reported as a locktime failure, not
   `TooEarly` (F7), and a failing constructor check is not reported by name (F8).
-- **Relayer:** the keyless relayer is tested on the mock network only; no relayed transaction has been broadcast on
-  mainnet, and a relayer can still decline to send or send late (the party can send the same transaction itself).
+- **Relayer:** the keyless relayer is tested on the mock network and on regtest, where it broadcast a token escrow
+  `buyerCancel` from the files the buyer wrote (branch T, `docs/MEASURED.md`); no relayed transaction has been
+  broadcast on mainnet, and a relayer can still decline to send or send late (the party can send the same
+  transaction itself).
 - **Dropped from the original:** meta transactions, the fee discount NFT and partner split, the proxy deployer and
   the seller balance pool (reasons in `docs/PORTING.md`).
 - **Wallets:** a seller can trade from a wallet that signs over the BCH WalletConnect methods: the wallet pays and
@@ -276,6 +278,7 @@ the intent with it is refused by the network, because the party's signature and 
 ```sh
 npx tsx scripts/relay.ts tx.hex intent.json          # check only
 npx tsx scripts/relay.ts tx.hex intent.json --send   # broadcast through the spending budget
+npx tsx scripts/lifecycle.ts --network regtest --branches T --relay buyerCancel   # branch T on a regtest node
 ```
 
 ### Test wallet

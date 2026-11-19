@@ -35,4 +35,8 @@ signer, phrase or environment file.
 - No contract change (decision 0018).
 - A relayer can still decline to send, or send late. The party can hand the same transaction to another relayer or
   send it itself; the escrow's waiting times are unchanged.
+- Branch T (`src/lifecycle/relayed.ts`, `scripts/lifecycle.ts --relay buyerCancel`) runs it end to end: the buyer
+  writes the signed `buyerCancel` of a token escrow and its intent to two files, and `scripts/relay.ts`, started as
+  its own process (`scripts/relay-process.ts`), checks and sends them. On regtest it sends to the node over JSON-RPC
+  and mines one block; it has run there (`docs/MEASURED.md`, "Relayed token cancel on regtest").
 - No relayed transaction has been broadcast on mainnet; the mainnet runs broadcast their own transactions.

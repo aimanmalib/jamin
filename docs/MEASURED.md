@@ -158,6 +158,38 @@ file with git. Not committed.
 | token fields left out of the comparison | 2: fewer token units, tokens taken off |
 | a `secp256k1` import added to the module | 1: "holds no key: the relay module imports no signer, key, phrase or environment file" |
 
+## Relayed token cancel on regtest (branch T)
+
+Measured 2026-11-19 21:17 UTC on a stock Bitcoin Cash Node 29.0.0 (`/Bitcoin Cash Node:29.0.0(EB32.0)/`, the node
+of "Regtest (real consensus limits)" below), contracts unchanged (decision 0018). Commands:
+
+```
+bash scripts/regtest-node.sh start
+npx tsx scripts/lifecycle.ts --network regtest --branches T --relay buyerCancel
+bash scripts/regtest-node.sh stop
+```
+
+The seller creates a token escrow (200 units, fee 1 unit, one reserve unit) and deposits the tokens. The buyer signs
+`buyerCancel` and does not broadcast it: the run writes `T-buyerCancel.hex` and `T-buyerCancel.intent.json` (every
+coin spent and all 7 outputs), and `scripts/relay.ts --send --network regtest`, started as its own process with no
+key, checks one against the other and sends the bytes. The run then checks that the seller has 201 units back and
+the escrow is `CancelledByBuyer`. Exit code 0.
+
+| Step | txid | Bytes | Largest unlocking script | Miner fee (sat) |
+|---|---|---|---|---|
+| createEscrow | `7934556c9c8f2e3332514b160fb508d9b3bfdf9d39284b36baca242eea76ab2e` | 754 | 100 | 1,754 |
+| deposit | `b525a443435993785796552bb4d729dd7e840a72bbc658801edd8baa9ea9077c` | 8,420 | 6,888 | 8,610 |
+| buyerCancel, relayed | `5915f6b0809fb04a6ac4fac1c6dc2117729a280f0d539045c8797a069603fafe` | 8,537 | 6,888 | 8,727 |
+
+The run record marks the cancel `"relayed": true`. The same two files with one token amount in the intent lowered by
+a unit: `scripts/relay.ts` prints `refused: output 0 differs from the intent`, exit code 1, and sends nothing. The
+unchanged files: `matches the intent`, exit code 0.
+
+Sabotage, not committed: with the output comparison removed from `src/relay/relay.ts`, the SolidHat test
+"relays a token buyerCancel from the files the buyer wrote, and refuses the same files once the intent is changed"
+(`test/relay.test.ts`) fails (`expected [Function] to throw error matching /output \d+ differs from the intent/ but
+got 'relay refused: the network reported 0…'`); restored, it passes.
+
 ## Regtest (real consensus limits)
 
 Measured 2026-11-18 10:39 UTC on the contracts with the 2-of-3 arbitration panel (decision 0008), on a stock Bitcoin
