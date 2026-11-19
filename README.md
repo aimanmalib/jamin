@@ -112,7 +112,7 @@ keeps its references honest.
 
 | What | Where |
 | --- | --- |
-| SolidHat tests (99, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
+| SolidHat tests (102, mock network, production profile) | `test/`, count in `docs/MEASURED.md` |
 | Sabotage: a check removed from a copy of a contract makes its named test fail | `docs/MEASURED.md` |
 | Script and transaction sizes of every function | `docs/MEASURED.md` |
 | Size and miner fee of each call on regtest | "Size and cost" below, `examples/regtest.json` |
