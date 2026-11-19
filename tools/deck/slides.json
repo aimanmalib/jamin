@@ -40,7 +40,7 @@
         { "text": "In a peer-to-peer trade one side has to send first, or both trust an exchange that holds the coins." },
         { "text": "OpenPeer answered this on EVM with an MIT-licensed escrow contract. Jamin ports it to the Bitcoin Cash UTXO model in SolidCash." },
         { "text": "Each escrow is a stateful contract: its state lives in the coin, and covenant rules fix every payout." },
-        { "text": "Building it turned up thirteen SolidCash issues. Three fixes are open as pull requests: #8, #9 and #10.", "source": "docs/SOLIDCASH-FINDINGS.md#Fixes submitted upstream" }
+        { "text": "Building it turned up fourteen SolidCash issues. Three fixes are open as pull requests: #8, #9 and #10.", "source": "docs/SOLIDCASH-FINDINGS.md#Fixes submitted upstream" }
       ]
     },
     {

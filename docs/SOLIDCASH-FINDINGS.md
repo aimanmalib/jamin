@@ -2,7 +2,7 @@
 
 Issues met while building this project. Versions: `@solidcash/solidc` and `@solidcash/solidcash` 0.51.1, upstream
 `master` at `eda85a88d`. Reproductions: `npx tsx scripts/repro-findings.ts` (sources in `test/fixtures/findings/`); F11 to F13:
-`npx tsx scripts/repro-close.ts`.
+`npx tsx scripts/repro-close.ts`; F14: `tests/filler.test.ts`.
 Upstream status was checked against open issues and pull requests on 2026-11-17 and again on 2026-11-18 (pull
 requests #1 and #4 to #7, issues #2 and #3).
 
@@ -177,6 +177,20 @@ requests #1 and #4 to #7, issues #2 and #3).
 - Effect in this project: none beyond F11; it would have stopped the token escrow's close (decision 0013).
 - Upstream: a small fix (pass the option, or document that the container must be empty); not prepared as a fix.
 
+## F14: the SDK leaves filler outputs that anyone may sweep, but offers no way to spend one
+
+- Repro: `tests/filler.test.ts`. The token escrow's first deposit on mainnet (`d46f258d...`, output 3) left 576 sats
+  at the filler lock; `@solidcash/solidcash` 0.51.1 exports no unlocker or sweep helper for it, so the test spends
+  it through an unlocker written from the script.
+- Cause: `fillerOutput` (`stateful/filler.ts`) and `fillerLockingBytecode` (`@solidcash/utils`) build the output at
+  the P2SH32 lock of `<144> OP_CHECKSEQUENCEVERIFY OP_DROP OP_1`, and their comments say anyone may sweep it after
+  144 blocks. Nothing in the package or in `website/docs` spends it; upstream's own `test/e2e/DrainFiller.test.ts`
+  defines its own unlocker for the same reason.
+- Effect in this project: `src/coins/filler.ts` writes the lock and its unlock out, and the event sweep adds the
+  filler of an escrow's own transactions (the 576 sats of branch B).
+- Upstream: a small helper (an exported filler unlocker, or a sweep beside `fillerOutput`) and a line in the guides;
+  not prepared as a fix.
+
 ## Fixes submitted upstream
 
 Three findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
@@ -195,4 +209,5 @@ compile; a framed payment to a P2PKH output was not run on a network in this pro
 
 The others are not prepared as fixes: F2 and F5 change how calls are derived or compiled, which is larger than a
 small patch and needs the maintainers' view first; F3 may be intended; F6 is fixed by open pull request #6; F7 is how
-BCH time locks fail; F9 is a documentation point; F10 needs an asynchronous signing step in the SDK.
+BCH time locks fail; F9 is a documentation point; F10 needs an asynchronous signing step in the SDK;
+F11 to F14 were found after the pull requests were opened, and each section names the change it would take.

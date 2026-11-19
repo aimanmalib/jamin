@@ -156,7 +156,7 @@ Sizes vary by a few bytes between runs (signature length) and by the number of c
 
 ## Upstream contributions
 
-Building Jamin turned up thirteen issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
+Building Jamin turned up fourteen issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
 `docs/SOLIDCASH-FINDINGS.md`. Three have a small fix with a regression test that fails on upstream `master` and
 passes with the change, and each is open as a pull request:
 
@@ -167,7 +167,7 @@ passes with the change, and each is open as a pull request:
 - [solidcash/solidcash#10](https://github.com/solidcash/solidcash/pull/10): `MockNetworkProvider` does not
   type-check under `exactOptionalPropertyTypes` (F4).
 
-The reasons the other ten are not are in the same file.
+The reasons the other eleven are not are in the same file.
 
 ## Known limits
 
@@ -178,7 +178,7 @@ The reasons the other ten are not are in the same file.
   the escrow has left (`docs/MEASURED.md`, "Final state", tried for all seven mainnet escrows). After the claims below,
   the seven escrows hold 75,976 sats in contract coins. 41,800 of them (the master and state NFTs, the 1,000-sat
   reserve, and B's token container with 1 unit, 0.01 PUSD) cannot be spent. 33,600 are event records, which anyone
-  may sweep 144 blocks after they were mined. A further 576 sats are an SDK filler output, which anyone may also
+  may sweep 144 blocks after they were mined. A further 576 sats are an SDK filler output (F14), which anyone may also
   sweep after 144 blocks. Each
   escrow's metadata identity (756 sats) was burned by its owner, which returned 78 sats net after the fee. Every
   satoshi of the test wallet is accounted for, with 0 unexplained.
