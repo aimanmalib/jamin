@@ -13,7 +13,8 @@ export interface RefusedStep {
   step: string; refused: true; by: string; expected: string; rawTxHash: string; serverError: string; at: string;
 }
 export type EscrowStep = MainnetStep | RefusedStep;
-export interface MainnetEscrow { branch: string; asset: string; address?: string; steps: EscrowStep[] }
+/** `demo`: the public demo escrow a visitor may release (docs/decisions/0020-public-demo-escrow.md). */
+export interface MainnetEscrow { branch: string; asset: string; address?: string; demo?: boolean; steps: EscrowStep[] }
 export interface RefusedRun extends MainnetEscrow { node: string; measuredAt: string }
 
 export interface RegtestRun {
@@ -33,4 +34,9 @@ export function byBranch<T extends { branch: string }>(rows: T[]): [string, T[]]
   const groups = new Map<string, T[]>();
   for (const r of rows) groups.set(r.branch, [...(groups.get(r.branch) ?? []), r]);
   return [...groups.entries()];
+}
+
+/** The address of the public demo escrow on mainnet, once one is recorded. */
+export function demoEscrowAddress(run: MainnetRun = mainnet): string | undefined {
+  return run.escrows.find((e) => e.demo === true)?.address;
 }

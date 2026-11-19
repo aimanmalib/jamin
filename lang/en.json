@@ -286,5 +286,31 @@
     "resume": "Continuing trade {trade}: connect the same wallet that created it.",
     "resumeLink": "Keep this link to come back to the escrow later:",
     "resumeLinkText": "continue this trade"
+  },
+  "demo": {
+    "title": "Release on mainnet",
+    "note": "A real escrow on Bitcoin Cash mainnet, already created, funded and marked paid. You play the seller: the button signs the release in this page with a public demo key and sends it. The demo keys are published on purpose and can never move more than {max} sats.",
+    "reading": "Reading the escrow from the network...",
+    "none": "The demo escrow is not on mainnet yet. Until it is, run a trade in the simulator above.",
+    "failed": "Could not read or release the escrow. The network may be busy; try again later.",
+    "ready": "Ready: the buyer has marked the trade paid and {sats} sats wait in the escrow.",
+    "dryNote": "Dry run: the release is signed here and not sent.",
+    "button": "Release on mainnet",
+    "buttonDry": "Sign the release without sending",
+    "working": "Signing the release in this page...",
+    "sent": "Released. Transaction ({bytes} bytes):",
+    "signed": "Signed, not sent ({bytes} bytes). It would have this transaction id:",
+    "closed": "This escrow is already {status}. Latest transaction:",
+    "escrow": "Escrow address:",
+    "status": {
+      "created": "created",
+      "funded": "funded",
+      "paid": "paid",
+      "disputed": "in dispute",
+      "released": "released",
+      "cancelledByBuyer": "cancelled by the buyer",
+      "cancelledBySeller": "cancelled by the seller",
+      "resolved": "resolved by the panel"
+    }
   }
 }

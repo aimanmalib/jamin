@@ -186,6 +186,10 @@ other ten are not are in the same file.
   sweep after 144 blocks. Each
   escrow's metadata identity (756 sats) was burned by its owner, which returned 78 sats net after the fee. Every
   satoshi of the test wallet is accounted for, with 0 unexplained.
+- **Public demo keys:** the "Release on mainnet" card signs with keys published in `config/demo.json` on purpose.
+  Anyone may use them; they guard at most `maxSats` (24,000 sats) and are not derived from any wallet
+  (`docs/decisions/0020-public-demo-escrow.md`). One press releases the demo escrow for good; until it is staged on
+  mainnet the card says so.
 - **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
   and left out (`docs/decisions/0013-closing-an-escrow.md`). Its covenant caps the miner fee below 2,000 sats, but
   the closing transaction is about 7,000 bytes, under the relay minimum of 1 sat per byte; and at that size a close

@@ -1,9 +1,12 @@
-// First screen: one sentence, one action card with one primary button, the judges' strip. Then the demo video and
-// how it works.
-import type { ReactNode } from 'react';
+// First screen: one sentence, one action card with one primary button, the judges' strip. Then the mainnet demo
+// escrow, the demo video and how it works.
+import { Suspense, lazy, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { HeroArt } from './Art.js';
 import { config, sitePath } from '../data/config.js';
+
+// The demo card carries the SolidCash SDK: loaded after the first screen.
+const DemoRelease = lazy(async () => ({ default: (await import('./DemoRelease.js')).DemoRelease }));
 
 export function Home(): ReactNode {
   const { t } = useLang();
@@ -29,6 +32,7 @@ export function Home(): ReactNode {
           <li><a href="#/contract">{t('home.judge3')}</a></li>
         </ol>
       </section>
+      <Suspense fallback={null}><DemoRelease /></Suspense>
       {config.banner.videoUrl && <DemoVideo />}
       <section aria-labelledby="how-title">
         <h2 id="how-title">{t('home.howTitle')}</h2>

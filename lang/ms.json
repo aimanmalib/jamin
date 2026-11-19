@@ -286,5 +286,31 @@
     "resume": "Menyambung dagangan {trade}: sambungkan dompet yang sama yang menciptanya.",
     "resumeLink": "Simpan pautan ini untuk kembali kepada escrow kemudian:",
     "resumeLinkText": "sambung dagangan ini"
+  },
+  "demo": {
+    "title": "Lepaskan di mainnet",
+    "note": "Escrow sebenar di mainnet Bitcoin Cash, sudah dicipta, didanai dan ditanda bayar. Anda menjadi penjual: butang ini menandatangani pelepasan dalam halaman ini dengan kunci demo awam dan menghantarnya. Kunci demo diterbitkan dengan sengaja dan tidak boleh memindahkan lebih daripada {max} sat.",
+    "reading": "Membaca escrow dari rangkaian...",
+    "none": "Escrow demo belum ada di mainnet. Sementara itu, jalankan dagangan dalam simulator di atas.",
+    "failed": "Escrow tidak dapat dibaca atau dilepaskan. Rangkaian mungkin sibuk; cuba lagi nanti.",
+    "ready": "Sedia: pembeli sudah menanda dagangan dibayar dan {sats} sat menunggu dalam escrow.",
+    "dryNote": "Larian kering: pelepasan ditandatangani di sini dan tidak dihantar.",
+    "button": "Lepaskan di mainnet",
+    "buttonDry": "Tandatangani pelepasan tanpa menghantar",
+    "working": "Menandatangani pelepasan dalam halaman ini...",
+    "sent": "Dilepaskan. Transaksi ({bytes} bait):",
+    "signed": "Ditandatangani, tidak dihantar ({bytes} bait). Id transaksinya:",
+    "closed": "Escrow ini sudah {status}. Transaksi terkini:",
+    "escrow": "Alamat escrow:",
+    "status": {
+      "created": "dicipta",
+      "funded": "didanai",
+      "paid": "dibayar",
+      "disputed": "dalam pertikaian",
+      "released": "dilepaskan",
+      "cancelledByBuyer": "dibatalkan oleh pembeli",
+      "cancelledBySeller": "dibatalkan oleh penjual",
+      "resolved": "diputuskan oleh panel"
+    }
   }
 }

@@ -1,0 +1,19 @@
+{
+  "label": "Public demo keys, published on purpose. They guard one mainnet escrow worth at most maxSats satoshis.",
+  "maxSats": 24000,
+  "escrowSats": 5000,
+  "feeCoinSats": [
+    3000,
+    3000,
+    3000
+  ],
+  "buyerCoinSats": 10000,
+  "sellerCoinSats": 30000,
+  "keys": {
+    "seller": "0684e2a85669b805398e67b748862f1719757fdb0e0536daaa8328bf33e69f35",
+    "buyer": "57212d55d710d0e32510016b2446b8bd4b7d487e6f5a9bf9d28544dfedd54180",
+    "panelA": "534599776c83aad8c55423e742dd99fb3fe806901f3dfa351ff55f809f8b673f",
+    "panelB": "171706e3d8195e2b1e56c139067e7115c84ea1c792bb3890c1180e93f03e3df8",
+    "panelC": "cd565cf90c6e6e3db1170ca072799dbc8d19f914bd62e7397bef3224c11ee623"
+  }
+}

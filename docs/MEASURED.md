@@ -258,6 +258,32 @@ for `absurdly-high-fee, 50060478 > 10000000 (code 256)` before checking any scri
 P2PKH signatures because the contract signature covers its function body, not the redeem script, so the node refused
 it for the signature instead of the locktime. Both led to decision 0015's capture and covered-bytecode search.
 
+## Demo escrow
+
+Measured 2026-11-19 19:10 to 19:25 UTC with `scripts/demo-escrow.ts --stage --release` (decision 0020), the public
+demo keys of `config/demo.json` and its amounts: trade amount 5,000 sats (trade fee raised to the 546 sat floor),
+seller fee coins 3 x 3,000 sats, `maxSats` 24,000. The release is signed by `src/demo/escrow.ts`, the module the
+page's "Release on mainnet" card runs in the browser: first dry (signed, taken at the provider, not sent), then sent.
+
+On a stock Bitcoin Cash Node 29.0.0 regtest node (`/Bitcoin Cash Node:29.0.0(EB32.0)/`, `-acceptnonstdtxn=0`,
+decision 0004):
+
+| Step | Txid | Tx bytes | Inputs | Confirmations when read |
+|---|---|---|---|---|
+| createEscrow | `73442c7b519d78bdd65e0f291267fee741beeccba02e963c8d5c46b4dcf423cf` | 758 | 1 | 13 |
+| fund | `deef66ca51ec2737e3e68558c206451508114e0d45a39d6d674bfb99da8686bd` | 6,872 | 5 | 12 |
+| markAsPaid | `685015561dda90da918635d9fd89d9aaa36b58298aa573e1b45dcdd335e8503a` | 6,168 | 3 | 9 |
+| release (dry, not sent) | `bdcf32eddf2ddc0a088016b3153bf0b1579c6df9a91fd9692ab951242cedd186` | 7,191 | | |
+| release (sent) | `bdcf32eddf2ddc0a088016b3153bf0b1579c6df9a91fd9692ab951242cedd186` | 7,191 | 7 | 1 |
+
+- After staging the escrow's status was `paid`, and the demo addresses plus the escrow's trade amount and fee came to
+  14,546 sats the demo keys could spend (5,000 + 546 + 9,000), under `maxSats`. The three fee coins were enough: the
+  release made no coin split first.
+- After the dry release the status was still `paid`; after the sent release it was `released`. The dry txid equals
+  the sent txid, so dry mode shows the exact transaction a press sends.
+- The same run on the SolidCash mock network with the production profile gave the same sizes (release 7,191 bytes)
+  and the same result; `tests/demo.test.ts` repeats it and checks that the dry release calls no broadcast method.
+
 ## Wallet signing (branch W)
 
 Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with
