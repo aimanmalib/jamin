@@ -304,6 +304,10 @@ On mainnet, staged 2026-11-19 20:07 UTC with `scripts/demo-escrow.ts --network m
   escrow, 9,000 in fee coins), under `maxSats` 24,000.
 - The spending gate's ledger went from 442,050 to 493,511 sats counted (budget 2,000,000). It counts every payment to
   the demo keys in full and never credits the change that came back.
+- All three staging transactions were mined in block 978069. After deploying the site with this record
+  (image `cb9d18f-202611192010`), the Playwright suite against the public URL passed 42 of 42 (Chromium and WebKit
+  iPhone 13, 25.6 min), its mainnet demo test in dry mode only; read from the chain afterwards, the escrow's status
+  was still `paid` and its address history held only the three staging transactions.
 
 ## Wallet signing (branch W)
 
