@@ -574,8 +574,13 @@ burn (below) is counted with the escrow whose coin it spent.
 All amounts in satoshis. "Other contract coins" per BCH escrow: the master NFT (1,200), three state NFTs (3,600) and
 the satoshi container's reserve (1,000). Branch B adds its token container (1,200 sats and 1 unit, 0.01 PUSD) and a
 576-sat output its deposit transaction (`d46f258d…`, output 3) paid to an address that is not one of the contract's
-and that six transactions of other people also pay; no SDK path names that address, so it is counted here and not
-tried.
+and that six transactions of other people also pay. That output is the SDK's filler: the SDK leaves it at the index
+of the token container a first deposit appends after the block. Every filler sits at one P2SH32 lock whose script is
+`<144> OP_CHECKSEQUENCEVERIFY OP_DROP OP_1` (`fillerLockingBytecode` in `@solidcash/utils` 0.51.1; the address
+`bitcoincash:p0zzcyw3hq83atjvqf8uwewap3thq89r496908umhesqq70qtx602qgtw9tlu`), so anyone may spend it 144 blocks
+after it was mined, as an event record. The SDK has no helper that spends one; `src/coins/filler.ts` writes the
+unlock out (`tests/filler.test.ts`: the lock equals the SDK's and the mainnet address, a spend with sequence 144 is
+accepted on the mock network and one with 143 is refused at `OP_CHECKSEQUENCEVERIFY`).
 
 Ways to spend each kind of coin, tried on the mirror for every escrow (same results for all seven):
 
@@ -589,7 +594,7 @@ Ways to spend each kind of coin, tried on the mirror for every escrow (same resu
 | | | | `release` as seller, `resolveDispute` as panel A+B | refused by the SDK before evaluation: `Total transfer amount (2000) exceeds satoshi container balance (1000)` (B: `Total fungible token transfer amount (2) exceeds token container balance (1)`) |
 | Event records (one per call, no capability NFT) | 28 | 33,600 | the event covenant's cleanup spend, sequence 144, to the wallet | accepted on the mirror; on the chain anyone may spend them 144 blocks after they were mined: from block 978033 (A, C, D, E, W), 978045 (B), 978062 (R) |
 | | | | the same spend for A's four records sent at tip 977927 (`--early A`) | refused by the server: `the transaction was rejected by network rules. non-BIP68-final (code 64)` (raw hash `ab5b16a1642b3171a623dca70a5f8f3fb03fc902ea683580ceecc614a5febdfe`, ledger entry of 0 sats) |
-| B's 576-sat output at an address that is not the contract's | 1 | 576 | none: no SDK path names that address | not tried |
+| B's filler (576 sats at the shared filler lock) | 1 | 576 | the filler script's spend, sequence 144, to the wallet, in B's sweep | spendable from block 978045 (mined at 977901); measured on the mock network, not yet on the chain |
 | Identity (the category's metadata authhead, owned by the seller's lock) | 7 | 5,292 | `publishMetadata` with `action: burn` as owner | accepted on the mirror, then claimed on mainnet (below) |
 
 Identity burns sent with `--claim`, each through the spending gate (0 sats counted, the change returns to the seller):
@@ -602,9 +607,9 @@ B `ee0bb971d84a5c5385b43d05ea917a864edfc55fd87bab79a952dc1c58f38094`,
 R `e75e308e32db0fa0b66863c0af970b15de3ff5312083cc43b627cf309f689f3d`.
 Each spends the 756-sat authhead with a seller coin; the burn's fee is 678 sats, so each returns 78 sats net.
 
-So, of the 75,976 sats left in contract coins: 33,600 (event records) can be swept back by anyone from the blocks
-above; 41,800 cannot be spent by any entry point of these builds, because every entry point checks a status the
-finished escrow has left; and B's 576-sat output has no known path. A function that closes a finished escrow would not reach these seven; for
+So, of the 75,976 sats left in contract coins: 33,600 (event records) and 576 (B's filler) can be swept back by
+anyone from the blocks above; 41,800 cannot be spent by any entry point of these builds, because every entry point
+checks a status the finished escrow has left. A function that closes a finished escrow would not reach these seven; for
 new escrows it was measured and left out (see "Closing an escrow" below).
 
 The wallet, every satoshi:

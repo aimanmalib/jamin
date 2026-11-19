@@ -13,6 +13,7 @@ const ADDRESSES: ContractAddress[] = [
   { lock: 'aa03', address: 'sats', kind: 'satoshiContainer' },
   { lock: 'aa04', address: 'released', kind: 'event', event: 'Released' },
   { lock: 'aa05', address: 'identity', kind: 'identity' },
+  { lock: 'aa06', address: 'filler', kind: 'filler', shared: true },
 ];
 
 describe('classify', () => {
@@ -25,11 +26,13 @@ describe('classify', () => {
     ['aa03', [{ txid: tx(9), vout: 3, satoshis: 1000 }]],
     ['bb99', [{ txid: tx(4), vout: 3, satoshis: 576 }]],
     ['aa05', [{ txid: tx(1), vout: 0, satoshis: 756 }]],
+    ['aa06', [{ txid: tx(9), vout: 4, satoshis: 576, height: 101 }]],
   ]);
   const coins = classify('A', ADDRESSES, listed);
 
   it('names each coin after the address it sits at and counts a coin listed twice once', () => {
-    expect(coins.map((c) => c.kind)).toEqual(['master', 'data', 'data', 'satoshiContainer', 'event', 'identity', 'other']);
+    expect(coins.map((c) => c.kind)).toEqual(['master', 'data', 'data', 'satoshiContainer', 'event', 'filler', 'identity',
+      'other']);
     expect(coins.find((c) => c.kind === 'event')?.event).toBe('Released');
     expect(coins.every((c) => c.branch === 'A')).toBe(true);
   });
@@ -40,15 +43,17 @@ describe('classify', () => {
       { kind: 'data', coins: 2, satoshis: 2400, tokenAmount: 0 },
       { kind: 'satoshiContainer', coins: 1, satoshis: 1000, tokenAmount: 0 },
       { kind: 'event', coins: 1, satoshis: 1200, tokenAmount: 0 },
+      { kind: 'filler', coins: 1, satoshis: 576, tokenAmount: 0 },
       { kind: 'identity', coins: 1, satoshis: 756, tokenAmount: 0 },
       { kind: 'other', coins: 1, satoshis: 576, tokenAmount: 0 },
     ]);
   });
 
-  it('lets an event coin go once its relative lock has passed, and not a block earlier', () => {
+  it('lets an event or filler coin go once its relative lock has passed, and not a block earlier', () => {
     expect(spendableFrom(100, 144)).toBe(244);
     expect(matured(coins, 242, 144)).toEqual([]);
     expect(matured(coins, 243, 144).map((c) => c.vout)).toEqual([6]);
+    expect(matured(coins, 244, 144).map((c) => `${c.kind}:${c.vout}`)).toEqual(['event:6', 'filler:4']);
   });
 });
 

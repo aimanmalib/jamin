@@ -3,12 +3,17 @@
 
 /**
  * What a coin at a contract address is, named after the stateful contract's address it sits at. 'identity' is the
- * category's metadata authhead each deployment creates at output 0, owned by the deployer's lock.
+ * category's metadata authhead each deployment creates at output 0, owned by the deployer's lock. 'filler' is an
+ * output the SDK leaves at an unused index, at a lock every contract shares (src/coins/filler.ts).
  */
-export type CoinKind = 'master' | 'data' | 'satoshiContainer' | 'tokenContainer' | 'event' | 'identity' | 'other';
+export type CoinKind = 'master' | 'data' | 'satoshiContainer' | 'tokenContainer' | 'event' | 'filler' | 'identity'
+  | 'other';
 
-export const COIN_KINDS: readonly CoinKind[] = ['master', 'data', 'satoshiContainer', 'tokenContainer', 'event', 'identity',
-  'other'];
+export const COIN_KINDS: readonly CoinKind[] = ['master', 'data', 'satoshiContainer', 'tokenContainer', 'event', 'filler',
+  'identity', 'other'];
+
+/** Kinds anyone may spend once a relative lock has passed. */
+export const SWEPT_KINDS: readonly CoinKind[] = ['event', 'filler'];
 
 /** One address of a contract, by locking bytecode (hex), with the kind of coin that belongs there. */
 export interface ContractAddress {
@@ -17,6 +22,8 @@ export interface ContractAddress {
   kind: Exclude<CoinKind, 'other'>;
   /** The event an event address records. */
   event?: string;
+  /** Other people's coins sit at this lock too: only the escrow's own transactions' outputs are counted. */
+  shared?: boolean;
 }
 
 export interface ContractCoin {
@@ -83,15 +90,15 @@ export function sum(values: readonly number[]): number {
 }
 
 /**
- * The first block an event coin can be spent in: its covenant checks a relative lock of `relativeBlocks`
+ * The first block an event or filler coin can be spent in: its covenant checks a relative lock of `relativeBlocks`
  * (OP_CHECKSEQUENCEVERIFY), so a coin mined at height h can be spent in a block at h + relativeBlocks.
  */
 export function spendableFrom(height: number, relativeBlocks: number): number {
   return height + relativeBlocks;
 }
 
-/** Event coins the next block can include, given the chain tip. */
+/** Event and filler coins the next block can include, given the chain tip. */
 export function matured(coins: readonly ContractCoin[], tip: number, relativeBlocks: number): ContractCoin[] {
-  return coins.filter((c) => c.kind === 'event' && c.height !== undefined
+  return coins.filter((c) => SWEPT_KINDS.includes(c.kind) && c.height !== undefined
     && spendableFrom(c.height, relativeBlocks) <= tip + 1);
 }

@@ -6,6 +6,7 @@ import { TransactionBuilder, type NetworkProvider, type Utxo } from '@solidcash/
 import { publishMetadata, type IdentityRecord } from '@solidcash/solidcash/bcmr';
 import { MockNetworkProvider } from '@solidcash/solidcash/network/mock';
 import { createEventNftUnlocker, type StatefulContract } from '@solidcash/solidcash/stateful';
+import { fillerUnlocker } from './filler.js';
 import { call, panelCall, type Party, type PartyName } from '../lifecycle/context.js';
 
 export interface MirrorCoin { address: string; utxo: Utxo }
@@ -94,19 +95,21 @@ export async function tryEntryPoints(sc: StatefulContract, parties: Record<Party
   return results;
 }
 
-export interface EventCoin { utxo: Utxo; event: string }
+/** An event record of the contract, or a filler (src/coins/filler.ts) when `event` is left out. */
+export interface EventCoin { utxo: Utxo; event?: string }
 
 /**
- * A transaction that spends `coins` (event records of `sc`) to `to`, paying `feeRate` sat/byte. Event records carry a
- * non-fungible token of the contract's category with no capability; the sweep burns it on purpose. Their covenant
- * checks a block-based relative lock, which the input's sequence number carries.
+ * A transaction that spends `coins` (event records of `sc`, and fillers) to `to`, paying `feeRate` sat/byte. Event
+ * records carry a non-fungible token of the contract's category with no capability; the sweep burns it on purpose.
+ * Both covenants check a block-based relative lock, which the input's sequence number carries.
  */
 export function eventSweep(sc: StatefulContract, provider: NetworkProvider, coins: readonly EventCoin[], to: string,
   feeRate: number, relativeBlocks: number): TransactionBuilder {
   const build = (fee: bigint): TransactionBuilder => {
     const tx = new TransactionBuilder({ provider, allowImplicitNftBurn: true });
     for (const c of coins) {
-      tx.addInput(c.utxo, createEventNftUnlocker(sc.inner, sc.categoryId, c.event), { sequence: relativeBlocks });
+      const unlocker = c.event === undefined ? fillerUnlocker() : createEventNftUnlocker(sc.inner, sc.categoryId, c.event);
+      tx.addInput(c.utxo, unlocker, { sequence: relativeBlocks });
     }
     const total = coins.reduce((a, c) => a + c.utxo.satoshis, 0n);
     return tx.addOutput({ to, amount: total - fee });

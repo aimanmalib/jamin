@@ -4,9 +4,10 @@ import { binToHex, decodeTransaction, hexToBin, lockingBytecodeToCashAddress } f
 import type { NetworkProvider, Utxo } from '@solidcash/solidcash';
 import { resolveIdentity, type IdentityRecord } from '@solidcash/solidcash/bcmr';
 import { party, type Party, type PartyName } from '../lifecycle/context.js';
-import { classify, matured, spendableFrom, totalsByKind, type ContractAddress, type ContractCoin, type KindTotal,
+import { classify, matured, spendableFrom, SWEPT_KINDS, totalsByKind, type ContractAddress, type ContractCoin, type KindTotal,
   type ListedCoin } from './classify.js';
 import { addressesOf, attach, type Attached } from './escrows.js';
+import { fillerAddress, fillerLock } from './filler.js';
 import { burnIdentity, eventSweep, mirror, tryEntryPoints, verbatim, type EventCoin, type PathResult } from './paths.js';
 
 export interface SurveyOptions {
@@ -78,13 +79,15 @@ export async function surveyEscrow(o: SurveyOptions): Promise<Survey> {
   if (identity && identityAddress) {
     known.push({ lock: binToHex(identity.lockingBytecode), address: identityAddress, kind: 'identity' });
   }
+  known.push({ lock: binToHex(fillerLock()), address: fillerAddress(), kind: 'filler', shared: true });
   const extra = await otherLocks(o.provider, o.stepTxids, new Set(known.map((a) => a.lock)), o.walletLocks);
   const utxos = new Map<string, { address: string; utxo: Utxo }>();
   const listed = new Map<string, ListedCoin[]>();
-  for (const ad of [...known, ...extra]) {
+  const lookups: (Pick<ContractAddress, 'lock' | 'address'> & Partial<ContractAddress>)[] = [...known, ...extra];
+  for (const ad of lookups) {
     const list = await o.provider.getUtxos(ad.address);
     // An address no part of this contract names may hold other people's coins: keep the escrow's own.
-    const ours = 'kind' in ad ? list : list.filter((u) => o.stepTxids.includes(u.txid));
+    const ours = ad.kind !== undefined && ad.shared !== true ? list : list.filter((u) => o.stepTxids.includes(u.txid));
     for (const u of ours) utxos.set(`${u.txid}:${u.vout}`, { address: ad.address, utxo: u });
     listed.set(ad.lock, ours.map((u) => ({ txid: u.txid, vout: u.vout, satoshis: Number(u.satoshis),
       ...(u.token?.amount ? { tokenAmount: Number(u.token.amount) } : {}),
@@ -104,10 +107,11 @@ export async function surveyEscrow(o: SurveyOptions): Promise<Survey> {
   const mirrored = await attach(o.address, onMirror, m, o.attached.category);
   const paths = await tryEntryPoints(mirrored.sc, onMirror, state.terms, o.attached.category);
 
-  const eventsOf = (cs: readonly ContractCoin[]): EventCoin[] => cs.filter((c) => c.kind === 'event')
-    .map((c) => ({ utxo: (utxos.get(`${c.txid}:${c.vout}`) as { utxo: Utxo }).utxo, event: c.event ?? '' }));
+  const eventsOf = (cs: readonly ContractCoin[]): EventCoin[] => cs.filter((c) => SWEPT_KINDS.includes(c.kind))
+    .map((c) => ({ utxo: (utxos.get(`${c.txid}:${c.vout}`) as { utxo: Utxo }).utxo,
+      ...(c.kind === 'event' ? { event: c.event ?? '' } : {}) }));
   const events = eventsOf(coins);
-  const heights = coins.filter((c) => c.kind === 'event' && c.height !== undefined).map((c) => c.height as number);
+  const heights = coins.filter((c) => SWEPT_KINDS.includes(c.kind) && c.height !== undefined).map((c) => c.height as number);
   const ready = eventsOf(matured(coins, o.tip, o.relativeBlocks));
   let sweep: Survey['eventSweep'] = { outcome: 'no event coins', maturedNow: ready.length };
   if (events.length > 0) {

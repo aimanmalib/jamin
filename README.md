@@ -178,7 +178,8 @@ The reasons the other ten are not are in the same file.
   the escrow has left (`docs/MEASURED.md`, "Final state", tried for all seven mainnet escrows). After the claims below,
   the seven escrows hold 75,976 sats in contract coins. 41,800 of them (the master and state NFTs, the 1,000-sat
   reserve, and B's token container with 1 unit, 0.01 PUSD) cannot be spent. 33,600 are event records, which anyone
-  may sweep 144 blocks after they were mined. A further 576 sats sit at an address no SDK path names. Each
+  may sweep 144 blocks after they were mined. A further 576 sats are an SDK filler output, which anyone may also
+  sweep after 144 blocks. Each
   escrow's metadata identity (756 sats) was burned by its owner, which returned 78 sats net after the fee. Every
   satoshi of the test wallet is accounted for, with 0 unexplained.
 - **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
