@@ -709,6 +709,30 @@ Wallet at 17:50 UTC: the six addresses held 68,359 sats (seller 15,371; buyer 32
 fees (22,593), and 16,116 sats for the seller's genesis-coin payment fee and the coins the escrow keeps at its
 contract addresses, not split further here.
 
+## Locked amounts
+
+Measured 2026-11-20 05:20 UTC through `bch.imaginary.cash`, read only: `npx tsx scripts/record-locked.ts` read each
+fund and deposit transaction of `examples/mainnet.json` and wrote the amount its escrow container received into that
+step (`lockedSats` for BCH escrows, `lockedUnits` for PUSD escrows; decision 0023). A BCH container holds the trade
+amount, the trade fee raised to the 546 sat floor and the 1,000 sat container reserve (20,000 + 546 + 1,000 =
+21,546; 5,000 + 546 + 1,000 = 6,546). A PUSD container holds the amount, one fee unit and one reserve unit.
+
+| Branch | Asset | Step | Transaction | Locked |
+|---|---|---|---|---|
+| A | BCH | `fund` | `96f2b3fc8d4a73a9cfebeda07df4fc32d89b8b49b2a825a82f5e1aae8d98d206` | 21,546 sats |
+| C | BCH | `fund` | `1c063be47cc40144463424de8880389e629cbbd112b5ae844674bdf2c23a57c1` | 21,546 sats |
+| D | BCH | `fund` | `9847ee3724f3ab166d4f04ee111b4ca5c48d1d03ebead3ff61b57b7bce0e0c60` | 21,546 sats |
+| E | BCH | `fund` | `309372d30678f74f73e9e55708ca1595f01f5c15f3508ba52006ce8bb10de6b6` | 21,546 sats |
+| W | BCH | `fund` | `c205bd65fecfe28f48446be5b65c25039dcdb4762225099ca655b96109b71eae` | 21,546 sats |
+| B | PUSD | `deposit` | `d46f258decb247ac12c11e8326745b75e9a8e1244a7772f4ba4f6fb24dfe284d` | 12 PUSD units |
+| R | BCH | `fund` | `4c8bed17e9c7157899f4981f4f504545243a1a69813de80c2f767c2e4bc9ad8b` | 21,546 sats |
+| X | BCH | `fund` | `0617d193feb779083dbe2b16954caec84fa4eba94f0f2dddf22e7100c050da38` | 6,546 sats |
+| P | BCH | `fund` | `e206e84283673f2f7f21d143aa598d37098dc490f528200af410190edefc2b15` | 6,546 sats |
+| T | PUSD | `deposit` | `1f5457efafe05e5d363172823c083827338d55cb9e8a45a5a3e3d5d775133e32` | 11 PUSD units |
+
+Total: 142,368 sats (0.00142368 BCH) and 23 PUSD units (0.23 PUSD), never added together. The Home stats
+strip shows these sums, counted from the file by `web/data/stats.ts` (`tests/stats.test.ts`).
+
 ## Final state
 
 Measured 2026-11-18 19:30 UTC (tip 977927) through `bch.imaginary.cash` with `npx tsx scripts/contract-coins.ts`: every

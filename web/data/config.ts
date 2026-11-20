@@ -19,6 +19,8 @@ export interface WebConfig {
     feeRecipientPkh: string; wallets: string[]; pollMs: number; pollRangeMs: { min: number; max: number };
     copiedMs: number;
   };
+  stats: { pollMs: number; pollRangeMs: { min: number; max: number }; tickMs: number; mockPollMs: number;
+    mockStartHeight: number };
   tokens: { pusd: { symbol: string; category: string; decimals: number } };
 }
 

@@ -7,7 +7,11 @@ export interface RegtestTx {
   branch: string; step: string; txid: string; height: number; txBytes: number; inputs: number;
   largestUnlockBytes: number;
 }
-export interface MainnetStep { step: string; txid: string; height?: number; signer?: 'wallet'; wallet?: string }
+export interface MainnetStep {
+  step: string; txid: string; height?: number; signer?: 'wallet'; wallet?: string;
+  /** fund: satoshis locked; deposit: token units locked (measured on chain by scripts/record-locked.ts). */
+  lockedSats?: number; lockedUnits?: number;
+}
 /** A call the network refused (docs/decisions/0015): never mined, so a raw hash and no txid. */
 export interface RefusedStep {
   step: string; refused: true; by: string; expected: string; rawTxHash: string; serverError: string; at: string;

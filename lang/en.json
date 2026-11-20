@@ -322,5 +322,15 @@
     },
     "next": "Another demo escrow is waiting for the next visitor.",
     "nextButton": "Show the next escrow"
+  },
+  "stats": {
+    "title": "On mainnet",
+    "escrows": "Escrows on mainnet",
+    "locked": "Coins ever locked",
+    "refused": "Calls the network refused",
+    "block": "Current block",
+    "updated": "updated {seconds} s ago",
+    "loading": "reading the chain",
+    "unavailable": "live data unavailable"
   }
 }

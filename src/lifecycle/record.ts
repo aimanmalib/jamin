@@ -32,6 +32,8 @@ export interface MainnetStep {
   step: string; txid: string; height?: number; signer?: 'wallet'; wallet?: string; txBytes?: number; feeSats?: number;
   /** Signed by the party, broadcast by the keyless relayer (decision 0019). */
   relayed?: true;
+  /** fund: satoshis the escrow's container received; deposit: token units (scripts/record-locked.ts). */
+  lockedSats?: number; lockedUnits?: number;
 }
 /** A call the network refused (decision 0015): never mined, so a raw hash and no txid. */
 export interface RefusedRow {

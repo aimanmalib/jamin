@@ -18,7 +18,8 @@
           "txid": "96f2b3fc8d4a73a9cfebeda07df4fc32d89b8b49b2a825a82f5e1aae8d98d206",
           "txBytes": 6872,
           "feeSats": 7062,
-          "height": 977889
+          "height": 977889,
+          "lockedSats": 21546
         },
         {
           "step": "markAsPaid",
@@ -53,7 +54,8 @@
           "txid": "1c063be47cc40144463424de8880389e629cbbd112b5ae844674bdf2c23a57c1",
           "txBytes": 6872,
           "feeSats": 7062,
-          "height": 977889
+          "height": 977889,
+          "lockedSats": 21546
         },
         {
           "step": "markAsPaid",
@@ -88,7 +90,8 @@
           "txid": "9847ee3724f3ab166d4f04ee111b4ca5c48d1d03ebead3ff61b57b7bce0e0c60",
           "txBytes": 6872,
           "feeSats": 7062,
-          "height": 977889
+          "height": 977889,
+          "lockedSats": 21546
         },
         {
           "step": "sellerCancel",
@@ -116,7 +119,8 @@
           "txid": "309372d30678f74f73e9e55708ca1595f01f5c15f3508ba52006ce8bb10de6b6",
           "txBytes": 6872,
           "feeSats": 7062,
-          "height": 977889
+          "height": 977889,
+          "lockedSats": 21546
         },
         {
           "step": "markAsPaid",
@@ -160,7 +164,8 @@
           "signer": "wallet",
           "txBytes": 6872,
           "feeSats": 7055,
-          "height": 977889
+          "height": 977889,
+          "lockedSats": 21546
         },
         {
           "step": "markAsPaid",
@@ -196,7 +201,8 @@
           "txid": "d46f258decb247ac12c11e8326745b75e9a8e1244a7772f4ba4f6fb24dfe284d",
           "txBytes": 8416,
           "feeSats": 8606,
-          "height": 977901
+          "height": 977901,
+          "lockedUnits": 12
         },
         {
           "step": "markAsPaid",
@@ -231,7 +237,8 @@
           "txid": "4c8bed17e9c7157899f4981f4f504545243a1a69813de80c2f767c2e4bc9ad8b",
           "txBytes": 7013,
           "feeSats": 7062,
-          "height": 977918
+          "height": 977918,
+          "lockedSats": 21546
         },
         {
           "step": "sellerCancel",
@@ -288,7 +295,8 @@
           "wallet": "Cashonize v0.15.2",
           "txBytes": 6872,
           "feeSats": 7055,
-          "height": 977939
+          "height": 977939,
+          "lockedSats": 6546
         },
         {
           "step": "markAsPaid",
@@ -326,7 +334,8 @@
           "txid": "e206e84283673f2f7f21d143aa598d37098dc490f528200af410190edefc2b15",
           "txBytes": 6872,
           "feeSats": 7062,
-          "height": 978069
+          "height": 978069,
+          "lockedSats": 6546
         },
         {
           "step": "markAsPaid",
@@ -352,7 +361,8 @@
           "step": "deposit",
           "txid": "1f5457efafe05e5d363172823c083827338d55cb9e8a45a5a3e3d5d775133e32",
           "txBytes": 8416,
-          "feeSats": 8606
+          "feeSats": 8606,
+          "lockedUnits": 11
         },
         {
           "step": "buyerCancel",

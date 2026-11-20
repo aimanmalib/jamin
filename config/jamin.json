@@ -228,5 +228,15 @@
       "max": 30000
     },
     "copiedMs": 2000
+  },
+  "stats": {
+    "pollMs": 15000,
+    "pollRangeMs": {
+      "min": 5000,
+      "max": 60000
+    },
+    "tickMs": 1000,
+    "mockPollMs": 1000,
+    "mockStartHeight": 978100
   }
 }

@@ -4,6 +4,7 @@ import { Suspense, lazy, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { HeroArt } from './Art.js';
 import { config, sitePath } from '../data/config.js';
+import { StatsStrip } from './StatsStrip.js';
 
 // The demo card carries the SolidCash SDK: loaded after the first screen.
 const DemoRelease = lazy(async () => ({ default: (await import('./DemoRelease.js')).DemoRelease }));
@@ -24,6 +25,7 @@ export function Home(): ReactNode {
         </div>
         <HeroArt />
       </section>
+      <StatsStrip />
       <section className="judge" aria-labelledby="judge-title">
         <h2 id="judge-title" className="h3">{t('home.judgeTitle')}</h2>
         <ol>
