@@ -318,6 +318,8 @@
       "cancelledByBuyer": "dibatalkan oleh pembeli",
       "cancelledBySeller": "dibatalkan oleh penjual",
       "resolved": "diputuskan oleh panel"
-    }
+    },
+    "next": "Satu lagi escrow demo menunggu pelawat seterusnya.",
+    "nextButton": "Papar escrow seterusnya"
   }
 }

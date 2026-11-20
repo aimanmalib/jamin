@@ -15,5 +15,14 @@
     "panelA": "534599776c83aad8c55423e742dd99fb3fe806901f3dfa351ff55f809f8b673f",
     "panelB": "171706e3d8195e2b1e56c139067e7115c84ea1c792bb3890c1180e93f03e3df8",
     "panelC": "cd565cf90c6e6e3db1170ca072799dbc8d19f914bd62e7397bef3224c11ee623"
+  },
+  "pool": {
+    "size": 3,
+    "budgetSats": 145000,
+    "restageUntil": "2026-12-15T00:00:00Z",
+    "maxIndex": 40,
+    "estimateSats": 42000,
+    "payFeeSats": 400,
+    "indexPath": "/pool/pool.json"
   }
 }

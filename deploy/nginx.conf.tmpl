@@ -46,6 +46,14 @@ http {
       try_files $uri =404;
     }
 
+    # The demo escrow pool's list of escrows (decision 0021): a file the host's restage cron rewrites, mounted
+    # read-only. Never cached, so a visitor sees a newly staged escrow at once.
+    location /pool/ {
+      add_header Cache-Control "no-store" always;
+      add_header X-Content-Type-Options "nosniff" always;
+      try_files $uri =404;
+    }
+
     # The demo video and its poster keep their names, so a short lifetime. nginx answers Range requests, which
     # WebKit needs before it plays a video.
     location /media/ {

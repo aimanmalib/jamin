@@ -69,6 +69,8 @@ case "$mode" in
   *) echo "usage: deploy.sh [--rollback|--status]"; exit 2 ;;
 esac
 
+# The demo pool's list is bind-mounted read-only; made here so Docker does not create it as root.
+mkdir -p ../state/demo-public
 old_id=$(docker inspect -f '{{.Image}}' jamin 2>/dev/null || true)
 JAMIN_TAG=$TAG $DC up -d --force-recreate jamin
 echo "$TAG" > CURRENT_TAG

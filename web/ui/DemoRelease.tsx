@@ -1,18 +1,18 @@
 // "Release on mainnet": the public demo escrow, already created, funded and marked paid. Pressing the button signs
 // `release` in this page with the public demo seller key and broadcasts it; `?demo=dry` signs and sends nothing.
-// The escrow's state is read from the chain, so a release by an earlier visitor shows as such.
+// The escrow's state is read from the chain, so a release by an earlier visitor shows as such. A pool of demo escrows
+// waits (decision 0021): the card offers the first still at `paid`, and after a release points to the next one.
 import { useEffect, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config, explorerLink } from '../data/config.js';
-import { demoEscrowAddress } from '../data/examples.js';
-import { demo, demoTarget, lastTx, release, statusOf, type DemoTarget } from '../demo/run.js';
+import { demo, lastTx, offer, release, type DemoTarget, type Offer } from '../demo/run.js';
 import type { DemoStatus, Released } from '../../src/demo/escrow.js';
 
 type View =
   | { kind: 'loading' } | { kind: 'none' } | { kind: 'error' }
   | { kind: 'status'; target: DemoTarget; status: DemoStatus; last?: string | undefined }
   | { kind: 'working'; target: DemoTarget }
-  | { kind: 'done'; target: DemoTarget; result: Released };
+  | { kind: 'done'; target: DemoTarget; result: Released; next?: Offer | undefined };
 
 function TxLink({ txid, live }: { txid: string; live: boolean }): ReactNode {
   return live ? <a className="txid" href={explorerLink(config.explorer.mainnetTx, txid)}>{txid}</a>
@@ -22,20 +22,28 @@ function TxLink({ txid, live }: { txid: string; live: boolean }): ReactNode {
 export function DemoRelease(): ReactNode {
   const { t } = useLang();
   const [view, setView] = useState<View>({ kind: 'loading' });
+  const [addresses, setAddresses] = useState<string[]>([]);
   useEffect(() => {
     let alive = true;
     (async (): Promise<View> => {
-      const target = await demoTarget(demoEscrowAddress());
-      if (!target) return { kind: 'none' };
-      const status = await statusOf(target);
-      return { kind: 'status', target, status, last: status === 'paid' ? undefined : await lastTx(target) };
+      const o = await offer();
+      if (!o) return { kind: 'none' };
+      setAddresses(o.addresses);
+      return { kind: 'status', target: o.target, status: o.status,
+        last: o.status === 'paid' ? undefined : await lastTx(o.target) };
     })().then((v) => { if (alive) setView(v); }, () => { if (alive) setView({ kind: 'error' }); });
     return () => { alive = false; };
   }, []);
 
   const press = (target: DemoTarget): void => {
     setView({ kind: 'working', target });
-    release(target).then((result) => setView({ kind: 'done', target, result }), () => setView({ kind: 'error' }));
+    release(target).then(async (result) => {
+      setView({ kind: 'done', target, result });
+      // A sent release ends this escrow: look for the next one still waiting. A dry one changes nothing.
+      if (!result.sent || target.mode === 'mock') return;
+      const next = await offer(target.mode, new Set([target.address]), addresses).catch(() => undefined);
+      if (next?.status === 'paid') setView({ kind: 'done', target, result, next });
+    }, () => setView({ kind: 'error' }));
   };
 
   const live = (target: DemoTarget): boolean => target.mode !== 'mock';
@@ -63,6 +71,12 @@ export function DemoRelease(): ReactNode {
         <p role="status" data-testid="demo-result">
           {t(view.result.sent ? 'demo.sent' : 'demo.signed', { bytes: view.result.bytes.toLocaleString('en') })}
           {' '}<TxLink txid={view.result.txid} live={view.result.sent && live(view.target)} />
+        </p>
+      )}
+      {view.kind === 'done' && view.next && (
+        <p data-testid="demo-next">{t('demo.next')}{' '}
+          <button type="button" className="btn" onClick={() => view.next &&
+            setView({ kind: 'status', target: view.next.target, status: view.next.status })}>{t('demo.nextButton')}</button>
         </p>
       )}
       {view.kind !== 'none' && view.kind !== 'loading' && 'target' in view && (

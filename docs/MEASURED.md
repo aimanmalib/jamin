@@ -341,6 +341,34 @@ On mainnet, staged 2026-11-19 20:07 UTC with `scripts/demo-escrow.ts --network m
   iPhone 13, 25.6 min), its mainnet demo test in dry mode only; read from the chain afterwards, the escrow's status
   was still `paid` and its address history held only the three staging transactions.
 
+## Demo pool
+
+Measured 2026-11-20 03:42 to 03:58 UTC with `scripts/demo-restage.ts` (decision 0021) and the pool settings of
+`config/demo.json` (`size` 3, `budgetSats` 145,000, `estimateSats` 42,000, 400 sats counted per wallet payment).
+Nothing on mainnet: mainnet was only counted with `--kering`.
+
+On a stock Bitcoin Cash Node 29.0.0 regtest node (`/Bitcoin Cash Node:29.0.0(EB32.0)/`), three runs on one chain:
+
+| Run | Waiting at `paid` before | Released by the test first | Staged | Swept back (sats) | Net spent after (sats) |
+|---|---:|---|---:|---:|---:|
+| 1 | 0 | no | 3 | 37,455 | 86,763 |
+| 2 | 2 (after the test release) | `87ded77b55368bb5d7300fe90c4141f2ed7bfd38df60046bd7b1236c5ead805a` | 1 | 4,815 | 123,354 |
+| 3 | 2 (after the test release) | `576936665ca3e3fd456d76f935d4260fbabcaaecf448a241ac6acb184c1bb542` | 0 (budget) | 0 | 123,354 |
+
+- Each staging cost 41,406 sats: paid to the demo keys 49,000, change back 8,794, plus 3 wallet payments counted
+  at 400. The first run's sweep took back 37,455 sats that an earlier run, stopped by its time limit mid-staging,
+  had left at the demo keys.
+- Run 2 kept the 6 largest coins at the demo seller for the two escrows still waiting, swept 4,815 sats (what the
+  release paid the demo buyer, less the sweep fee) and staged one escrow
+  (createEscrow `220284a5554c9c7842b920632171048350eb9c33e36cc38f539a4c0c2b8ab979`).
+- Run 3: 123,354 plus the next cost of 42,000 would pass 145,000, so it staged nothing, broadcast nothing and sent
+  the one-time budget warning; the ledger recorded when.
+- On the SolidCash mock network (production profile), `tests/demo-pool.test.ts` fills a pool of 3 from empty,
+  releases one, restages one, and then signs a dry release of each escrow still waiting without a coin split: the
+  kept fee coins were enough. Costs 41,406 for the first staging and 38,406 for each after it.
+- `env -i HOME=$HOME PATH=/usr/bin:/bin bash deploy/demo-restage-cron.sh --kering` against mainnet
+  (`bch.imaginary.cash`): exit 0, "1 of 3 waiting at paid; plan stage 2; dry, nothing sent", no ledger written.
+
 ## Wallet signing (branch W)
 
 Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with

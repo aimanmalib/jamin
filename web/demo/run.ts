@@ -1,5 +1,6 @@
-// The "Release on mainnet" card's network side, in the browser. Live and dry modes attach to the demo escrow recorded
-// in examples/mainnet.json and read it from the configured Electrum server; mock mode (`?demo=mock`, for tests)
+// The "Release on mainnet" card's network side, in the browser. Live and dry modes offer the first demo escrow still
+// waiting at `paid` (web/demo/pick.ts: those in examples/mainnet.json, then the pool's list, decision 0021) and read
+// them from the configured Electrum server; mock mode (`?demo=mock`, for tests)
 // stages a demo escrow on the SolidCash mock network in this page first. Keys come from config/demo.json: public demo
 // keys that guard at most maxSats (docs/decisions/0020-public-demo-escrow.md).
 import { hexToBin } from '@bitauth/libauth';
@@ -12,7 +13,9 @@ import { attachDemo, demoStatus, releaseDemo, type DemoParties, type DemoStatus,
 import { stageDemo, type Pay } from '../../src/demo/stage.js';
 import { artifact } from '../sim/load.js';
 import { config } from '../data/config.js';
+import { demoEscrowAddresses } from '../data/examples.js';
 import { demoMode, type DemoMode } from './mode.js';
+import { candidates, fetchIndex, pickReady } from './pick.js';
 
 export const demo = demoRaw as DemoConfig;
 
@@ -46,15 +49,33 @@ async function mockTarget(): Promise<DemoTarget> {
   return { mode: 'mock', provider, parties: p, address: staged.address };
 }
 
-/** The escrow the card acts on, or undefined when no demo escrow is recorded on mainnet yet. */
-export async function demoTarget(address: string | undefined, mode = demoMode()): Promise<DemoTarget | undefined> {
-  if (mode === 'mock') return mockTarget();
-  if (address === undefined) return undefined;
-  return { mode, provider: mainnetProvider(), parties: parties('bitcoincash'), address };
-}
-
 export async function statusOf(t: DemoTarget): Promise<DemoStatus> {
   return demoStatus(await attachDemo(t.provider, await artifact('JaminEscrow'), t.parties, t.address));
+}
+
+export interface Offer { target: DemoTarget; status: DemoStatus; addresses: string[] }
+
+/** Every demo escrow address the card may offer: recorded ones, then the pool's list. */
+export async function demoAddresses(): Promise<string[]> {
+  const recorded = demoEscrowAddresses();
+  return candidates(recorded, await fetchIndex(demo.pool.indexPath), recorded.length + demo.pool.maxIndex);
+}
+
+/**
+ * The escrow the card acts on: the first of `addresses` still waiting at `paid` (skipping `exclude`), else the
+ * newest. Undefined when no demo escrow is on mainnet yet.
+ */
+export async function offer(mode = demoMode(), exclude: ReadonlySet<string> = new Set(),
+  addresses?: string[]): Promise<Offer | undefined> {
+  if (mode === 'mock') {
+    if (exclude.size > 0) return undefined;
+    const target = await mockTarget();
+    return { target, status: await statusOf(target), addresses: [target.address] };
+  }
+  const list = addresses ?? await demoAddresses();
+  const base = { mode, provider: mainnetProvider(), parties: parties('bitcoincash') };
+  const picked = await pickReady(list, (address) => statusOf({ ...base, address }), exclude);
+  return picked && { target: { ...base, address: picked.address }, status: picked.status, addresses: list };
 }
 
 /** Signs the release in this page; broadcasts it unless the mode is dry. */

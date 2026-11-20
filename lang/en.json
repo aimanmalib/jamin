@@ -318,6 +318,8 @@
       "cancelledByBuyer": "cancelled by the buyer",
       "cancelledBySeller": "cancelled by the seller",
       "resolved": "resolved by the panel"
-    }
+    },
+    "next": "Another demo escrow is waiting for the next visitor.",
+    "nextButton": "Show the next escrow"
   }
 }

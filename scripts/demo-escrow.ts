@@ -6,14 +6,13 @@
 // On mainnet the demo escrow is left for a visitor to release: this script never sends a mainnet release, and stages
 // again only when the recorded demo escrow is no longer waiting for one. It records the escrow in examples/mainnet.json.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { RegtestNetworkProvider, type Artifact, type NetworkProvider, type Utxo } from '@solidcash/solidcash';
-import { MockNetworkProvider } from '@solidcash/solidcash/network/mock';
-import { binToHex, hexToBin } from '@bitauth/libauth';
+import type { Artifact } from '@solidcash/solidcash';
+import { hexToBin } from '@bitauth/libauth';
 import { loadConfig, repoRoot } from '../src/config.js';
-import { demoKeys, validDemoConfig, type DemoConfig, type Prefix } from '../src/demo/config.js';
+import { demoKeys, validDemoConfig, type DemoConfig } from '../src/demo/config.js';
 import { demoStatus, attachDemo, releaseDemo, type DemoParties } from '../src/demo/escrow.js';
-import { stageDemo, type Pay } from '../src/demo/stage.js';
-import { regtestRpc } from '../src/lifecycle/regtest.js';
+import { stageDemo } from '../src/demo/stage.js';
+import { mockNet, regtestNet, type Net } from './demo-nets.js';
 import { measure } from '../src/lifecycle/inspect.js';
 import { readRecord, writeRecord, type MainnetStep } from '../src/lifecycle/record.js';
 import { addDemoEscrow, latestDemo } from '../src/demo/record.js';
@@ -31,41 +30,6 @@ const demo = validDemoConfig(JSON.parse(readFileSync(`${repoRoot}config/demo.jso
   BigInt(cfg.escrow.feeBps));
 const artifact = JSON.parse(readFileSync(`${repoRoot}artifacts/solidcash/JaminEscrow.json`, 'utf8')) as Artifact;
 
-interface Net { provider: NetworkProvider; prefix: Prefix; pay: Pay; returnAddress: string; node: string }
-
-function randomTxid(): string {
-  return binToHex(crypto.getRandomValues(new Uint8Array(32)));
-}
-
-async function mockNet(): Promise<Net> {
-  const mock = new MockNetworkProvider({ profile: 'production' });
-  const [wallet] = await mock.getSigners(1);
-  if (!wallet) throw new Error('mock signer missing');
-  const pay: Pay = async (address, amounts) => {
-    const txid = randomTxid();
-    return Promise.all(amounts.map((satoshis, vout) => mock.seedUtxo(address, { txid, vout, satoshis })));
-  };
-  return { provider: mock as unknown as NetworkProvider, prefix: 'bchtest', pay, returnAddress: wallet.address,
-    node: 'SolidCash MockNetworkProvider (production profile)' };
-}
-
-async function regtestNet(): Promise<Net> {
-  const rpcUrl = `http://127.0.0.1:${cfg.regtest.rpcPort}`;
-  const user = process.env.REGTEST_RPC_USER ?? 'user';
-  const password = process.env.REGTEST_RPC_PASSWORD ?? 'password';
-  const regtest = new RegtestNetworkProvider({ rpcUrl, rpcUser: user, rpcPassword: password });
-  const rpc = regtestRpc(rpcUrl, user, password);
-  const zero = '00'.repeat(32);
-  const pay: Pay = async (address, amounts) => {
-    const out: Utxo[] = [];
-    for (const satoshis of amounts) out.push(await regtest.addUtxo(address, { txid: zero, vout: 0, satoshis }));
-    return out;
-  };
-  const node = (await rpc('getnetworkinfo') as { subversion: string }).subversion;
-  return { provider: regtest as unknown as NetworkProvider, prefix: 'bchreg', pay,
-    returnAddress: await rpc('getnewaddress') as string, node };
-}
-
 if (!['mock', 'regtest', 'mainnet'].includes(network) || !flags.has('--stage')) {
   console.error('usage: tsx scripts/demo-escrow.ts --network mock|regtest|mainnet --stage [--release, not on mainnet]');
   process.exit(2);
@@ -77,7 +41,7 @@ if (network === 'mainnet' && flags.has('--release')) {
 
 async function chosenNet(): Promise<Net & { close?: () => Promise<void> }> {
   if (network === 'mock') return mockNet();
-  if (network === 'regtest') return regtestNet();
+  if (network === 'regtest') return regtestNet(cfg);
   const recordFile = `${repoRoot}${cfg.mainnetExamples}`;
   const m = await mainnetNet(cfg, repoRoot, stagingNeed(demo));
   const close = async (): Promise<void> => { await m.electrum.disconnect(); };

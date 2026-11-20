@@ -1,4 +1,5 @@
-# jamin: one static web container behind the host's reverse proxy. No published port, no volume, no keys.
+# jamin: one static web container behind the host's reverse proxy. No published port, no keys. One read-only bind:
+# the demo escrow pool's list of escrows, which the host's restage cron writes (decision 0021).
 # Run through deploy/deploy.sh, which sources deploy/hos.env (host values, not tracked).
 name: jamin
 services:
@@ -8,6 +9,8 @@ services:
     restart: unless-stopped
     read_only: true
     tmpfs: [/tmp]
+    volumes:
+      - ../state/demo-public:/srv/jamin/pool:ro
     cpus: 0.25
     mem_limit: 64m
     networks: [proxy]

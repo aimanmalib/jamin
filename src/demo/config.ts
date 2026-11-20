@@ -20,6 +20,26 @@ export interface DemoConfig {
   sellerCoinSats: number;
   /** Private keys as hex. Public on purpose; see the label. */
   keys: Record<DemoRole, string>;
+  /** The pool of demo escrows kept waiting at `paid` (decision 0021). */
+  pool: PoolConfig;
+}
+
+/** The pool of demo escrows (decision 0021); checked by validPool in src/demo/pool.ts, which runs in Node only. */
+export interface PoolConfig {
+  /** Escrows waiting at `paid` the pool keeps, 3 to 5. */
+  size: number;
+  /** Most the pool may spend, net of what it takes back from the demo keys. */
+  budgetSats: number;
+  /** No staging at or after this time. */
+  restageUntil: string;
+  /** Most escrows the pool ever stages. */
+  maxIndex: number;
+  /** Cost of staging one escrow before any is measured: what the wallet pays out, less the change that comes back. */
+  estimateSats: number;
+  /** Miner fee counted for each wallet payment to a demo key (the wallet's side of a staging). */
+  payFeeSats: number;
+  /** Where the site reads the list of pool escrows (state/demo-public/pool.json, mounted read-only). */
+  indexPath: string;
 }
 
 export interface DemoKey { privateKey: Uint8Array; publicKey: Uint8Array; pkh: Uint8Array; address: string }
