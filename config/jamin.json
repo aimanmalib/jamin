@@ -119,9 +119,9 @@
     "repoUrl": "https://github.com/aimanmalib/jamin",
     "prizeAddress": "bitcoincash:zplrydnf2z4pj4z9rv7uhmwsuxyrm8hj7uken87e7q",
     "deckUrl": "https://jamin.sasateguh.com/deck.pdf",
-    "videoUrl": "https://jamin.sasateguh.com/media/jamin-demo.mp4",
+    "videoUrl": "https://jamin.sasateguh.com/media/jamin-demo.mp4?v=1fa77a38",
     "videoPosterUrl": "https://jamin.sasateguh.com/media/jamin-demo.jpg",
-    "videoSeconds": 59,
+    "videoSeconds": 55,
     "note": true,
     "firstCommitUrl": "https://github.com/aimanmalib/jamin/commit/4ad48710f055ef59b318338b0020f817be1dc277"
   },

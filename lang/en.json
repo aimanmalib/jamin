@@ -52,7 +52,7 @@
     "judge2": "See the transactions recorded on a real network.",
     "judge3": "Read the contract and each SolidCash feature it uses, with the test that runs it.",
     "videoTitle": "Watch the demo ({seconds} seconds)",
-    "videoNote": "A recorded walk through this site: a disputed trade in the browser, then the escrows it ran on Bitcoin Cash mainnet. No sound.",
+    "videoNote": "A recorded walk through this site: a real release on Bitcoin Cash mainnet from the home page, a disputed trade in the browser, then the escrows recorded on mainnet. No sound.",
     "videoFallback": "Your browser cannot play this video. Download it here.",
     "howTitle": "How a trade goes",
     "how1Title": "1. The seller locks the coins",

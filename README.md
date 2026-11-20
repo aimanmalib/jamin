@@ -20,7 +20,7 @@ New project. First commit after the 14 November start:
 
 ## For judges: one minute
 
-- **Demo video (59 seconds, no sound):** https://jamin.sasateguh.com/media/jamin-demo.mp4, also on the
+- **Demo video (55 seconds, no sound):** https://jamin.sasateguh.com/media/jamin-demo.mp4?v=1fa77a38, also on the
   home page of the site.
 - **Try it:** https://jamin.sasateguh.com, tab **Try it**. The compiled contracts run on the SolidCash mock network
   in your browser. Play seller, buyer, arbitrator (panel member A, signing with member B or alone, which the contract refuses) or an outsider through all five branches and see each transaction

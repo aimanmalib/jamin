@@ -41,7 +41,9 @@ test('home: the demo video loads only on play, answers range requests, and fits 
   const errors = watchErrors(page);
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto('/');
-  const path = new URL(config.banner.videoUrl).pathname;
+  // The query (?v=<first 8 hex of the file's sha256>) changes with the file, so no cache serves an older video.
+  const url = new URL(config.banner.videoUrl);
+  const path = url.pathname + url.search;
   await expect(page.getByRole('link', { name: 'Demo video' })).toHaveAttribute('href', config.banner.videoUrl);
   const video = page.locator('.demo-video video');
   await video.scrollIntoViewIfNeeded();

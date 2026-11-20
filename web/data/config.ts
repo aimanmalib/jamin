@@ -28,9 +28,14 @@ export interface WebConfig {
 
 export const config = raw as WebConfig;
 
-/** The path of an absolute URL on this site, so a page served elsewhere (preview, tests) loads its own copy. */
+/**
+ * The path and query of an absolute URL on this site, so a page served elsewhere (preview, tests) loads its own copy.
+ * The query stays: `?v=` names the file's version past the CDN cache.
+ */
 export function sitePath(url: string): string {
-  return url ? new URL(url).pathname : '';
+  if (!url) return '';
+  const u = new URL(url);
+  return u.pathname + u.search;
 }
 
 /** `template` with `{txid}` / `{address}` replaced. */

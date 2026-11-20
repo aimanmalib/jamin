@@ -1,12 +1,14 @@
 // The demo video the site serves: the file and its poster are in public/ at the path of the configured URLs, the
 // MP4 can start playing before it has fully loaded, the length the page states is the file's own, the web server
 // gives /media/ its cache lifetime, and the README's first stop for judges links the video.
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { loadConfig } from '../src/config.js';
 import { renderTemplate } from '../src/deploy/site.js';
 import raw from '../config/jamin.json' with { type: 'json' };
+import { sitePath } from '../web/data/config.js';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const banner = raw.banner;
@@ -35,6 +37,12 @@ describe('demo video', () => {
     expect(mp4.subarray(4, 8).toString('latin1')).toBe('ftyp');
     expect(mp4.indexOf('moov')).toBeGreaterThan(0);
     expect(mp4.indexOf('moov')).toBeLessThan(mp4.indexOf('mdat'));
+  });
+
+  it('names the file version in its URL, so the CDN cache never serves an older video, and the page keeps it', () => {
+    const sha = createHash('sha256').update(publicFile(banner.videoUrl)).digest('hex');
+    expect(new URL(banner.videoUrl).searchParams.get('v')).toBe(sha.slice(0, 8));
+    expect(sitePath(banner.videoUrl)).toBe(`/media/jamin-demo.mp4?v=${sha.slice(0, 8)}`);
   });
 
   it('states the length of the file, rounded up to whole seconds', () => {
