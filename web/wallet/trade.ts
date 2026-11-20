@@ -14,10 +14,9 @@ import {
 import { artifact } from '../sim/load.js';
 import { config } from '../data/config.js';
 import type { WizSession } from './session.js';
+import type { TradeApi, TradeTx } from './types.js';
 
-export type TradeStep = 'createEscrow' | 'fund' | 'release';
-
-export interface TradeTx { step: TradeStep; txid: string }
+export type { TradeApi, TradeStep, TradeTx } from './types.js';
 
 export function tradeTerms(): TradeTerms {
   const e = config.escrow;
@@ -49,7 +48,7 @@ export function mainnetProvider(): NetworkProvider {
     encrypted: s.scheme === 'wss' }) as unknown as NetworkProvider;
 }
 
-export class WalletTrade {
+export class WalletTrade implements TradeApi {
   sc: StatefulContract | undefined;
   readonly txs: TradeTx[] = [];
 
@@ -64,6 +63,12 @@ export class WalletTrade {
       site: new URL(config.site.url).host, trade }, 'bitcoincash', BigInt(config.walletTrade.roleKeyRequestSats));
     return new WalletTrade(provider, seller, trade, walletName);
   }
+
+  get sellerAddress(): string { return this.seller.address; }
+
+  get roleKey(): Uint8Array { return this.seller.role.publicKey; }
+
+  hasEscrow(): boolean { return this.sc !== undefined; }
 
   async create(buyer: Uint8Array): Promise<string> {
     const terms = tradeTerms();

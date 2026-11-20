@@ -1,5 +1,5 @@
 // Page shell: event banner, header with the tabs and language toggle, the current tab, footer. Tabs are hash routes
-// (#/try, #/wallet, #/lifecycle, #/contract) so the app is one static page.
+// (#/try, #/wallet, #/lifecycle, #/contract) so the app is one static page. The header's wallet chip links to #/wallet.
 import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react';
 import { useLang } from './i18n.js';
 import { config } from './data/config.js';
@@ -12,6 +12,7 @@ import { ContractView } from './ui/ContractView.js';
 // The wallet tab carries the SDK's Electrum provider and the WizardConnect packages: loaded only when opened.
 const WalletTab = lazy(async () => ({ default: (await import('./ui/WalletTab.js')).WalletTab }));
 import { Mark } from './ui/Art.js';
+import { WalletChip } from './ui/WalletChip.js';
 import { TABS, hrefOf, tabFromHash, type Tab } from './route.js';
 
 function useTab(): Tab {
@@ -27,6 +28,9 @@ function useTab(): Tab {
 export function App(): ReactNode {
   const { t, lang, setLang } = useLang();
   const tab = useTab();
+  // Once opened, the wallet tab stays mounted (hidden on other tabs) so a connected wallet and its trade survive.
+  const [walletOpened, setWalletOpened] = useState(tab === 'wallet');
+  useEffect(() => { if (tab === 'wallet') setWalletOpened(true); }, [tab]);
   useEffect(() => { document.title = `${t(`tabs.${tab}`)} · ${t('app.name')}`; }, [tab, t]);
   return (
     <>
@@ -46,12 +50,17 @@ export function App(): ReactNode {
           </nav>
           <button type="button" className="btn-lang" lang={lang === 'en' ? 'ms' : 'en'}
             onClick={() => setLang(lang === 'en' ? 'ms' : 'en')}>{t('app.languageToggle')}</button>
+          <WalletChip />
         </div>
       </header>
       <main id="main" className="wrap" tabIndex={-1}>
         {tab === 'home' && <Home />}
         {tab === 'try' && <TryIt />}
-        {tab === 'wallet' && <Suspense fallback={<p className="muted">{t('wallet.loading')}</p>}><WalletTab /></Suspense>}
+        {walletOpened && (
+          <div hidden={tab !== 'wallet'}>
+            <Suspense fallback={<p className="muted">{t('wallet.loading')}</p>}><WalletTab /></Suspense>
+          </div>
+        )}
         {tab === 'lifecycle' && <Lifecycle />}
         {tab === 'contract' && <ContractView />}
       </main>

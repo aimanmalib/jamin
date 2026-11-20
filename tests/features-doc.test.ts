@@ -45,7 +45,7 @@ const PINS: Record<string, RegExp> = {
   'src/lifecycle/context.ts:119': /contract\.connect\(/,
   'src/lifecycle/wallet-branch.ts:35': /Signer\.external\(/,
   'src/wallet/wizard-trade.ts:52': /Signer\.external\(/,
-  'src/lifecycle/mainnet.ts:54': /new TransactionBuilder\(.*unlockP2PKH\(\)/,
+  'src/lifecycle/mainnet.ts:56': /new TransactionBuilder\(.*unlockP2PKH\(\)/,
   'test/helpers/escrow.ts:48': /new MockNetworkProvider\(\{ profile: 'production' \}\)/,
 };
 

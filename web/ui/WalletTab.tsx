@@ -1,14 +1,19 @@
 // "Wallet": a real escrow on mainnet, sold from a wallet that speaks WizardConnect (docs/decisions/0014). The seller
 // pastes the connection link into their wallet, the wallet signs the role key request, the creation, the deposit and
 // the release, and the buyer marks the trade paid from their own wallet in between. The page broadcasts each
-// transaction and keeps no wallet key; the link is hidden once the wallet has connected.
-import { useCallback, useRef, useState, type ReactNode } from 'react';
+// transaction and keeps no wallet key; the link is hidden once the wallet has connected. The escrow's status and the
+// wallet's balance stay current by themselves (docs/decisions/0022): there is no refresh button.
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config, explorerLink } from '../data/config.js';
 import { STATUS, type StatusName } from '../sim/engine.js';
-import { openSession, type WizSession } from '../wallet/session.js';
-import { WalletTrade, parsePublicKey, tradeTerms } from '../wallet/trade.js';
+import { parsePublicKey, tradeTerms, type TradeApi, type TradeTx } from '../wallet/trade.js';
+import { walletBackend } from '../wallet/backend.js';
+import { setConnectedWallet } from '../wallet/store.js';
+import { usePolling } from '../wallet/poll.js';
 import { hashQuery } from '../route.js';
+import { WalletQr } from './WalletQr.js';
+import { WizardHat } from './WizardHat.js';
 
 type Phase = 'idle' | 'linking' | 'connected' | 'created' | 'funded';
 
@@ -31,13 +36,13 @@ export function WalletTab(): ReactNode {
   const [buyerHex, setBuyerHex] = useState(resume?.buyer ?? '');
   const [phase, setPhase] = useState<Phase>('idle');
   const [uri, setUri] = useState('');
-  const [trade, setTrade] = useState<WalletTrade | null>(null);
+  const [trade, setTrade] = useState<TradeApi | null>(null);
   const [escrow, setEscrow] = useState('');
   const [status, setStatus] = useState<StatusName | null>(null);
-  const [txs, setTxs] = useState<WalletTrade['txs']>([]);
+  const [txs, setTxs] = useState<TradeTx[]>([]);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState('');
-  const session = useRef<WizSession | null>(null);
+  const backend = useMemo(() => walletBackend(), []);
   const terms = tradeTerms();
   const buyer = parsePublicKey(buyerHex);
 
@@ -48,15 +53,16 @@ export function WalletTab(): ReactNode {
   }, []);
 
   const connect = (): void => {
-    const s = openSession();
-    session.current = s;
-    setUri(s.uri);
+    const link = backend.open();
+    setUri(link.uri);
     setPhase('linking');
     void run(async () => {
       const name = resume?.trade ?? `${config.walletTrade.tradeNamePrefix}-${Math.floor(Date.now() / 1000)}`;
-      const w = await WalletTrade.start(s, name);
+      const w = await link.start(name);
       setUri('');
       setTrade(w);
+      setConnectedWallet({ name: w.walletName, address: w.sellerAddress,
+        readBalance: () => backend.balance(w.sellerAddress) });
       if (resume && buyer) {
         await w.resume(resume.escrow, buyer);
         setEscrow(resume.escrow);
@@ -68,15 +74,18 @@ export function WalletTab(): ReactNode {
     });
   };
 
-  const step = (work: (w: WalletTrade) => Promise<void>, next?: Phase) => (): void => {
+  const step = (work: (w: TradeApi) => Promise<void>, next?: Phase) => (): void => {
     if (!trade) return;
     void run(async () => {
       await work(trade);
       setTxs([...trade.txs]);
-      if (trade.sc) setStatus(STATUS[Number(await trade.status())] ?? null);
+      if (trade.hasEscrow()) setStatus(STATUS[Number(await trade.status())] ?? null);
       if (next) setPhase(next);
     });
   };
+
+  const live = phase === 'funded' && !busy && status !== 'released' && trade !== null;
+  usePolling(async () => { if (trade) setStatus(STATUS[Number(await trade.status())] ?? null); }, live);
 
   return (
     <>
@@ -99,22 +108,15 @@ export function WalletTab(): ReactNode {
           <p id="buyer-help" className="small muted">{buyerHex !== '' && !buyer ? t('wallet.buyerInvalid') : t('wallet.buyerHelp')}</p>
           {phase === 'idle' && (
             <button type="button" className="btn btn-primary" disabled={!buyer} onClick={connect}
-              data-testid="wallet-connect">{t('wallet.connect')}</button>
+              data-testid="wallet-connect"><WizardHat />{t('wallet.connect')}</button>
           )}
-          {phase === 'linking' && uri !== '' && (
-            <div className="wallet" data-testid="wallet-link-box">
-              <p className="small">{t('wallet.linkNote')}</p>
-              <input type="text" readOnly value={uri} className="wallet-link" aria-label={t('wallet.linkLabel')}
-                data-testid="wallet-link" onFocus={(e) => e.target.select()} />
-              <p className="small muted">{busy ? t('wallet.waiting') : ''}</p>
-            </div>
-          )}
+          {phase === 'linking' && uri !== '' && <WalletQr uri={uri} waiting={busy} />}
           {trade && (
             <div className="wallet" data-testid="wallet-connected">
               <p className="small">{t('wallet.connected', { name: trade.walletName || '?' })}</p>
-              <p className="small muted">{t('wallet.address')} <span className="txid" data-testid="wallet-address">{trade.seller.address}</span></p>
+              <p className="small muted">{t('wallet.address')} <span className="txid" data-testid="wallet-address">{trade.sellerAddress}</span></p>
               <p className="small muted">{t('wallet.roleKey')} <span className="txid" data-testid="role-key">{
-                Array.from(trade.seller.role.publicKey, (b) => b.toString(16).padStart(2, '0')).join('')}</span></p>
+                Array.from(trade.roleKey, (b) => b.toString(16).padStart(2, '0')).join('')}</span></p>
               <p className="small muted">{t('wallet.tradeName')} <span className="txid" data-testid="trade-name">{trade.trade}</span></p>
             </div>
           )}
@@ -129,12 +131,8 @@ export function WalletTab(): ReactNode {
                 onClick={step(async (w) => { await w.fund(); }, 'funded')}>{t('wallet.fund')}</button>
             )}
             {phase === 'funded' && (
-              <>
-                <button type="button" className="btn" disabled={busy} data-testid="wallet-refresh"
-                  onClick={step(async () => Promise.resolve())}>{t('wallet.refresh')}</button>
-                <button type="button" className="btn btn-primary" disabled={busy || status !== 'paid'}
-                  data-testid="wallet-release" onClick={step(async (w) => { await w.release(); })}>{t('wallet.release')}</button>
-              </>
+              <button type="button" className="btn btn-primary" disabled={busy || status !== 'paid'}
+                data-testid="wallet-release" onClick={step(async (w) => { await w.release(); })}>{t('wallet.release')}</button>
             )}
           </div>
           {busy && phase !== 'linking' && <p className="small muted" role="status">{t('wallet.signInWallet')}</p>}

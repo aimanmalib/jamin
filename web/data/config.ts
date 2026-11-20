@@ -16,8 +16,10 @@ export interface WebConfig {
   walletTrade: {
     network: 'mainnet'; dappName: string; relayUrls: string[]; amountSats: number; minGenesisCoinSats: number;
     roleKeyRequestSats: number; connectTimeoutMs: number; tradeNamePrefix: string; panel: string[];
-    feeRecipientPkh: string; wallets: string[];
+    feeRecipientPkh: string; wallets: string[]; pollMs: number; pollRangeMs: { min: number; max: number };
+    copiedMs: number;
   };
+  tokens: { pusd: { symbol: string; category: string; decimals: number } };
 }
 
 export const config = raw as WebConfig;

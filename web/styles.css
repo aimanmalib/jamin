@@ -19,6 +19,8 @@
   --font-body: 'IBM Plex Sans', system-ui, sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --tap: 44px;
+  --qr-light: #fff;
+  --qr-dark: #000;
   color-scheme: light;
 }
 *, *::before, *::after { box-sizing: border-box; }
@@ -174,11 +176,38 @@ footer { border-top: 1px solid var(--line); padding-block: 1.5rem; font-size: 0.
 .diagram .edge-label { font-size: 12px; }
 main { padding-top: 2rem; }
 
+/* Header wallet button: "Connect wallet" with the WizardConnect hat, then the connected wallet's balance. */
+.btn-wallet { display: inline-flex; align-items: center; gap: 0.4rem; min-height: var(--tap); padding: 0 0.75rem;
+  border: 1px solid var(--river); border-radius: 8px; background: var(--river); color: var(--paper); font-weight: 600;
+  text-decoration: none; white-space: nowrap; }
+.btn-wallet.connected { background: var(--river-soft); color: var(--ink); font-family: var(--font-mono); font-weight: 400;
+  font-size: 0.85rem; }
+.btn-wallet .chip-token { padding-left: 0.4rem; border-left: 1px solid var(--line); }
+.wizard-hat { flex: none; }
+
+/* Wallet tab: the WizardConnect QR (tap to copy), the link in full below it, and the copy note. */
+.wiz-label { display: flex; align-items: center; gap: 0.4rem; font-weight: 600; color: var(--river); margin-bottom: 0.4rem; }
+.qr { display: block; width: min(16rem, 100%); padding: 0; border: 1px solid var(--line); border-radius: 8px;
+  background: var(--qr-light); cursor: copy; }
+.qr rect { fill: var(--qr-light); }
+.qr path { fill: var(--qr-dark); }
+.qr svg { display: block; width: 100%; height: auto; border-radius: 8px; }
+.wallet-uri { font-family: var(--font-mono); overflow-wrap: anywhere; margin: 0.5rem 0; }
+.wallet-qr .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
+.copied { color: var(--river); font-weight: 600; }
+
 /* Narrow screens: brand and language on one row, tabs below */
 @media (max-width: 40rem) {
   .top nav { order: 3; width: 100%; }
   .tabs a { padding: 0 0.6rem; }
   .btn-lang { min-height: 40px; font-size: 0.9rem; }
+  .top .wrap { column-gap: 0.5rem; }
+  .btn-wallet { min-height: 40px; padding: 0 0.6rem; font-size: 0.85rem; }
+  /* Phones: the hat alone before a wallet connects (the label stays for screen readers), BCH alone after. */
+  .btn-wallet:not(.connected) { min-width: 40px; justify-content: center; padding: 0; }
+  .btn-wallet:not(.connected) .chip-label { position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap; }
+  .btn-wallet .chip-token { display: none; }
   .banner { font-size: 0.8rem; }
 }
 .wallet { border-top: 1px solid var(--line); margin: 0 0 1rem; padding-top: 0.75rem; min-width: 0; }
@@ -196,9 +225,10 @@ main { padding-top: 2rem; }
 
 /* Wallet tab: a key field and the WizardConnect link, both in the mono face and never wider than the card. */
 .field { display: grid; gap: 0.3rem; margin: 0.75rem 0 0.25rem; min-width: 0; font-weight: 600; }
-.field input, .wallet-link { width: 100%; max-width: 100%; min-width: 0; min-height: var(--tap); padding: 0 0.6rem;
+.field input { width: 100%; max-width: 100%; min-width: 0; min-height: var(--tap); padding: 0 0.6rem;
   border: 1px solid var(--line); border-radius: 8px; background: var(--card); color: var(--ink);
   font-family: var(--font-mono); font-size: 0.85rem; font-weight: 400; }
 .field input[aria-invalid="true"] { border-color: var(--ink); border-style: dashed; }
 .wallet-trade ul { padding-left: 1.1rem; margin: 0 0 0.5rem; }
 .wallet-trade .actions { margin-top: 0.75rem; }
+.wallet-trade .actions .btn { flex-direction: row; justify-content: center; align-items: center; min-height: var(--tap); }
