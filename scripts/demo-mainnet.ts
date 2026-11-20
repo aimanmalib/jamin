@@ -14,6 +14,7 @@ import { gather } from '../src/wallet/gather.js';
 import { childPath, deriveKey } from '../src/wallet/keys.js';
 import { readEnvValue } from '../src/wallet/env-file.js';
 import type { Pay } from '../src/demo/stage.js';
+import { FundsShort } from '../src/demo/pool.js';
 import { ROLE_OF } from './lifecycle-mainnet.js';
 
 export interface MainnetNet {
@@ -69,7 +70,7 @@ export async function mainnetNet(cfg: JaminConfig, repoRoot: string, need: bigin
   console.log(`seller ${seller.address} holds ${held} sat; staging needs ${need} (${server.hostname})`);
   if (held < need) {
     await electrum.disconnect();
-    throw new MainnetRefused(`not funded: the wallet holds ${held} sat at the seller, staging needs ${need}; nothing staged`);
+    throw new FundsShort(`not funded: the wallet holds ${held} sat at the seller, staging needs ${need}; nothing staged`);
   }
 
   const payDemo: Pay = async (address, amounts) => {

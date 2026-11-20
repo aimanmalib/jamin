@@ -145,8 +145,12 @@ try {
   const r = await restage(deps(ledger));
   report(network, r);
   ledger = r.ledger;
+  if (r.waitingFunds) console.log(`  waiting for funds: ${r.waitingFunds}`);
+  if (r.failed) console.error(`restage failed: ${r.failed}`);
   if (!dry) {
-    ledger = recordSuccess(ledger);
+    // Waiting for funds is not a failure: the count of failed runs stays as it is and no warning goes out.
+    if (r.failed) { ledger = recordFailure(ledger, r.failed, new Date(), notify); code = 1; }
+    else if (!r.waitingFunds) ledger = recordSuccess(ledger);
     if (ledgerFile) writeJsonAtomic(ledgerFile, ledger);
     if (network === 'mainnet') {
       writeJsonAtomic(publicFile, { updatedAt: new Date().toISOString(), escrows: poolAddresses(side.known, ledger) });

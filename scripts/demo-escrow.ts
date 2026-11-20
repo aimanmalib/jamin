@@ -17,6 +17,7 @@ import { measure } from '../src/lifecycle/inspect.js';
 import { readRecord, writeRecord, type MainnetStep } from '../src/lifecycle/record.js';
 import { addDemoEscrow, latestDemo } from '../src/demo/record.js';
 import { MainnetRefused, mainnetNet, stagingNeed } from './demo-mainnet.js';
+import { FundsShort } from '../src/demo/pool.js';
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);
@@ -61,7 +62,7 @@ let net: Net & { close?: () => Promise<void> };
 try {
   net = await chosenNet();
 } catch (error) {
-  if (!(error instanceof MainnetRefused)) throw error;
+  if (!(error instanceof MainnetRefused || error instanceof FundsShort)) throw error;
   console.error(error.message);
   process.exit(2);
 }

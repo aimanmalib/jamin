@@ -10,7 +10,7 @@ import { demoKeys, type DemoConfig } from '../src/demo/config.js';
 import { attachDemo, demoStatus, releaseDemo, type DemoStatus } from '../src/demo/escrow.js';
 import { largest, stageDemo, sweepDemoKeys, type Pay, type Staged } from '../src/demo/stage.js';
 import {
-  POOL_LIMITS, emptyLedger, netSpent, planRestage, recordFailure, recordSuccess, restage, validPool,
+  FundsShort, POOL_LIMITS, emptyLedger, netSpent, planRestage, recordFailure, recordSuccess, restage, validPool,
   type PoolConfig, type PoolLedger, type RestageDeps,
 } from '../src/demo/pool.js';
 import { candidates, fetchIndex, parseIndex, pickReady } from '../web/demo/pick.js';
@@ -141,6 +141,33 @@ describe('restage', () => {
     expect(d.stage).toHaveBeenCalledTimes(1);
     expect(r.ledger.spentSats).toBe(61_200);
     expect(netSpent(r.ledger)).toBeLessThanOrEqual(POOL.budgetSats);
+  });
+
+  it('with the wallet short of funds waits: no throw, no warning, nothing counted', async () => {
+    const d = deps({ known: ['p'], statuses: { p: 'released' } });
+    d.sweepBack.mockRejectedValue(new FundsShort('not funded: the wallet holds 7933 sat'));
+    const r = await restage(d);
+    expect(r.waitingFunds).toMatch(/not funded/);
+    expect(r.failed).toBeUndefined();
+    expect(d.stage).not.toHaveBeenCalled();
+    expect(d.notify).not.toHaveBeenCalled();
+    expect(r.ledger).toEqual(emptyLedger());
+  });
+
+  it('keeps an escrow already staged when a later staging fails', async () => {
+    const d = deps({ known: [] });
+    let n = 0;
+    d.stage.mockImplementation(async () => {
+      n += 1;
+      if (n === 2) throw new Error('electrum went away');
+      return fakeStaged(n);
+    });
+    const r = await restage(d);
+    expect(r.failed).toBe('electrum went away');
+    expect(r.staged).toEqual(['escrow-1']);
+    expect(r.ledger.escrows.map((e) => e.address)).toEqual(['escrow-1']);
+    expect(r.ledger.spentSats).toBe(20_200);
+    expect(r.ledger.sweptSats).toBe(5_000);
   });
 
   it('warns once after three failed runs in a row, again only after a success', () => {

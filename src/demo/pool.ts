@@ -11,6 +11,9 @@ import type { Staged } from './stage.js';
 
 export type { PoolConfig };
 
+/** The wallet holds too little to stage: the pool waits for funds; not a failure, so no warning. */
+export class FundsShort extends Error {}
+
 export const POOL_LIMITS = { minSize: 3, maxSize: 5, maxBudgetSats: 145_000 } as const;
 
 export function validPool(p: PoolConfig): PoolConfig {
@@ -110,6 +113,10 @@ export interface RestageResult {
   swept?: { txid: string; sats: number };
   plan: { stage: number; stop?: Stop };
   ledger: PoolLedger;
+  /** Set when the wallet could not pay for a staging (FundsShort); what was done before stays in the ledger. */
+  waitingFunds?: string;
+  /** Set when a sweep or staging failed otherwise; what was done before stays in the ledger. */
+  failed?: string;
 }
 
 export const POOL_MESSAGES = {
@@ -137,19 +144,26 @@ export async function restage(d: RestageDeps): Promise<RestageResult> {
   }
   if (plan.stage === 0) return result;
 
-  const back = await d.sweepBack(ready.length * d.feeCoinsPerEscrow);
-  if (back) {
-    result.swept = { txid: back.txid, sats: Number(back.sats) };
-    ledger.sweptSats += Number(back.sats);
-    ledger.sweeps.push({ at: d.now.toISOString(), ...result.swept });
-  }
-  for (let i = 0; i < plan.stage; i += 1) {
-    if (netSpent(ledger) + nextCost(d.pool, ledger) > d.pool.budgetSats) break;
-    const s = await d.stage();
-    const costSats = stagingCost(s, d.pool);
-    ledger.spentSats += costSats;
-    ledger.escrows.push({ address: s.address, stagedAt: new Date().toISOString(), steps: s.steps, extra: s.extra, costSats });
-    result.staged.push(s.address);
+  try {
+    const back = await d.sweepBack(ready.length * d.feeCoinsPerEscrow);
+    if (back) {
+      result.swept = { txid: back.txid, sats: Number(back.sats) };
+      ledger.sweptSats += Number(back.sats);
+      ledger.sweeps.push({ at: d.now.toISOString(), ...result.swept });
+    }
+    for (let i = 0; i < plan.stage; i += 1) {
+      if (netSpent(ledger) + nextCost(d.pool, ledger) > d.pool.budgetSats) break;
+      const s = await d.stage();
+      const costSats = stagingCost(s, d.pool);
+      ledger.spentSats += costSats;
+      ledger.escrows.push({ address: s.address, stagedAt: new Date().toISOString(), steps: s.steps, extra: s.extra, costSats });
+      result.staged.push(s.address);
+    }
+  } catch (error) {
+    // Keep what was already swept and staged: those coins moved on chain and the ledger must count them.
+    const msg = error instanceof Error ? error.message : String(error);
+    if (error instanceof FundsShort) result.waitingFunds = msg;
+    else result.failed = msg;
   }
   return result;
 }
