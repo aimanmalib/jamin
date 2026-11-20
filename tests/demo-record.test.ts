@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { MainnetRecord } from '../src/lifecycle/record.js';
-import { addDemoEscrow, latestDemo } from '../src/demo/record.js';
+import { addDemoEscrow, latestDemo, unrecordedPool } from '../src/demo/record.js';
 import { demoEscrowAddress } from '../web/data/examples.js';
 import { stagingNeed } from '../scripts/demo-mainnet.js';
 
@@ -35,6 +35,13 @@ describe('demo escrow record', () => {
     expect(latestDemo(BASE)).toBeUndefined();
   });
 
+  it('copies only the pool escrows the record does not hold yet, oldest first', () => {
+    const once = addDemoEscrow(BASE, 'bitcoincash:pp', steps(10));
+    const pool = [{ address: 'bitcoincash:pp' }, { address: 'bitcoincash:pq' }, { address: 'bitcoincash:pr' }];
+    expect(unrecordedPool(once, pool).map((e) => e.address)).toEqual(['bitcoincash:pq', 'bitcoincash:pr']);
+    expect(unrecordedPool(once, [])).toEqual([]);
+  });
+
   it('needs the seller and buyer coins plus a fee margin each at the seller before staging', () => {
     expect(stagingNeed({ sellerCoinSats: 30_000, buyerCoinSats: 10_000 })).toBe(46_000n);
   });
@@ -58,5 +65,11 @@ describe('examples/mainnet.json', () => {
       expect(e.steps.slice(0, 3).map((s) => s.step)).toEqual(['createEscrow', 'fund', 'markAsPaid']);
       expect(e.steps.slice(3).every((s) => s.step === 'release')).toBe(true);
     }
+  });
+
+  it('holds the demo pool on mainnet: at least three demo escrows, each step with a block height', () => {
+    const demos = record.escrows.filter((x) => x.demo === true);
+    expect(demos.length).toBeGreaterThanOrEqual(3);
+    for (const e of demos) for (const s of e.steps) expect('height' in s && typeof s.height === 'number', e.address).toBe(true);
   });
 });

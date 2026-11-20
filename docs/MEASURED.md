@@ -413,6 +413,24 @@ so nothing was staged.
 - The host crontab has one line tagged `# jamin-demo-restage`, every 10 minutes. It stages by itself once the
   wallet holds enough, within `budgetSats` 145,000 and before `restageUntil`.
 
+After the funding above arrived, the cron run of 2026-11-20 06:40 UTC staged two escrows; every run since reports
+"3 of 3 waiting at paid; plan stage 0 (stop: full)". Recorded in `examples/mainnet.json` as branch P, marked `demo`,
+by `npx tsx scripts/demo-pool-record.ts` (read only: sizes, fees and heights from `bch.imaginary.cash`) and
+`npx tsx scripts/record-locked.ts`, on 2026-11-20 11:50 UTC.
+
+| Escrow | createEscrow | fund | markAsPaid | Height | Pool cost (sats) |
+|---|---|---|---|---:|---:|
+| `bitcoincash:pw0n5r3873w59g4j59sf8adujn2f4zea5rrf863klsmp9xff5hesqtgs3kj59` | `edbf5d70d35328f48456490a343e4833ec704947b18486f5d85b47ba72bcd40b` | `2bc20fefe062b633ac313a1fbb7d0604d5a1498e797bf71d768bfaa4226320e1` | `fd9351e288eb954eb0cfd6c263d89da0ea1979f24b59be70e453636bcac6ce43` | 978,132 | 38,406 |
+| `bitcoincash:p0ezv5z7camnesw4exgnh2n0p6f99nh3kjjzac68kr0qte537wy3j00kzyyy8` | `76614cb628e17828323841d2fca3eef6826bab692841c7ddb5bdf0066d332781` | `125e0a15d967679179ad3a2c278d18d69613b6c165a87f74594439647fb6cce0` | `b05cdfa784e7e9765c2e02b388644ae7f795d41ff9534a0b1eaeeaa3d629c2d7` | 978,132 | 38,406 |
+
+- Each: createEscrow 758 B (fee 1,758), fund 7,013 B (fee 7,062, locks 6,546 sats), markAsPaid 6,168 B (fee 6,358).
+  Before it, the wallet paid the demo seller and buyer their coins and the seller its fee coins in three payments,
+  and took its change back (txids in the pool ledger, `state/demo-pool.json`, not tracked).
+- Pool cost 38,406 each: paid to the demo keys, less the change back, plus the wallet payments counted at 400.
+- Pool ledger: spent 76,812, swept 0, net 76,812 of `budgetSats` 145,000; failures 0; no warning sent.
+- With the escrow staged on 2026-11-19 (branch P, the first row of the three), three demo escrows wait at `paid`;
+  `/pool/pool.json` lists all three.
+
 ## Wallet signing (branch W)
 
 Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with
@@ -567,6 +585,8 @@ the SDK broadcast through `sendPreparedTransaction` (F9).
   broadcasts nothing. No mainnet contract transaction has been sent.
 - Funding: 0.00030878 BCH received from a shared test wallet, txid
   c72ddd8b2ec30b72b0fb2e5055c2ce7df10a31bde330149511caa0f73dae465e, for the relayed token cancel on mainnet (branch T).
+- Funding: 0.00080067 BCH received from a shared test wallet, txid
+  074f06469052261856e22a60e75cd3010e71f19370b14785f5c8796417c9c5d4, for the demo escrow pool (two stagings).
 
 ## Mainnet
 

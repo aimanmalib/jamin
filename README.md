@@ -130,7 +130,7 @@ keeps its references honest.
 | Mainnet branch X: Cashonize signs the seller's steps on the Wallet tab over WizardConnect | `docs/MEASURED.md` "Third-party wallet on mainnet", `examples/mainnet.json` |
 | Mainnet branch R: two forbidden calls the network refused (server text, raw hashes), then a valid release | `docs/MEASURED.md` "Refused on mainnet", `examples/mainnet.json` |
 | Mainnet branch T: a token escrow's `buyerCancel` broadcast by the keyless relayer | `docs/MEASURED.md` "Relayed token cancel on mainnet", `examples/mainnet.json` |
-| Mainnet branch P: a public demo escrow created, funded and marked paid, left for a visitor to release from the home page | `docs/MEASURED.md` "Demo escrow", `examples/mainnet.json` |
+| Mainnet branch P: three public demo escrows created, funded and marked paid, left for visitors to release from the home page | `docs/MEASURED.md` "Demo escrow" and "Demo pool on mainnet", `examples/mainnet.json` |
 
 ## Size and cost
 
@@ -196,13 +196,13 @@ other ten are not are in the same file.
   escrow's metadata identity (756 sats) was burned by its owner, which returned 78 sats net after the fee. Every
   satoshi of the test wallet is accounted for, with 0 unexplained.
 - **Public demo keys:** the "Release on mainnet" card signs with keys published in `config/demo.json` on purpose.
-  Anyone may use them; they guard at most `maxSats` (24,000 sats) and are not derived from any wallet
-  (`docs/decisions/0020-public-demo-escrow.md`). The demo escrow (branch P in `examples/mainnet.json`) was
-  created, funded and marked paid on mainnet by the test wallet; one press releases it for good, and the card then
-  shows the release instead of the button. A host cron is meant to keep three such escrows waiting within a pool
-  budget of 145,000 sats (`docs/decisions/0021-demo-escrow-pool.md`), but the test wallet holds too little to stage
-  more: the pool has one escrow, branch P, and once it is released the card shows the release until the wallet is
-  funded (`docs/MEASURED.md` "Demo pool on mainnet").
+  Anyone may use them; each demo escrow puts at most `maxSats` (24,000 sats) in their reach, and they are not derived
+  from any wallet (`docs/decisions/0020-public-demo-escrow.md`). Each demo escrow (branch P in
+  `examples/mainnet.json`) was created, funded and marked paid on mainnet by the test wallet; one press releases it
+  for good, and the card moves on to the next one still waiting. A host cron keeps three such escrows waiting within a pool
+  budget of 145,000 sats (`docs/decisions/0021-demo-escrow-pool.md`): three wait now, and it stages again after a
+  release until that budget or `restageUntil` in `config/demo.json` runs out; then the card shows the last release
+  (`docs/MEASURED.md` "Demo pool on mainnet").
 - **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
   and left out (`docs/decisions/0013-closing-an-escrow.md`). Its covenant caps the miner fee below 2,000 sats, but
   the closing transaction is about 7,000 bytes, under the relay minimum of 1 sat per byte; and at that size a close

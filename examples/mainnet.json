@@ -372,6 +372,66 @@
           "relayed": true
         }
       ]
+    },
+    {
+      "branch": "P",
+      "asset": "BCH",
+      "address": "bitcoincash:pw0n5r3873w59g4j59sf8adujn2f4zea5rrf863klsmp9xff5hesqtgs3kj59",
+      "demo": true,
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "edbf5d70d35328f48456490a343e4833ec704947b18486f5d85b47ba72bcd40b",
+          "height": 978132,
+          "txBytes": 758,
+          "feeSats": 1758
+        },
+        {
+          "step": "fund",
+          "txid": "2bc20fefe062b633ac313a1fbb7d0604d5a1498e797bf71d768bfaa4226320e1",
+          "height": 978132,
+          "txBytes": 7013,
+          "feeSats": 7062,
+          "lockedSats": 6546
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "fd9351e288eb954eb0cfd6c263d89da0ea1979f24b59be70e453636bcac6ce43",
+          "height": 978132,
+          "txBytes": 6168,
+          "feeSats": 6358
+        }
+      ]
+    },
+    {
+      "branch": "P",
+      "asset": "BCH",
+      "address": "bitcoincash:p0ezv5z7camnesw4exgnh2n0p6f99nh3kjjzac68kr0qte537wy3j00kzyyy8",
+      "demo": true,
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "76614cb628e17828323841d2fca3eef6826bab692841c7ddb5bdf0066d332781",
+          "height": 978132,
+          "txBytes": 758,
+          "feeSats": 1758
+        },
+        {
+          "step": "fund",
+          "txid": "125e0a15d967679179ad3a2c278d18d69613b6c165a87f74594439647fb6cce0",
+          "height": 978132,
+          "txBytes": 7013,
+          "feeSats": 7062,
+          "lockedSats": 6546
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "b05cdfa784e7e9765c2e02b388644ae7f795d41ff9534a0b1eaeeaa3d629c2d7",
+          "height": 978132,
+          "txBytes": 6168,
+          "feeSats": 6358
+        }
+      ]
     }
   ]
 }

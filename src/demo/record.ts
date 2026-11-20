@@ -19,3 +19,9 @@ export function addDemoEscrow(record: MainnetRecord, address: string, steps: Mai
   const escrow: MainnetEscrow = { branch: DEMO_BRANCH, asset: 'BCH', address, demo: true, steps: [...steps] };
   return { network: 'mainnet', escrows: [...record.escrows, escrow] };
 }
+
+/** The pool escrows (decision 0021) the record does not hold yet, oldest first. */
+export function unrecordedPool<T extends { address: string }>(record: MainnetRecord, pool: T[]): T[] {
+  const known = new Set(record.escrows.map((e) => e.address));
+  return pool.filter((e) => !known.has(e.address));
+}
