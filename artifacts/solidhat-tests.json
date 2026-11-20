@@ -33,6 +33,10 @@
   },
   {
     "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses Schnorr signatures, which OP_CHECKMULTISIG does not accept here"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
     "name": "JaminEscrow arbitration panel (2 of 3) > refuses a panel member of a single-arbitrator escrow who is not that arbitrator"
   },
   {
@@ -42,10 +46,6 @@
   {
     "file": "test/JaminEscrow.panel.test.ts",
     "name": "JaminEscrow arbitration panel (2 of 3) > refuses one panel signature with an outsider signature"
-  },
-  {
-    "file": "test/JaminEscrow.panel.test.ts",
-    "name": "JaminEscrow arbitration panel (2 of 3) > refuses Schnorr signatures, which OP_CHECKMULTISIG does not accept here"
   },
   {
     "file": "test/JaminEscrow.panel.test.ts",
@@ -245,11 +245,11 @@
   },
   {
     "file": "test/JaminEscrow.wallet.test.ts",
-    "name": "seller signing with a wallet > creates, funds and releases an escrow with every seller input signed by the wallet"
+    "name": "seller signing with a wallet > F10: the SDK refuses a call whose seller signature is a placeholder for the wallet to fill"
   },
   {
     "file": "test/JaminEscrow.wallet.test.ts",
-    "name": "seller signing with a wallet > F10: the SDK refuses a call whose seller signature is a placeholder for the wallet to fill"
+    "name": "seller signing with a wallet > creates, funds and releases an escrow with every seller input signed by the wallet"
   },
   {
     "file": "test/JaminEscrow.wallet.test.ts",
