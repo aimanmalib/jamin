@@ -293,6 +293,11 @@ describe('the pool list file and the card line when no escrow waits', () => {
     expect(poolIndex(POOL, [], { ...emptyLedger(), spentSats: 81_000 }, NOW).closed).toBe(true);
   });
 
+  it('says closed while the wallet is too short to stage, so the card promises no minutes it cannot keep', () => {
+    expect(poolIndex(POOL, [Q], emptyLedger(), NOW, true).closed).toBe(true);
+    expect(poolIndex(POOL, [Q], emptyLedger(), NOW, false).closed).toBe(false);
+  });
+
   it('reads the file, keeping only well-formed fields', () => {
     expect(parsePool({ escrows: [Q], lastRunAt: '2026-11-20T12:00:00Z', everyMinutes: 10, closed: false }))
       .toEqual({ escrows: [Q], lastRunAt: at, everyMinutes: 10, closed: false });

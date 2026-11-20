@@ -455,6 +455,22 @@ by `npx tsx scripts/demo-pool-record.ts` (read only: sizes, fees and heights fro
 - With the escrow staged on 2026-11-19 (branch P, the first row of the three), three demo escrows wait at `paid`;
   `/pool/pool.json` lists all three.
 
+#### Judging week, 2026-11-20 16:05 UTC
+
+- Wallet before: 12,730 plain sats, all at the seller address (`bch.imaginary.cash`, every role address read; the
+  other five hold 0). Keeping the pool going up to `budgetSats` 400,000 (net 76,812 spent) needs 373,188 in hand
+  with a 50,000 margin, so 360,458 sats were requested from the shared test wallet. The answer was short: nothing
+  was sent, and the wallet still holds 12,730.
+- What that means: the three demo escrows waiting at `paid` stay; once visitors release all three, a run can sweep
+  back about 4,815 sats per released escrow (regtest, "Sweep and net cost per cycle"), which with 12,730 is below
+  the 46,000 one staging needs at the seller. Until more funds arrive the pool stages nothing new.
+- So the card does not promise one: a run that finds the wallet short now writes `closed: true` to `/pool/pool.json`
+  (decision 0021, amendment "closed while the wallet cannot pay"); `tests/demo-pool.test.ts` failed on the code
+  before and passes after.
+- `env -i HOME=$HOME PATH=/usr/bin:/bin bash deploy/demo-restage-cron.sh --kering` at 16:14 UTC: exit 0, "3 of 3
+  waiting at paid; plan stage 0 (stop: full)", net 76,812 of 400,000. The crontab line `# jamin-demo-restage`
+  (every 10 minutes) was already installed; `/pool/pool.json` showed `lastRunAt` 16:10:19 UTC at 16:15 UTC.
+
 ## Wallet signing (branch W)
 
 Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with

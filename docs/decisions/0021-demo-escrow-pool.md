@@ -84,3 +84,13 @@ The keys guard nothing else and are unrelated to any wallet (decision 0020).
 - **Releases on mainnet.** The stats strip counts the release steps `examples/mainnet.json` records, plus demo
   escrows seen released on the chain (read while the page is open) or released by this page, so a visitor's release
   shows at once.
+
+## Amendment, 2026-11-20: closed while the wallet cannot pay
+
+- The funding request for the judging week came back short: the wallet held 12,730 sats, and one staging needs
+  46,000 at the seller. `budgetSats` stays 400,000 (it is a ceiling, not money in hand); what the wallet holds is
+  the real limit (`docs/MEASURED.md` "Demo pool on mainnet").
+- A run that finds the wallet too short to stage writes `closed: true` to `/pool/pool.json`, so once every demo
+  escrow is released the card says the pool is closed instead of promising an escrow in N minutes that no run can
+  stage. The next run that can stage again writes `false`. Waiting for funds still sends no warning.
+- Way back: drop the extra argument to `poolIndex` in `scripts/demo-restage.ts`.

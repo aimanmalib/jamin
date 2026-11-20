@@ -142,14 +142,16 @@ export interface PoolIndex {
   /** When the cron last ran, and how often it runs: the card counts the minutes to the next staging from them. */
   lastRunAt: string;
   everyMinutes: number;
-  /** No staging will follow: the card says the pool is closed instead of counting minutes. */
+  /** No staging will follow (budget, end date, escrow limit), or the wallet is too short to pay for one: the card
+   *  says the pool is closed instead of counting minutes. A later run that can stage again writes false. */
   closed: boolean;
   escrows: string[];
 }
 
-export function poolIndex(pool: PoolConfig, known: string[], l: PoolLedger, now: Date): PoolIndex {
+export function poolIndex(pool: PoolConfig, known: string[], l: PoolLedger, now: Date, waitingFunds = false): PoolIndex {
   const at = now.toISOString();
-  return { updatedAt: at, lastRunAt: at, everyMinutes: pool.restageEveryMinutes, closed: !poolOpen(pool, l, now),
+  return { updatedAt: at, lastRunAt: at, everyMinutes: pool.restageEveryMinutes,
+    closed: waitingFunds || !poolOpen(pool, l, now),
     escrows: poolAddresses(known, l) };
 }
 

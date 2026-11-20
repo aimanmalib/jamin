@@ -158,7 +158,7 @@ try {
     else if (!r.waitingFunds) ledger = recordSuccess(ledger);
     if (ledgerFile) writeJsonAtomic(ledgerFile, ledger);
     if (network === 'mainnet') {
-      writeJsonAtomic(publicFile, poolIndex(pool, side.known, ledger, new Date()));
+      writeJsonAtomic(publicFile, poolIndex(pool, side.known, ledger, new Date(), r.waitingFunds !== undefined));
     }
   }
 } catch (error) {
