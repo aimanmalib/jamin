@@ -196,7 +196,10 @@ other ten are not are in the same file.
   Anyone may use them; they guard at most `maxSats` (24,000 sats) and are not derived from any wallet
   (`docs/decisions/0020-public-demo-escrow.md`). The demo escrow (branch P in `examples/mainnet.json`) was
   created, funded and marked paid on mainnet by the test wallet; one press releases it for good, and the card then
-  shows the release instead of the button. It is not staged again after that.
+  shows the release instead of the button. A host cron is meant to keep three such escrows waiting within a pool
+  budget of 145,000 sats (`docs/decisions/0021-demo-escrow-pool.md`), but the test wallet holds too little to stage
+  more: the pool has one escrow, branch P, and once it is released the card shows the release until the wallet is
+  funded (`docs/MEASURED.md` "Demo pool on mainnet").
 - **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
   and left out (`docs/decisions/0013-closing-an-escrow.md`). Its covenant caps the miner fee below 2,000 sats, but
   the closing transaction is about 7,000 bytes, under the relay minimum of 1 sat per byte; and at that size a close

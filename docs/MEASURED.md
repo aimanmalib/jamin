@@ -395,6 +395,24 @@ On a stock Bitcoin Cash Node 29.0.0 regtest node (`/Bitcoin Cash Node:29.0.0(EB3
 - `env -i HOME=$HOME PATH=/usr/bin:/bin bash deploy/demo-restage-cron.sh --kering` against mainnet
   (`bch.imaginary.cash`): exit 0, "1 of 3 waiting at paid; plan stage 2; dry, nothing sent", no ledger written.
 
+### Demo pool on mainnet
+
+Measured 2026-11-20 04:48 UTC. Before the run the test wallet held 7,933 plain sats (seller 5,056, buyer 2,877) and
+10 units of PUSD; one staging needs 46,000 at the seller (`stagingNeed`: seller and buyer coins plus 3,000 fee margin
+each), so two stagings need about 88,000. A request for the difference from the shared test wallet came back short,
+so nothing was staged.
+
+- One real run of `env -i HOME=$HOME PATH=/usr/bin:/bin bash deploy/demo-restage-cron.sh` (no `--kering`): exit 0,
+  "1 of 3 waiting at paid; plan stage 2", then "waiting for funds: not funded: the wallet holds 7748 sat at the
+  seller, staging needs 46000; nothing staged". Before giving up it gathered the wallet's plain coins at the seller
+  in one transaction, `14e425abf22a263cc39117b90b297b090f37ade48ac2217b00c70727ccd358ed` (185 sats fee, through the
+  spending gate).
+- Pool ledger after the run: spent 0, swept 0, failures 0, no warning sent. Waiting for funds is not counted as a
+  failed run, so the three-failures warning does not fire while the wallet is short.
+- The public list the site reads (`/pool/pool.json`) holds one escrow, branch P.
+- The host crontab has one line tagged `# jamin-demo-restage`, every 10 minutes. It stages by itself once the
+  wallet holds enough, within `budgetSats` 145,000 and before `restageUntil`.
+
 ## Wallet signing (branch W)
 
 Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with

@@ -60,4 +60,6 @@ The keys guard nothing else and are unrelated to any wallet (decision 0020).
 - After the budget or the end date, the card shows the newest escrow, already released, with its transaction.
 - The container gains one read-only bind; `deploy/deploy.sh` creates the folder first so Docker does not make it
   as root.
+- A wallet too short to pay for a staging ends the run as waiting for funds: no failure counted, no warning, the
+  public list still written. A failure after some escrows were staged keeps those in the ledger.
 - Way back: `deploy/demo-restage-cron.sh buang` stops restaging; the escrows already staged stay waiting.

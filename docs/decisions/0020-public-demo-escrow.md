@@ -1,6 +1,7 @@
 # 0020: A public demo escrow a visitor can release
 
-Date: 2026-11-19. Status: accepted.
+Date: 2026-11-19. Status: accepted; the single escrow became the first member of a pool in
+`0021-demo-escrow-pool.md`.
 
 ## Context
 
