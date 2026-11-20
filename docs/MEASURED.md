@@ -516,6 +516,23 @@ wallet tests in `test/JaminEscrow.wallet.test.ts` (decision 0009). Before them, 
 checks; 5 end-to-end branches; 18 arbitration panel tests in `test/JaminEscrow.panel.test.ts`, 16 BCH and 2 token).
 On 2026-11-17, before the panel: 8 files, 71 tests.
 
+## Depth strip
+
+The Home depth strip (decision 0026) counts its numbers from repository files when the site is built. Output of
+`depth()` in `web/data/depth.ts` on 2026-11-20 for the files at this commit: 26 SolidCash features (rows of
+`docs/FEATURES.md`), 103 SolidHat tests (`artifacts/solidhat-tests.json`), 14 findings (`## F1` to `## F14` in
+`docs/SOLIDCASH-FINDINGS.md`), 3 pull requests opened upstream (#8, #9, #10), 9 scenarios on mainnet and 35
+transactions.
+
+A scenario is one branch label in `examples/mainnet.json` other than the demo pool escrows (`"demo": true`): the
+lifecycle branches A to E, the refused-call run R, the relayed token cancel T, and the wallet-signed releases W and X.
+Transactions are the distinct txids those escrows record; refused calls have no txid and are not counted. The demo
+pool escrows are counted by the stats strip instead (decision 0023).
+
+The test list is collected by running the test files: `vitest list --staticParse=false` returns 103 cases in 12 files,
+the same as `solidhat test` on 2026-11-19; a static count of `it(` in `test/` gives 91, because the panel and
+rejection tests are made in loops.
+
 ## Web app end-to-end tests
 
 `npx vite build && npx playwright test e2e/simulator.spec.ts e2e/pages.spec.ts` on 2026-11-18 05:50 UTC, Playwright

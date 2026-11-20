@@ -1,16 +1,18 @@
-// First screen: the hero (one sentence, "Release on mainnet", the simulator second), then the stats strip, the judges'
-// strip, the demo video and how it works.
+// First screen: the hero (one sentence, "Release on mainnet", the simulator second), then the depth strip, the stats
+// strip, the judges' strip, the demo video and how it works.
 import type { ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { Hero } from './Hero.js';
 import { config, sitePath } from '../data/config.js';
 import { StatsStrip } from './StatsStrip.js';
+import { DepthStrip } from './DepthStrip.js';
 
 export function Home(): ReactNode {
   const { t } = useLang();
   return (
     <>
       <Hero />
+      <DepthStrip />
       <StatsStrip />
       <section className="judge" aria-labelledby="judge-title">
         <h2 id="judge-title" className="h3">{t('home.judgeTitle')}</h2>

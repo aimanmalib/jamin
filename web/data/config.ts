@@ -21,6 +21,8 @@ export interface WebConfig {
   };
   stats: { pollMs: number; pollRangeMs: { min: number; max: number }; tickMs: number; mockPollMs: number;
     mockStartHeight: number };
+  depth: { upstreamPrs: number[]; upstreamPrUrl: string;
+    links: { tests: string; findings: string; upstream: string; porting: string } };
   tokens: { pusd: { symbol: string; category: string; decimals: number } };
 }
 

@@ -327,6 +327,17 @@
     "next": "Satu lagi escrow demo menunggu pelawat seterusnya.",
     "nextButton": "Papar escrow seterusnya"
   },
+  "depth": {
+    "title": "Di sebalik kontrak",
+    "features": "ciri SolidCash digunakan",
+    "tests": "ujian SolidHat",
+    "findings": "penemuan SolidCash",
+    "upstreamPrs": "pull request ke SolidCash",
+    "scenarios": "senario dijalankan di mainnet",
+    "transactions": "transaksi",
+    "arrow": "→",
+    "ported": "Diport daripada OpenPeerEscrow (Solidity, EVM)"
+  },
   "stats": {
     "title": "Di mainnet",
     "escrows": "Escrow di mainnet",

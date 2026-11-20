@@ -240,5 +240,19 @@
     "tickMs": 1000,
     "mockPollMs": 1000,
     "mockStartHeight": 978100
+  },
+  "depth": {
+    "upstreamPrs": [
+      8,
+      9,
+      10
+    ],
+    "upstreamPrUrl": "https://github.com/solidcash/solidcash/pull/{n}",
+    "links": {
+      "tests": "tree/main/test",
+      "findings": "blob/main/docs/SOLIDCASH-FINDINGS.md",
+      "upstream": "blob/main/README.md#upstream-contributions",
+      "porting": "blob/main/docs/PORTING.md"
+    }
   }
 }

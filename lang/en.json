@@ -327,6 +327,17 @@
     "next": "Another demo escrow is waiting for the next visitor.",
     "nextButton": "Show the next escrow"
   },
+  "depth": {
+    "title": "Behind the contract",
+    "features": "SolidCash features used",
+    "tests": "SolidHat tests",
+    "findings": "SolidCash findings",
+    "upstreamPrs": "pull requests to SolidCash",
+    "scenarios": "scenarios run on mainnet",
+    "transactions": "transactions",
+    "arrow": "→",
+    "ported": "Ported from OpenPeerEscrow (Solidity, EVM)"
+  },
   "stats": {
     "title": "On mainnet",
     "escrows": "Escrows on mainnet",

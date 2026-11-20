@@ -10,6 +10,7 @@ step() { printf '\n== %s\n' "$1"; }
 step lint;          npm run --silent lint
 step typecheck;     npm run --silent typecheck
 step solidhat:test; npm run --silent solidhat:test
+step solidhat:list; npx tsx scripts/solidhat-list.ts --check
 step unit;          npm run --silent test
 step build;         npm run --silent build
 printf '\ngate passed\n'

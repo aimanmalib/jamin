@@ -137,6 +137,15 @@ section + section { margin-top: 2.5rem; }
 .stats dd:first-of-type { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 600; color: var(--ink);
   font-variant-numeric: tabular-nums; }
 .stats dd a { color: inherit; }
+.depth { border: 1px solid var(--line); border-radius: var(--radius); background: var(--card); padding: 1rem 1.25rem; }
+.depth ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem 1rem; margin: 0; padding: 0;
+  list-style: none; }
+.depth li { display: grid; gap: 0.15rem; min-width: 0; align-content: start; overflow-wrap: anywhere; }
+.depth a { color: var(--ink); }
+.depth .depth-more { font-size: 0.875rem; color: var(--ink-soft); }
+.depth-n { font-family: var(--font-mono); font-size: 1.15rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.depth-port { margin: 0.75rem 0 0; }
+.depth-port a { color: inherit; }
 .demo-video { display: grid; gap: 0.5rem; max-width: 52rem; }
 .demo-video video { display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9;
   background: var(--ink); border-radius: var(--radius); }
@@ -144,6 +153,7 @@ section + section { margin-top: 2.5rem; }
   .hero { grid-template-columns: 1.3fr 1fr; }
   .steps3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .stats dl { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .depth ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 /* Simulator */

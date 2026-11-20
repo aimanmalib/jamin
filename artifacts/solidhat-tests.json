@@ -1,0 +1,414 @@
+[
+  {
+    "file": "test/JaminEscrow.covenant.test.ts",
+    "name": "JaminEscrow (BCH) covenant > accepts a release whose payments are named by hand exactly as the contract pays them"
+  },
+  {
+    "file": "test/JaminEscrow.covenant.test.ts",
+    "name": "JaminEscrow (BCH) covenant > rejects a buyer cancel that pays the buyer instead of the seller"
+  },
+  {
+    "file": "test/JaminEscrow.covenant.test.ts",
+    "name": "JaminEscrow (BCH) covenant > rejects a dispute resolution for the buyer that pays the seller"
+  },
+  {
+    "file": "test/JaminEscrow.covenant.test.ts",
+    "name": "JaminEscrow (BCH) covenant > rejects a release that pays the amount to someone other than the buyer"
+  },
+  {
+    "file": "test/JaminEscrow.covenant.test.ts",
+    "name": "JaminEscrow (BCH) covenant > rejects a release that pays the buyer less than the amount"
+  },
+  {
+    "file": "test/JaminEscrow.covenant.test.ts",
+    "name": "JaminEscrow (BCH) covenant > rejects a release that sends the fee to the buyer instead of the fee recipient"
+  },
+  {
+    "file": "test/JaminEscrow.covenant.test.ts",
+    "name": "JaminEscrow (BCH) covenant > rejects a release with an extra payment out of the escrow"
+  },
+  {
+    "file": "test/JaminEscrow.covenant.test.ts",
+    "name": "JaminEscrow (BCH) covenant > rejects a seller cancel that keeps the fee in a second output to the fee recipient"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses a panel member of a single-arbitrator escrow who is not that arbitrator"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses a trading party as the second signer"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses one panel signature with an outsider signature"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses Schnorr signatures, which OP_CHECKMULTISIG does not accept here"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses the same panel signature given twice"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses to create an escrow with the buyer in panel slot A (PartyOnPanel)"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses to create an escrow with the buyer in panel slot B (PartyOnPanel)"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses to create an escrow with the buyer in panel slot C (PartyOnPanel)"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses to create an escrow with the seller in panel slot A (PartyOnPanel)"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses to create an escrow with the seller in panel slot B (PartyOnPanel)"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses to create an escrow with the seller in panel slot C (PartyOnPanel)"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > refuses two panel signatures out of panel key order"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > resolves with the signatures of arbiterB and arbiterC"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > resolves with the signatures of arbitrator and arbiterB"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > resolves with the signatures of arbitrator and arbiterC"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminEscrow arbitration panel (2 of 3) > runs with a single arbitrator who fills all three slots and signs once"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminTokenEscrow arbitration panel (2 of 3) > refuses one panel signature with an outsider signature"
+  },
+  {
+    "file": "test/JaminEscrow.panel.test.ts",
+    "name": "JaminTokenEscrow arbitration panel (2 of 3) > resolves for the seller with the signatures of panel members B and C"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > pays the seller back in full when the buyer alone disputed and lost"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a buyer cancel once disputed (NotOpen)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a dispute before the buyer marked it paid (NotPaid)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a dispute resolution signed by the buyer (NotArbitrator)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a dispute resolution signed by the outsider (NotArbitrator)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a dispute resolution signed by the seller (NotArbitrator)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a dispute with the wrong dispute fee (WrongDisputeFee)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a release once disputed (NotOpen)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a second dispute fee from the same side (AlreadyPaidDispute)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a seller cancel after mark as paid, even after the waiting time (AlreadyMarkedPaid)"
+  },
+  {
+    "file": "test/JaminEscrow.reject.test.ts",
+    "name": "JaminEscrow (BCH) rejections > rejects a seller cancel before the waiting time (TooEarly)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > cannot be spent again once cancelled by the buyer"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > cannot be spent again once released"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > cannot be spent again once the dispute is resolved"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses a buyer cancel signed by the seller (NotBuyer)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses a buyer-side dispute signed by the seller (NotBuyer)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses a deposit signed by the buyer (NotSeller)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses a dispute resolution when no dispute is open (NoDispute)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses a second deposit (AlreadyFunded)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses a seller-side dispute signed by an outsider (NotSeller)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses a waiting time given as a block height (InvalidCancelTime)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses mark as paid before the deposit (NotFunded)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses to create an escrow with a zero amount (InvalidAmount)"
+  },
+  {
+    "file": "test/JaminEscrow.state.test.ts",
+    "name": "JaminEscrow (BCH) state rules > refuses to create an escrow without a dispute fee (InvalidDisputeFee)"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > creates a funded escrow with the basis-point fee"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > emits Released with the amount and the fee"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > lets the buyer cancel: amount and fee return to the seller"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > lets the seller cancel after the waiting time"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > marks as paid, then releases the amount to the buyer and the fee to the fee recipient"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > raises a fee below the dust limit to 546 sats"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > rejects a deposit that is not exactly amount + fee (WrongDeposit)"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > rejects a release signed by anyone but the seller (NotSeller)"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > rejects mark as paid by the seller (NotBuyer)"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > resolves a two-sided dispute for the buyer"
+  },
+  {
+    "file": "test/JaminEscrow.test.ts",
+    "name": "JaminEscrow (BCH) > resolves a two-sided dispute for the seller"
+  },
+  {
+    "file": "test/JaminEscrow.wallet.test.ts",
+    "name": "seller signing with a wallet > creates, funds and releases an escrow with every seller input signed by the wallet"
+  },
+  {
+    "file": "test/JaminEscrow.wallet.test.ts",
+    "name": "seller signing with a wallet > F10: the SDK refuses a call whose seller signature is a placeholder for the wallet to fill"
+  },
+  {
+    "file": "test/JaminEscrow.wallet.test.ts",
+    "name": "seller signing with a wallet > refuses a release signed with the wallet key instead of the role key"
+  },
+  {
+    "file": "test/JaminEscrow.wizard.test.ts",
+    "name": "seller signing with a WizardConnect wallet > builds a role key request that spends an outpoint named by the message, shown as the prompt"
+  },
+  {
+    "file": "test/JaminEscrow.wizard.test.ts",
+    "name": "seller signing with a WizardConnect wallet > creates, funds and releases an escrow with every seller input signed over WizardConnect"
+  },
+  {
+    "file": "test/JaminEscrow.wizard.test.ts",
+    "name": "seller signing with a WizardConnect wallet > encodes bytes as hex and integers as <bigint: Nn> on the wire"
+  },
+  {
+    "file": "test/JaminEscrow.wizard.test.ts",
+    "name": "seller signing with a WizardConnect wallet > gives the same role key for the same trade and another for another trade"
+  },
+  {
+    "file": "test/JaminEscrow.wizard.test.ts",
+    "name": "seller signing with a WizardConnect wallet > refuses a release signed with the wallet key instead of the role key"
+  },
+  {
+    "file": "test/JaminEscrow.wizard.test.ts",
+    "name": "seller signing with a WizardConnect wallet > refuses a wallet that signs with a key other than the one it shared"
+  },
+  {
+    "file": "test/JaminEscrow.wizard.test.ts",
+    "name": "seller signing with a WizardConnect wallet > signs with the WizardConnect hash type and returns the signature the wallet made"
+  },
+  {
+    "file": "test/JaminTokenEscrow.covenant.test.ts",
+    "name": "JaminTokenEscrow (CashToken) covenant > accepts a token release whose payments are named by hand exactly as the contract pays them"
+  },
+  {
+    "file": "test/JaminTokenEscrow.covenant.test.ts",
+    "name": "JaminTokenEscrow (CashToken) covenant > rejects a token buyer cancel that pays the buyer instead of the seller"
+  },
+  {
+    "file": "test/JaminTokenEscrow.covenant.test.ts",
+    "name": "JaminTokenEscrow (CashToken) covenant > rejects a token deposit short of amount + fee + reserve (WrongDeposit)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.covenant.test.ts",
+    "name": "JaminTokenEscrow (CashToken) covenant > rejects a token release that pays the buyer one unit less"
+  },
+  {
+    "file": "test/JaminTokenEscrow.covenant.test.ts",
+    "name": "JaminTokenEscrow (CashToken) covenant > rejects a token release that pays the tokens to someone other than the buyer"
+  },
+  {
+    "file": "test/JaminTokenEscrow.covenant.test.ts",
+    "name": "JaminTokenEscrow (CashToken) covenant > rejects a token release that sends the token fee to the buyer"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a buyer cancel once disputed (NotOpen)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a dispute before the buyer marked it paid (NotPaid)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a dispute resolution signed by the buyer (NotArbitrator)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a dispute resolution signed by the outsider (NotArbitrator)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a dispute resolution signed by the seller (NotArbitrator)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a dispute with the wrong dispute fee (WrongDisputeFee)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a release once disputed (NotOpen)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a second dispute fee from the same side (AlreadyPaidDispute)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a seller cancel after mark as paid, even after the waiting time (AlreadyMarkedPaid)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > rejects a seller cancel before the waiting time (TooEarly)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.reject.test.ts",
+    "name": "JaminTokenEscrow (CashToken) rejections > resolves a two-sided dispute for the seller: tokens and fee back, BCH dispute fees settled"
+  },
+  {
+    "file": "test/JaminTokenEscrow.test.ts",
+    "name": "JaminTokenEscrow (CashToken) > lets the buyer cancel: tokens return to the seller"
+  },
+  {
+    "file": "test/JaminTokenEscrow.test.ts",
+    "name": "JaminTokenEscrow (CashToken) > lets the seller cancel after the waiting time"
+  },
+  {
+    "file": "test/JaminTokenEscrow.test.ts",
+    "name": "JaminTokenEscrow (CashToken) > rejects a call naming another token category (WrongToken)"
+  },
+  {
+    "file": "test/JaminTokenEscrow.test.ts",
+    "name": "JaminTokenEscrow (CashToken) > releases tokens to the buyer and the token fee to the fee recipient"
+  },
+  {
+    "file": "test/JaminTokenEscrow.test.ts",
+    "name": "JaminTokenEscrow (CashToken) > resolves a dispute for the buyer with BCH dispute fees"
+  },
+  {
+    "file": "test/JaminTokenEscrow.test.ts",
+    "name": "JaminTokenEscrow (CashToken) > takes the deposit and the buyer marks it paid"
+  },
+  {
+    "file": "test/lifecycle.test.ts",
+    "name": "lifecycle branches > A: BCH release pays the buyer and the fee, and leaves only the reserve"
+  },
+  {
+    "file": "test/lifecycle.test.ts",
+    "name": "lifecycle branches > B: token release pays tokens to the buyer and the fee recipient, and leaves the reserve unit"
+  },
+  {
+    "file": "test/lifecycle.test.ts",
+    "name": "lifecycle branches > C: buyer cancel after mark as paid returns amount and fee to the seller"
+  },
+  {
+    "file": "test/lifecycle.test.ts",
+    "name": "lifecycle branches > D: seller cancel after the waiting time returns amount and fee to the seller"
+  },
+  {
+    "file": "test/lifecycle.test.ts",
+    "name": "lifecycle branches > E: a one-sided dispute won by the buyer returns the buyer's dispute fee"
+  },
+  {
+    "file": "test/relay.test.ts",
+    "name": "keyless relayer > a relayer that rewrites the intent too is refused by the network, and the signed release still goes through"
+  },
+  {
+    "file": "test/relay.test.ts",
+    "name": "keyless relayer > forwards a release the seller signed, byte for byte, and the buyer is paid"
+  },
+  {
+    "file": "test/relay.test.ts",
+    "name": "keyless relayer > refuses, before sending, a release whose buyer output was redirected to another address"
+  },
+  {
+    "file": "test/relay.test.ts",
+    "name": "keyless relayer > relays a token buyerCancel from the files the buyer wrote, and refuses the same files once the intent is changed"
+  }
+]
