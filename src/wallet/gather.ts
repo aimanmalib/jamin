@@ -52,5 +52,8 @@ export async function gather(provider: NetworkProvider, parties: Record<PartyNam
   const outputs: Output[] = plan.keeps.map((k) => ({ to: lockOf(parties[k.name].address), amount: k.amount }));
   if (outputs.length > 0) tx = tx.addOutputs(outputs);
   tx = tx.addBchChangeOutputIfNeeded({ to: parties.seller.address, feeRate });
+  // Coins a little above dust can be eaten by the fee. With no output left the network refuses the transaction, and
+  // there is nothing worth moving: the coins stay where they are.
+  if (tx.outputs.length === 0) return { plan: { inputs: [], keeps: [], taken: 0n } };
   return { txid: (await tx.send()).txid, plan };
 }

@@ -1,7 +1,10 @@
 // The wallet gather plan (decision 0016): which coins move to the seller and what the fee payers keep.
 import { describe, expect, it } from 'vitest';
-import type { Utxo } from '@solidcash/solidcash';
-import { DUST_SATS, gatherPlan } from '../src/wallet/gather.js';
+import { randomUtxo, type Utxo } from '@solidcash/solidcash';
+import { MockNetworkProvider } from '@solidcash/solidcash/network/mock';
+import { party, type Party, type PartyName } from '../src/lifecycle/context.js';
+import { asProvider } from '../src/sdk/mock.js';
+import { DUST_SATS, gather, gatherPlan } from '../src/wallet/gather.js';
 
 const coin = (satoshis: bigint, vout = 0): Utxo => ({ txid: 'aa'.repeat(32), vout, satoshis });
 const token: Utxo = { txid: 'bb'.repeat(32), vout: 1, satoshis: 1_000n,
@@ -30,4 +33,30 @@ describe('wallet gather plan', () => {
     expect(plan.inputs).toEqual([]);
     expect(plan.taken).toBe(0n);
   });
+});
+
+describe('wallet gather on a network', () => {
+  const NAMES: PartyName[] = ['seller', 'buyer', 'arbitrator', 'arbiterB', 'arbiterC', 'fees'];
+  async function wallet(feesCoin: bigint): Promise<Record<PartyName, Party>> {
+    const mock = new MockNetworkProvider();
+    const provider = asProvider(mock);
+    const parties = Object.fromEntries(NAMES.map((n, i) => [n, party(new Uint8Array(32).fill(i + 1), provider)])) as
+      Record<PartyName, Party>;
+    await mock.addUtxo(parties.fees.address, randomUtxo({ satoshis: feesCoin }));
+    return parties;
+  }
+
+  it('sends nothing when the fee would eat the only output (the network refuses a transaction without outputs)', async () => {
+    const parties = await wallet(DUST_SATS + 50n);
+    const r = await gather(parties.seller.signer.provider, parties, {}, 1);
+    expect(r.txid).toBeUndefined();
+    expect(r.plan.inputs).toEqual([]);
+  }, 120_000);
+
+  it('moves a coin that leaves more than dust after the fee to the seller', async () => {
+    const parties = await wallet(5_000n);
+    const r = await gather(parties.seller.signer.provider, parties, {}, 1);
+    expect(r.txid).toMatch(/^[0-9a-f]{64}$/);
+    expect(r.plan.inputs.map((i) => i.name)).toEqual(['fees']);
+  }, 120_000);
 });

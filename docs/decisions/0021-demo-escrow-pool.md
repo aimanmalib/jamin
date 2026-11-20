@@ -94,3 +94,16 @@ The keys guard nothing else and are unrelated to any wallet (decision 0020).
   escrow is released the card says the pool is closed instead of promising an escrow in N minutes that no run can
   stage. The next run that can stage again writes `false`. Waiting for funds still sends no warning.
 - Way back: drop the extra argument to `poolIndex` in `scripts/demo-restage.ts`.
+
+## Amendment, 2026-11-20: the sweep no longer waits for staging money
+
+- The first visitor release on mainnet showed two faults the regtest runs had not reached, because there the wallet
+  always had enough to stage. (1) The run opened the project wallet with the staging amount as its floor before it
+  swept, so a wallet too short to stage never got the demo keys' spare coins back. The sweep now opens the wallet
+  with a floor of 0; staging opens it again with its own floor. (2) Gathering the role addresses' coins at the
+  seller could pick a coin only a little above dust; the fee took all of it, the transaction had no output left and
+  the server refused it ("transactions must have at least one output"). The gather now sends nothing in that case.
+- Tests: `tests/gather.test.ts` builds the gather on the mock network (red on the old code), and the next cron run
+  on mainnet swept 4,815 sats back (`docs/MEASURED.md` "Demo pool on mainnet").
+- Way back: give `payer` no argument again in `scripts/demo-restage.ts` and drop the output check in
+  `src/wallet/gather.ts`.

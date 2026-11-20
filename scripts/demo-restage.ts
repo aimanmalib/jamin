@@ -63,7 +63,8 @@ function notify(text: string): void {
 }
 
 /** What the run reads with, and how it pays when it must stage. */
-interface Side { read: NetworkProvider; parties: DemoParties; known: string[]; payer(): Promise<Net>; close(): Promise<void> }
+/** `payer(need)`: the wallet, refusing (FundsShort) when it holds less than `need` at the seller; the sweep asks 0. */
+interface Side { read: NetworkProvider; parties: DemoParties; known: string[]; payer(need: bigint): Promise<Net>; close(): Promise<void> }
 
 function partiesFor(prefix: Net['prefix']): DemoParties {
   return { keys: demoKeys(demo, prefix), feeRecipientPkh: hexToBin(cfg.walletTrade.feeRecipientPkh) };
@@ -79,9 +80,11 @@ async function mainnetSide(): Promise<Side> {
   let wallet: MainnetNet | undefined;
   return {
     read: electrum as unknown as NetworkProvider, parties: partiesFor('bitcoincash'), known,
-    // Opened only when a staging is due: it reads the wallet phrase and pays through the spending gate.
-    payer: async () => {
-      wallet ??= await mainnetNet(cfg, repoRoot, stagingNeed(demo));
+    // Opened only when a staging is due: it reads the wallet phrase and pays through the spending gate. The sweep
+    // opens it with need 0, so a wallet too short to stage still gets the demo keys' spare coins back.
+    payer: async (need) => {
+      if (wallet && need > 0n) { await wallet.electrum.disconnect(); wallet = undefined; }
+      wallet ??= await mainnetNet(cfg, repoRoot, need);
       return { provider: wallet.provider, prefix: 'bitcoincash', pay: wallet.pay, returnAddress: wallet.returnAddress,
         node: wallet.node };
     },
@@ -103,7 +106,7 @@ function deps(ledger: PoolLedger): RestageDeps {
     pool, ledger, now: new Date(), known: side.known, dry, notify, feeCoinsPerEscrow: demo.feeCoinSats.length,
     status: statusOf,
     sweepBack: async (keep) => {
-      const net = await side.payer();
+      const net = await side.payer(0n);
       console.log(`  sweeping the demo keys' spare coins, keeping ${keep} at the seller`);
       const held = async (): Promise<bigint> => (await net.provider.getUtxos(net.returnAddress))
         .filter((u) => !u.token).reduce((a, u) => a + u.satoshis, 0n);
@@ -113,7 +116,7 @@ function deps(ledger: PoolLedger): RestageDeps {
       return back;
     },
     stage: async () => {
-      const net = await side.payer();
+      const net = await side.payer(stagingNeed(demo));
       console.log(`  staging an escrow on ${net.node}`);
       return stageDemo(net.provider, artifact, demo, side.parties, terms, net.pay, net.returnAddress);
     },
