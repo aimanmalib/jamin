@@ -471,6 +471,35 @@ by `npx tsx scripts/demo-pool-record.ts` (read only: sizes, fees and heights fro
   waiting at paid; plan stage 0 (stop: full)", net 76,812 of 400,000. The crontab line `# jamin-demo-restage`
   (every 10 minutes) was already installed; `/pool/pool.json` showed `lastRunAt` 16:10:19 UTC at 16:15 UTC.
 
+#### First release and first sweep on mainnet, 2026-11-20
+
+- 17:17 UTC: the demo video's recording pressed **Release on mainnet** once on the live site (the only press by the
+  builder). It released the first pool escrow `bitcoincash:pwhpw9f4mvvavdjwlwykzlfurq93h24xlkd7t6h35y5s6za5v4f42fz36zzus`
+  in `8d90c860bb692c328258a98f82672ad0f746177bcdd17d6755ca0bedaf47dee8` (7,191 bytes, as the card reported; block 978,198, miner fee 7,800 sats).
+  The dry run earlier gave the same transaction id: the release is signed deterministically. The home page's
+  "Releases on mainnet" went from 5 to 6 at once, and a fresh load read 6 from the chain.
+- 17:20 and 17:30 UTC: the cron runs saw "2 of 3 waiting at paid; plan stage 1" and failed with the server's
+  "Unable to verify transaction: transactions must have at least one output." before sweeping anything. Two
+  faults (decision 0021, amendment "the sweep no longer waits for staging money"): the run opened the wallet with
+  the staging floor before it swept, and the wallet gather built a transaction from a coin the fee ate whole.
+- 17:50 UTC, the first run with the fix: the wallet held 11,530 sats at the seller; the sweep kept the six largest
+  seller coins (fee coins of the two escrows still waiting) and sent 4,815 sats back to the seller address in
+  `7dd642bf566fc9d87965434d753d7fa8bc013424c8af11fadd77bfe0fcda7b31` (block 978,198), 16,345 after. The same as one
+  regtest cycle ("Sweep and net cost per cycle"). Then "waiting for funds": staging needs 46,000. Pool ledger:
+  spent 76,812, swept 4,815, net 71,997 of 400,000.
+- Two demo escrows still wait at `paid`.
+
+## Demo video
+
+Recorded 2026-11-20 17:00 to 17:40 UTC from the live site with Playwright (Chromium, 1920 by 1080), cut and
+captioned with ffmpeg; no sound. 54.3 seconds, H.264, sha256
+`1fa77a38f5b0b1361849001d32a2de21bea8c27a3cb5413eee9f3fe340dc4f56`. Scenes: the home page and its two strips, the
+real release above, the transaction on a block explorer, the home page again with one more release, the simulator's
+two-of-three panel, the Lifecycle tab. Every scene but the release was rehearsed first with `?demo=dry`, which signs
+and sends nothing. The explorer in the video is 3xpl.com: the site's configured explorer answered this host with
+HTTP 403, and the site keeps linking it for visitors. The video's URL carries `?v=1fa77a38` (the first eight hex of
+its sha256), because the CDN in front of the site keeps `/media/` files for hours.
+
 ## Wallet signing (branch W)
 
 Measured 2026-11-18 07:21 UTC on the same stock Bitcoin Cash Node 29.0.0 regtest node and settings as above, with

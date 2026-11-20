@@ -343,6 +343,13 @@
           "txBytes": 6168,
           "feeSats": 6358,
           "height": 978069
+        },
+        {
+          "step": "release",
+          "txid": "8d90c860bb692c328258a98f82672ad0f746177bcdd17d6755ca0bedaf47dee8",
+          "height": 978198,
+          "txBytes": 7191,
+          "feeSats": 7800
         }
       ]
     },
