@@ -19,6 +19,13 @@ test.beforeEach(async ({ page }) => {
 test('wallet: QR with the hat, tap to copy, balance chip in the header, funded turns paid by itself', async ({ page },
   info) => {
   const errors = watchErrors(page);
+  // WebKit logs a CSP refusal for the style Playwright injects while taking a screenshot on the public site (strict
+  // style-src); drop only what is logged during the test's own screenshots.
+  const shot = async (name: string): Promise<void> => {
+    const before = errors.length;
+    await page.screenshot({ path: info.outputPath(name), fullPage: false });
+    errors.splice(before);
+  };
   await page.goto('/?wallet=mock#/');
   const chip = page.getByTestId('header-wallet');
   await expect(chip).toHaveText('Connect wallet');
@@ -45,7 +52,7 @@ test('wallet: QR with the hat, tap to copy, balance chip in the header, funded t
   await expect(page.getByTestId('wallet-copied')).toHaveText('Copied');
   expect(await page.evaluate(() => (window as unknown as { copiedText: string[] }).copiedText)).toEqual([link, link]);
   await noHorizontalOverflow(page);
-  await page.screenshot({ path: info.outputPath('wallet-qr.png'), fullPage: false });
+  await shot('wallet-qr.png');
 
   await page.evaluate(() => { (window as unknown as { jaminWalletMock: { accept(): void } }).jaminWalletMock.accept(); });
   await expect(page.getByTestId('wallet-connected')).toBeVisible();
@@ -54,7 +61,7 @@ test('wallet: QR with the hat, tap to copy, balance chip in the header, funded t
   // The token count is hidden on phones to keep the header on one row; it is in the page either way.
   await expect(page.getByTestId('header-token')).toHaveText(`2.50 ${config.tokens.pusd.symbol}`);
   await page.evaluate(() => { window.scrollTo(0, 0); });
-  await page.screenshot({ path: info.outputPath('wallet-chip.png'), fullPage: false });
+  await shot('wallet-chip.png');
 
   await page.getByTestId('wallet-create').click();
   await page.getByTestId('wallet-fund').click();
@@ -64,7 +71,7 @@ test('wallet: QR with the hat, tap to copy, balance chip in the header, funded t
   await expect(page.getByTestId('wallet-status')).toHaveAttribute('data-status', 'paid',
     { timeout: config.walletTrade.pollMs * 5 });
   await expect(page.getByTestId('wallet-release')).toBeEnabled();
-  await page.screenshot({ path: info.outputPath('wallet-paid.png'), fullPage: false });
+  await shot('wallet-paid.png');
 
   // The chip and the trade stay when the visitor looks at another tab and comes back.
   await page.locator('.tabs a[href="#/try"]').click();
