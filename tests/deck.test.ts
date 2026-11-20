@@ -4,6 +4,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { deckConfig, inputsHash, loadSlides, OUT, ROOT, STAMP } from '../tools/deck/deck.js';
+import { countsLine, heroSentence } from './opening-text.js';
 
 const read = (path: string): string => readFileSync(resolve(ROOT, path), 'utf8');
 const slides = loadSlides();
@@ -62,6 +63,14 @@ describe('deck', () => {
     const c = deckConfig();
     expect(c.deckUrl).toBe(`${c.site}/${OUT.replace(/^public\//, '')}`);
     expect(existsSync(resolve(ROOT, OUT))).toBe(true);
+  });
+
+  it('opens with the README opening: the title sentence on slide 1, what to press and the counts on slide 2', () => {
+    // The README's line with its bold and link markup taken off.
+    const readme = read('README.md').replaceAll('**', '').replaceAll('https://', '');
+    expect(slides[0]?.lines?.[0]).toBe(heroSentence);
+    expect(readme).toContain(slides[1]?.lines?.[0]);
+    expect(slides[1]?.lines).toContain(countsLine());
   });
 
   it('finds numbers and sections the way the checks above rely on', () => {

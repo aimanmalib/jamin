@@ -1,8 +1,13 @@
 # Jamin
 
-Peer-to-peer trade escrow for Bitcoin Cash, written in SolidCash.
+Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.
 
-A seller locks BCH (or a CashToken such as PUSD) in a contract. The buyer pays in fiat off chain (bank transfer, e-wallet)
+Press **Release on mainnet** at https://jamin.sasateguh.com to release a waiting demo escrow on Bitcoin Cash mainnet, signed in your browser, or **Try the simulator** to play every branch on the SolidCash mock network.
+
+On mainnet so far: 12 escrows, 0.00155460 BCH and 0.23 PUSD locked in them, and 2 calls refused by the network.
+Counted from `examples/mainnet.json`, the same numbers as the strip on the home page.
+
+Jamin is peer-to-peer trade escrow for Bitcoin Cash, written in SolidCash. A seller locks BCH (or a CashToken such as PUSD) in a contract. The buyer pays in fiat off chain (bank transfer, e-wallet)
 and marks the trade as paid. The seller then releases the coins to the buyer. If the two disagree, either side can open a
 dispute by posting a dispute fee, and two of three named arbitrators decide who receives the coins. Nobody holds the funds in the middle:
 the contract only lets each role do what the trade rules allow, checked by signature.
