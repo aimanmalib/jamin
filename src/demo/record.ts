@@ -25,3 +25,19 @@ export function unrecordedPool<T extends { address: string }>(record: MainnetRec
   const known = new Set(record.escrows.map((e) => e.address));
   return pool.filter((e) => !known.has(e.address));
 }
+
+/**
+ * Adds a visitor's release (decision 0021) to a recorded demo escrow. Refuses an escrow that is not a recorded demo
+ * escrow, one that already has a release, a step other than `release`, and a txid the record already holds.
+ */
+export function addDemoRelease(record: MainnetRecord, address: string, step: MainnetStep): MainnetRecord {
+  if (step.step !== 'release') throw new Error('only a release step can be added to a demo escrow');
+  const at = record.escrows.findIndex((e) => e.address === address && e.demo === true);
+  if (at < 0) throw new Error(`${address} is not a recorded demo escrow`);
+  const escrow = record.escrows[at] as MainnetEscrow;
+  if (escrow.steps.some((s) => s.step === 'release')) throw new Error(`${address} already has a release`);
+  const known = new Set(record.escrows.flatMap((e) => e.steps.map((s) => ('txid' in s ? s.txid : s.rawTxHash))));
+  if (known.has(step.txid)) throw new Error(`${step.txid} is already recorded`);
+  const escrows = record.escrows.map((e, i) => (i === at ? { ...e, steps: [...e.steps, step] } : e));
+  return { network: 'mainnet', escrows };
+}

@@ -3,7 +3,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { MainnetRecord } from '../src/lifecycle/record.js';
-import { addDemoEscrow, latestDemo, unrecordedPool } from '../src/demo/record.js';
+import { addDemoEscrow, addDemoRelease, latestDemo, unrecordedPool } from '../src/demo/record.js';
 import { demoEscrowAddress } from '../web/data/examples.js';
 import { stagingNeed } from '../scripts/demo-mainnet.js';
 
@@ -40,6 +40,18 @@ describe('demo escrow record', () => {
     const pool = [{ address: 'bitcoincash:pp' }, { address: 'bitcoincash:pq' }, { address: 'bitcoincash:pr' }];
     expect(unrecordedPool(once, pool).map((e) => e.address)).toEqual(['bitcoincash:pq', 'bitcoincash:pr']);
     expect(unrecordedPool(once, [])).toEqual([]);
+  });
+
+  it('adds a visitor release to a recorded demo escrow, once, and nothing else', () => {
+    const once = addDemoEscrow(BASE, 'bitcoincash:pp', steps(10));
+    const rel = { step: 'release', txid: tx(30), height: 900_000 };
+    const r = addDemoRelease(once, 'bitcoincash:pp', rel);
+    expect(r.escrows[1]?.steps).toEqual([...steps(10), rel]);
+    expect(once.escrows[1]?.steps).toHaveLength(3);
+    expect(() => addDemoRelease(r, 'bitcoincash:pp', { step: 'release', txid: tx(31) })).toThrow(/already has a release/);
+    expect(() => addDemoRelease(once, 'bitcoincash:pa', rel)).toThrow(/not a recorded demo escrow/);
+    expect(() => addDemoRelease(once, 'bitcoincash:pp', { step: 'release', txid: tx(11) })).toThrow(/already recorded/);
+    expect(() => addDemoRelease(once, 'bitcoincash:pp', { step: 'buyerCancel', txid: tx(32) })).toThrow(/only a release/);
   });
 
   it('needs the seller and buyer coins plus a fee margin each at the seller before staging', () => {
