@@ -221,6 +221,7 @@
       "W": "release, seller trades from a wallet",
       "R": "two calls refused, then release",
       "X": "release, seller signs in a third-party wallet",
+      "T": "buyer cancels a token escrow, sent by the relayer",
       "P": "public demo, a visitor releases"
     },
     "colStep": "Step",

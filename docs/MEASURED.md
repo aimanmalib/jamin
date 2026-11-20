@@ -190,6 +190,32 @@ Sabotage, not committed: with the output comparison removed from `src/relay/rela
 (`test/relay.test.ts`) fails (`expected [Function] to throw error matching /output \d+ differs from the intent/ but
 got 'relay refused: the network reported 0…'`); restored, it passes.
 
+## Relayed token cancel on mainnet (branch T)
+
+Measured 2026-11-20 04:40 UTC on Bitcoin Cash mainnet through `bch.imaginary.cash`, contracts unchanged (decision
+0018), seller and buyer HD paths of the project's test wallet. Command:
+
+```
+npx tsx scripts/lifecycle.ts --network mainnet --branches T --relay buyerCancel
+```
+
+The seller started with 40,000 sats (`mainnet.branchFloorSats.T`). The seller creates a PUSD token escrow (9 units,
+fee 1 unit, one reserve unit; `mainnet.branchTerms.T`) and deposits the tokens. The buyer signs `buyerCancel` without
+broadcasting it; `scripts/relay.ts`, a separate process with no key, printed `matches the intent: txid 454e54a6...,
+7 outputs` and sent the bytes. Exit code 0; the spending gate's ledger then held 526,778 of 2,000,000 sats.
+
+| Step | txid | Bytes | Largest unlocking script | Miner fee (sat) |
+|---|---|---|---|---|
+| createEscrow | `7e96341b44a0993a3ee462701fba5420e459399d3d07e5272c7155fd047db111` | 750 | 100 | 1,750 |
+| deposit | `1f5457efafe05e5d363172823c083827338d55cb9e8a45a5a3e3d5d775133e32` | 8,416 | 6,888 | 8,606 |
+| buyerCancel, relayed | `454e54a6e468b271d7e48901e5024ad8b4a296cd7538aabf6f65d04504c27d89` | 8,533 | 6,888 | 8,723 |
+
+The cancel, read back from the server: it spends outputs 0, 1, 2 and 5 of the deposit (the escrow's coins, the
+token container with the PUSD among them) and two wallet coins; output 4 pays 10 PUSD units (amount + fee) to the
+seller's token address `bitcoincash:zqjjt27z8wc44lkdd9x8jm3e2az8a5xleuzqr2a60v`, output 3 keeps the 1 reserve unit
+in the container, and output 6 returns 2,877 sats of change to the buyer. The record in `examples/mainnet.json`
+marks the cancel `"relayed": true`.
+
 ## Regtest (real consensus limits)
 
 Measured 2026-11-18 10:39 UTC on the contracts with the 2-of-3 arbitration panel (decision 0008), on a stock Bitcoin
@@ -521,6 +547,8 @@ the SDK broadcast through `sendPreparedTransaction` (F9).
   `bitcoincash:qqjjt27z8wc44lkdd9x8jm3e2az8a5xleu92s5nusl` holds 382,954 sats confirmed, 0 unconfirmed. This is below
   `mainnet.minFundingSats` (1,000,000) in `config/jamin.json`, so `npm run lifecycle -- --network mainnet` still
   broadcasts nothing. No mainnet contract transaction has been sent.
+- Funding: 0.00030878 BCH received from a shared test wallet, txid
+  c72ddd8b2ec30b72b0fb2e5055c2ce7df10a31bde330149511caa0f73dae465e, for the relayed token cancel on mainnet (branch T).
 
 ## Mainnet
 

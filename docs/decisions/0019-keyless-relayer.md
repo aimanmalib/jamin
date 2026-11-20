@@ -39,7 +39,8 @@ signer, phrase or environment file.
   writes the signed `buyerCancel` of a token escrow and its intent to two files, and `scripts/relay.ts`, started as
   its own process (`scripts/relay-process.ts`), checks and sends them. On regtest it sends to the node over JSON-RPC
   and mines one block; it has run there (`docs/MEASURED.md`, "Relayed token cancel on regtest").
-- No relayed transaction has been broadcast on mainnet; the mainnet runs broadcast their own transactions.
+- One relayed transaction has been broadcast on mainnet: the branch T `buyerCancel` of 2026-11-20
+  (`docs/MEASURED.md`, "Relayed token cancel on mainnet"); the other mainnet runs broadcast their own transactions.
 - The mainnet run takes branch T too (`scripts/lifecycle.ts --network mainnet --branches T --relay buyerCancel`):
   the relayer process sends through the spending gate to the configured server. Before the escrow is created, the
   token units earlier branches left at the buyer and the fee recipient are moved back to the seller in one coin

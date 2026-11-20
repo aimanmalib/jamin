@@ -74,3 +74,14 @@ describe('hash routes', () => {
     expect(hashQuery('#/wallet').get('trade')).toBeNull();
   });
 });
+
+describe('branch names', () => {
+  it('names every branch of the mainnet and regtest records in both languages', () => {
+    const branches = new Set([...mainnet.escrows, ...regtest.transactions, regtest.refused].map((e) => e.branch));
+    for (const file of ['lang/en.json', 'lang/ms.json']) {
+      const names = (JSON.parse(readFileSync(file, 'utf8')) as { lifecycle: { branch: Record<string, string> } })
+        .lifecycle.branch;
+      for (const b of branches) expect(names[b], `${file} lifecycle.branch.${b}`).toBeTruthy();
+    }
+  });
+});

@@ -221,6 +221,7 @@
       "W": "lepas, penjual berdagang dari dompet",
       "R": "dua panggilan ditolak, kemudian lepas",
       "X": "lepas, penjual menandatangani dalam dompet pihak ketiga",
+      "T": "pembeli membatalkan escrow token, dihantar oleh penyampai",
       "P": "demo awam, pelawat melepaskan"
     },
     "colStep": "Langkah",

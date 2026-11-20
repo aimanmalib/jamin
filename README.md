@@ -41,6 +41,9 @@ Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**.
   the buyer were sent as raw transactions past the SDK's own checks, and the network refused both; the server's text
   is recorded verbatim, the escrow's coins stayed unspent, and the seller's valid release followed (4 more escrow
   transactions; `docs/MEASURED.md`, "Refused on mainnet").
+- **Relayed token cancel on mainnet:** in branch T the buyer signed `buyerCancel` on a PUSD escrow and wrote it to two
+  files; the keyless relayer checked the transaction against the buyer's intent and broadcast it, and the 10 units
+  went back to the seller (3 escrow transactions; `docs/MEASURED.md`, "Relayed token cancel on mainnet").
 - **SolidCash features used:** 26, each with the test that exercises it, in `docs/FEATURES.md`.
 - **Upstream:** three fixes found while building this are open as pull requests to SolidCash (#8, #9, #10;
   "Upstream contributions").
@@ -123,6 +126,7 @@ keeps its references honest.
 | Mainnet run: branches A to E and W, 24 escrow txids, PUSD bought from a Cauldron pool | `docs/MEASURED.md` "Mainnet", `examples/mainnet.json` |
 | Mainnet branch X: Cashonize signs the seller's steps on the Wallet tab over WizardConnect | `docs/MEASURED.md` "Third-party wallet on mainnet", `examples/mainnet.json` |
 | Mainnet branch R: two forbidden calls the network refused (server text, raw hashes), then a valid release | `docs/MEASURED.md` "Refused on mainnet", `examples/mainnet.json` |
+| Mainnet branch T: a token escrow's `buyerCancel` broadcast by the keyless relayer | `docs/MEASURED.md` "Relayed token cancel on mainnet", `examples/mainnet.json` |
 | Mainnet branch P: a public demo escrow created, funded and marked paid, left for a visitor to release from the home page | `docs/MEASURED.md` "Demo escrow", `examples/mainnet.json` |
 
 ## Size and cost
@@ -178,7 +182,8 @@ other ten are not are in the same file.
 
 - **Mainnet:** the BCH escrow ran on mainnet (branches A, C, D, E, W, R); the token escrow ran branch B (release) with
   0.10 PUSD, a smaller amount than the 2.00 of the regtest run, as 0.01 PUSD costs about 4,800 sats (decision 0012).
-  The token escrow's cancel and dispute paths ran on regtest or the mock network only.
+  The token escrow's buyer cancel ran on mainnet through the relayer (branch T, 0.09 PUSD); its seller cancel and
+  dispute paths ran on regtest or the mock network only.
 - **Coins left behind:** no entry point of these contracts spends a finished escrow's coins: each one checks a status
   the escrow has left (`docs/MEASURED.md`, "Final state", tried for all seven mainnet escrows). After the claims below,
   the seven escrows held 75,976 sats in contract coins. 41,800 of them (the master and state NFTs, the 1,000-sat
@@ -209,10 +214,9 @@ other ten are not are in the same file.
   median time of past blocks.
 - **Error names from the SDK:** a seller cancel before the waiting time is reported as a locktime failure, not
   `TooEarly` (F7), and a failing constructor check is not reported by name (F8).
-- **Relayer:** the keyless relayer is tested on the mock network and on regtest, where it broadcast a token escrow
-  `buyerCancel` from the files the buyer wrote (branch T, `docs/MEASURED.md`); no relayed transaction has been
-  broadcast on mainnet, and a relayer can still decline to send or send late (the party can send the same
-  transaction itself).
+- **Relayer:** the keyless relayer broadcast one token escrow `buyerCancel` on mainnet and one on regtest, each from
+  the files the buyer wrote (branch T, `docs/MEASURED.md`). A relayer can still decline to send or send late (the
+  party can send the same transaction itself).
 - **Dropped from the original:** meta transactions, the fee discount NFT and partner split, the proxy deployer and
   the seller balance pool (reasons in `docs/PORTING.md`).
 - **Wallets:** a seller can trade from a wallet that signs over the BCH WalletConnect methods: the wallet pays and
