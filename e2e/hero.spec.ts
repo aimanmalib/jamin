@@ -7,8 +7,9 @@ import { noHorizontalOverflow, watchErrors } from './helpers.js';
 
 const FOLD = 664;
 
+// SHOT_DIR (optional): a folder for evidence screenshots.
 async function shot(page: Page, name: string): Promise<void> {
-  const dir = process.env.AUTOPILOT_BUKTI_DIR;
+  const dir = process.env.SHOT_DIR;
   if (dir) await page.screenshot({ path: `${dir}/jamin-q4-${test.info().project.name}-${name}.png` });
 }
 
