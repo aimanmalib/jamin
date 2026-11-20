@@ -395,6 +395,29 @@ On a stock Bitcoin Cash Node 29.0.0 regtest node (`/Bitcoin Cash Node:29.0.0(EB3
 - `env -i HOME=$HOME PATH=/usr/bin:/bin bash deploy/demo-restage-cron.sh --kering` against mainnet
   (`bch.imaginary.cash`): exit 0, "1 of 3 waiting at paid; plan stage 2; dry, nothing sent", no ledger written.
 
+### Sweep and net cost per cycle
+
+Measured 2026-11-20 15:15 to 15:18 UTC on a fresh stock Bitcoin Cash Node 29.0.0 regtest node with
+`scripts/demo-restage.ts --network regtest` and `pool.budgetSats` 400,000, three runs on one chain. Run 1 filled the
+pool; runs 2 and 3 each released the first waiting escrow (as a visitor would), then restaged.
+
+| Run | Test release | Swept back (sats) | Sweep txid | Return address before, after (sats) | Staged | Net spent after |
+|---|---|---:|---|---|---:|---:|
+| 1 | none | 0 | none | | 3 | 124,218 |
+| 2 | `7fba664387866a5bc378c0dcdbf34116c834106e7000c93251f7674cd3bcfdac` | 4,815 | `82e89c1d5e15ab7dbe7b8d74b6f8964453a2211cbec68d4deb2cd63fe3b32280` | 0, 4,815 | 1 | 160,809 |
+| 3 | `121e3dc7592ecaa3684961eef33db04f9db18d77626292a102b589edf598d5ca` | 4,815 | `6b1eb3c76f312e35a0a744791f219abaea9a33ce93c6e7167ccbb00b40cab230` | 0, 4,815 | 1 | 197,400 |
+
+- Each staging cost 41,406 sats; each sweep kept the 6 largest coins at the demo seller (the fee coins of the two
+  escrows still waiting) and took back what the release paid the demo buyer, less the sweep's fee. After each sweep
+  the two remaining escrows released with those kept coins.
+- **Net cost per cycle** (one release, one restage): 41,406 − 4,815 = **36,591 sats**. On mainnet a staging measured
+  38,406, so a mainnet cycle should be about 33,600.
+- The ledger recorded both sweeps: `sweptSats` 9,630 and two entries in `sweeps`.
+- `pool.budgetSats` = min(76,812 + 40 × 36,591 + 41,406, 400,000) = min(1,581,858, 400,000) = **400,000**
+  (decision 0021, amendment of 2026-11-20).
+- `env -i HOME=$HOME PATH=/usr/bin:/bin bash deploy/demo-restage-cron.sh --kering` against mainnet, 15:25 UTC:
+  exit 0, "3 of 3 waiting at paid; plan stage 0 (stop: full); dry, nothing sent", net 76,812 of 400,000.
+
 ### Demo pool on mainnet
 
 Measured 2026-11-20 04:48 UTC. Before the run the test wallet held 7,933 plain sats (seller 5,056, buyer 2,877) and
@@ -427,7 +450,8 @@ by `npx tsx scripts/demo-pool-record.ts` (read only: sizes, fees and heights fro
   Before it, the wallet paid the demo seller and buyer their coins and the seller its fee coins in three payments,
   and took its change back (txids in the pool ledger, `state/demo-pool.json`, not tracked).
 - Pool cost 38,406 each: paid to the demo keys, less the change back, plus the wallet payments counted at 400.
-- Pool ledger: spent 76,812, swept 0, net 76,812 of `budgetSats` 145,000; failures 0; no warning sent.
+- Pool ledger: spent 76,812, swept 0, net 76,812 of `budgetSats` 145,000 at the time (400,000 since the amendment
+  above); failures 0; no warning sent.
 - With the escrow staged on 2026-11-19 (branch P, the first row of the three), three demo escrows wait at `paid`;
   `/pool/pool.json` lists all three.
 

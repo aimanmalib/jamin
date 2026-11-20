@@ -15,13 +15,49 @@ export function candidates(recorded: string[], pool: string[], max: number): str
   return [...new Set([...recorded, ...pool])].slice(0, max);
 }
 
-export async function fetchIndex(path: string, get: typeof fetch = fetch): Promise<string[]> {
+/** The pool's list file: its escrows, and when present, when the cron last ran, how often, and whether it closed. */
+export interface PoolInfo { escrows: string[]; lastRunAt?: number; everyMinutes?: number; closed?: boolean }
+
+export function parsePool(body: unknown): PoolInfo {
+  const b = (body ?? {}) as { lastRunAt?: unknown; everyMinutes?: unknown; closed?: unknown };
+  const info: PoolInfo = { escrows: parseIndex(body) };
+  const at = typeof b.lastRunAt === 'string' ? Date.parse(b.lastRunAt) : NaN;
+  if (Number.isFinite(at)) info.lastRunAt = at;
+  if (typeof b.everyMinutes === 'number' && Number.isInteger(b.everyMinutes) && b.everyMinutes > 0) {
+    info.everyMinutes = b.everyMinutes;
+  }
+  if (typeof b.closed === 'boolean') info.closed = b.closed;
+  return info;
+}
+
+export async function fetchPool(path: string, get: typeof fetch = fetch): Promise<PoolInfo> {
   try {
     const res = await get(path, { cache: 'no-store' });
-    return res.ok ? parseIndex(await res.json()) : [];
+    return res.ok ? parsePool(await res.json()) : { escrows: [] };
   } catch {
-    return [];
+    return { escrows: [] };
   }
+}
+
+export async function fetchIndex(path: string, get: typeof fetch = fetch): Promise<string[]> {
+  return (await fetchPool(path, get)).escrows;
+}
+
+/** What the card says when no demo escrow waits: the next one in about `minutes`, the pool closed, or nothing. */
+export type PoolNext = { kind: 'soon'; minutes: number } | { kind: 'closed' } | undefined;
+
+/**
+ * Minutes until the cron's next run (from its last run and its interval) plus the time a run takes to stage. Nothing
+ * when the file does not say, or when the last run is older than `staleRuns` intervals: the cron may be stopped,
+ * and a count would be made up.
+ */
+export function poolNext(info: PoolInfo, now: number, readyMinutes: number, staleRuns = 3): PoolNext {
+  if (info.closed === true) return { kind: 'closed' };
+  if (info.lastRunAt === undefined || info.everyMinutes === undefined || info.closed === undefined) return undefined;
+  const every = info.everyMinutes * 60_000;
+  const since = now - info.lastRunAt;
+  if (since < 0 || since > staleRuns * every) return undefined;
+  return { kind: 'soon', minutes: Math.max(1, Math.ceil((every - since) / 60_000) + readyMinutes) };
 }
 
 export interface Picked<S extends string> { address: string; status: S }

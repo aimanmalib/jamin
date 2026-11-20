@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Host cron for the demo escrow pool (decision 0021): runs scripts/demo-restage.ts on mainnet every 10 minutes.
+# Host cron for the demo escrow pool (decision 0021): runs scripts/demo-restage.ts on mainnet every
+# pool.restageEveryMinutes (config/demo.json; the card counts the minutes to the next staging from the same value).
 #   deploy/demo-restage-cron.sh            one run (what the crontab line calls)
 #   deploy/demo-restage-cron.sh --kering   count and plan only: nothing is sent, the ledger is not written
 #   deploy/demo-restage-cron.sh pasang     install the crontab line (idempotent; tagged # jamin-demo-restage)
@@ -21,7 +22,8 @@ major=$("$NODE_BIN" -p 'process.versions.node.split(".")[0]')
 
 case "${1:-run}" in
   pasang)
-    line="*/10 * * * * $HERE/demo-restage-cron.sh >> $REPO/state/demo-restage.log 2>&1 $TAG"
+    every=$("$NODE_BIN" -p "JSON.parse(require('node:fs').readFileSync('$REPO/config/demo.json', 'utf8')).pool.restageEveryMinutes")
+    line="*/$every * * * * $HERE/demo-restage-cron.sh >> $REPO/state/demo-restage.log 2>&1 $TAG"
     { crontab -l 2>/dev/null | grep -vF "$TAG" || true; echo "$line"; } | crontab -
     echo "installed: $line"; exit 0 ;;
   buang)

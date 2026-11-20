@@ -18,11 +18,13 @@
   },
   "pool": {
     "size": 3,
-    "budgetSats": 145000,
+    "budgetSats": 400000,
     "restageUntil": "2026-12-15T00:00:00Z",
     "maxIndex": 40,
     "estimateSats": 42000,
     "payFeeSats": 400,
+    "restageEveryMinutes": 10,
+    "estimateReadyMinutes": 2,
     "indexPath": "/pool/pool.json"
   }
 }

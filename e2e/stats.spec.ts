@@ -9,6 +9,8 @@ import config from '../config/jamin.json' with { type: 'json' };
 const escrows = mainnet.escrows.length;
 const steps = (mainnet as unknown as { escrows: { steps: { refused?: boolean }[] }[] }).escrows.flatMap((e) => e.steps);
 const refused = steps.filter((s) => s.refused === true).length;
+const releases = (steps as { step?: string; refused?: boolean }[])
+  .filter((s) => s.step === 'release' && s.refused !== true).length;
 const start = config.stats.mockStartHeight;
 
 test('stats strip: recorded numbers, and the block moves on without a click', async ({ page }) => {
@@ -19,6 +21,8 @@ test('stats strip: recorded numbers, and the block moves on without a click', as
   // The pool list may name escrows the file does not record yet: never fewer than the file.
   expect(Number((await page.getByTestId('stats-escrows').textContent())?.replace(/\D/g, ''))).toBeGreaterThanOrEqual(escrows);
   await expect(page.getByTestId('stats-refused')).toHaveText(String(refused));
+  // Mock mode reads no chain: only the release steps the file records.
+  await expect(page.getByTestId('stats-releases')).toHaveText(String(releases));
   await expect(page.getByTestId('stats-locked')).toHaveText(/^0\.\d{8} BCH$/);
   await expect(page.getByTestId('stats-locked-token')).toHaveText(/PUSD/);
   await expect(page.getByTestId('stats-block')).toHaveText(/\d/);

@@ -14,13 +14,18 @@ export type { PoolConfig };
 /** The wallet holds too little to stage: the pool waits for funds; not a failure, so no warning. */
 export class FundsShort extends Error {}
 
-export const POOL_LIMITS = { minSize: 3, maxSize: 5, maxBudgetSats: 145_000 } as const;
+export const POOL_LIMITS = { minSize: 3, maxSize: 5, maxBudgetSats: 400_000, maxEveryMinutes: 60 } as const;
 
 export function validPool(p: PoolConfig): PoolConfig {
   const ints = [p.size, p.budgetSats, p.maxIndex, p.estimateSats, p.payFeeSats];
   if (!ints.every((n) => Number.isInteger(n) && n > 0)) throw new Error('pool values must be positive whole numbers');
   if (p.size < POOL_LIMITS.minSize || p.size > POOL_LIMITS.maxSize) throw new Error('pool size must be 3 to 5');
   if (p.budgetSats > POOL_LIMITS.maxBudgetSats) throw new Error(`pool budget must be at most ${POOL_LIMITS.maxBudgetSats} sats`);
+  if (!Number.isInteger(p.restageEveryMinutes) || p.restageEveryMinutes < 1
+    || p.restageEveryMinutes > POOL_LIMITS.maxEveryMinutes) throw new Error('pool restageEveryMinutes must be 1 to 60');
+  if (!Number.isInteger(p.estimateReadyMinutes) || p.estimateReadyMinutes < 0) {
+    throw new Error('pool estimateReadyMinutes must be a whole number, 0 or more');
+  }
   if (Number.isNaN(Date.parse(p.restageUntil))) throw new Error('pool restageUntil must be an ISO date');
   if (!/^\/[a-z0-9/_-]+\.json$/.test(p.indexPath)) throw new Error('pool indexPath must be a site path to a .json file');
   return p;
@@ -120,11 +125,33 @@ export interface RestageResult {
 }
 
 export const POOL_MESSAGES = {
-  budget: 'Jamin: the demo escrow pool stopped staging: its budget (USD 0.30) is used up, its end date passed or it '
+  budget: 'Jamin: the demo escrow pool stopped staging: its budget (pool.budgetSats) is used up, its end date passed or it '
     + 'reached its escrow limit. The site offers the escrows still waiting, then shows released ones. No action needed.',
   failures: (error: string): string => `Jamin: the demo escrow pool failed 3 runs in a row. Last error: ${error}. `
     + 'Check the host cron log; undo with deploy/demo-restage-cron.sh buang.',
 } as const;
+
+/** Whether a later run could still stage an escrow: false once the budget, the end date or the escrow limit stops it. */
+export function poolOpen(pool: PoolConfig, l: PoolLedger, now: Date): boolean {
+  return planRestage(pool, l, 0, now).stage > 0;
+}
+
+/** What the site reads at pool.indexPath (web/demo/pick.ts parses it). */
+export interface PoolIndex {
+  updatedAt: string;
+  /** When the cron last ran, and how often it runs: the card counts the minutes to the next staging from them. */
+  lastRunAt: string;
+  everyMinutes: number;
+  /** No staging will follow: the card says the pool is closed instead of counting minutes. */
+  closed: boolean;
+  escrows: string[];
+}
+
+export function poolIndex(pool: PoolConfig, known: string[], l: PoolLedger, now: Date): PoolIndex {
+  const at = now.toISOString();
+  return { updatedAt: at, lastRunAt: at, everyMinutes: pool.restageEveryMinutes, closed: !poolOpen(pool, l, now),
+    escrows: poolAddresses(known, l) };
+}
 
 /** Every demo escrow address the pool knows, oldest first, each once. */
 export function poolAddresses(known: string[], l: PoolLedger): string[] {

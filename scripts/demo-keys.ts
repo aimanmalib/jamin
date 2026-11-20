@@ -13,8 +13,8 @@ const FILE = `${repoRoot}config/demo.json`;
 const DEFAULTS: Omit<DemoConfig, 'keys'> = {
   label: 'Public demo keys, published on purpose. They guard one mainnet escrow worth at most maxSats satoshis.',
   maxSats: 24_000, escrowSats: 5_000, feeCoinSats: [3_000, 3_000, 3_000], buyerCoinSats: 10_000, sellerCoinSats: 30_000,
-  pool: { size: 3, budgetSats: 145_000, restageUntil: '2026-12-15T00:00:00Z', maxIndex: 40, estimateSats: 42_000,
-    payFeeSats: 400, indexPath: '/pool/pool.json' },
+  pool: { size: 3, budgetSats: 400_000, restageUntil: '2026-12-15T00:00:00Z', maxIndex: 40, estimateSats: 42_000,
+    payFeeSats: 400, restageEveryMinutes: 10, estimateReadyMinutes: 2, indexPath: '/pool/pool.json' },
 };
 
 export function randomKey(): string {

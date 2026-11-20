@@ -38,6 +38,10 @@ export interface PoolConfig {
   estimateSats: number;
   /** Miner fee counted for each wallet payment to a demo key (the wallet's side of a staging). */
   payFeeSats: number;
+  /** Minutes between cron runs: the crontab line deploy/demo-restage-cron.sh installs uses this value. */
+  restageEveryMinutes: number;
+  /** Minutes one run takes to stage an escrow, added to the wait for the next run in the card's estimate. */
+  estimateReadyMinutes: number;
   /** Where the site reads the list of pool escrows (state/demo-public/pool.json, mounted read-only). */
   indexPath: string;
 }

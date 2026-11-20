@@ -1,18 +1,31 @@
 // "Release on mainnet": the public demo escrow, already created, funded and marked paid. Pressing the button signs
 // `release` in this page with the public demo seller key and broadcasts it; `?demo=dry` signs and sends nothing.
 // The escrow's state is read from the chain, so a release by an earlier visitor shows as such. A pool of demo escrows
-// waits (decision 0021): the card offers the first still at `paid`, and after a release points to the next one.
+// waits (decision 0021): the card offers the first still at `paid`, and after a release points to the next one. When
+// none waits, the pool's list file says when the host's cron runs next (the card adds the minutes a staging takes)
+// or that the pool is closed.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config, explorerLink } from '../data/config.js';
 import { demo, lastTx, offer, release, type DemoTarget, type Offer } from '../demo/run.js';
+import { fetchPool, poolNext, type PoolInfo } from '../demo/pick.js';
+import { announceRelease } from '../demo/events.js';
 import type { DemoStatus, Released } from '../../src/demo/escrow.js';
 
 type View =
   | { kind: 'loading' } | { kind: 'none' } | { kind: 'error' }
-  | { kind: 'status'; target: DemoTarget; status: DemoStatus; last?: string | undefined }
+  | { kind: 'status'; target: DemoTarget; status: DemoStatus; last?: string | undefined; pool?: PoolInfo | undefined }
   | { kind: 'working'; target: DemoTarget }
-  | { kind: 'done'; target: DemoTarget; result: Released; next?: Offer | undefined };
+  | { kind: 'done'; target: DemoTarget; result: Released; next?: Offer | undefined; pool?: PoolInfo | undefined };
+
+/** "The next one is ready in about N min" or "the pool is closed", when no demo escrow waits. */
+function PoolLine({ pool }: { pool: PoolInfo | undefined }): ReactNode {
+  const { t } = useLang();
+  const next = pool && poolNext(pool, Date.now(), demo.pool.estimateReadyMinutes);
+  if (!next) return null;
+  return <p data-testid="demo-pool-next">{next.kind === 'closed' ? t('demo.poolClosed')
+    : t('demo.poolSoon', { minutes: String(next.minutes) })}</p>;
+}
 
 function TxLink({ txid, live }: { txid: string; live: boolean }): ReactNode {
   return live ? <a className="txid" href={explorerLink(config.explorer.mainnetTx, txid)}>{txid}</a>
@@ -33,7 +46,7 @@ export function DemoRelease({ focusOnMount = false }: { focusOnMount?: boolean }
       if (!o) return { kind: 'none' };
       setAddresses(o.addresses);
       return { kind: 'status', target: o.target, status: o.status,
-        last: o.status === 'paid' ? undefined : await lastTx(o.target) };
+        last: o.status === 'paid' ? undefined : await lastTx(o.target), pool: o.pool };
     })().then((v) => { if (alive) setView(v); }, () => { if (alive) setView({ kind: 'error' }); });
     return () => { alive = false; };
   }, []);
@@ -43,9 +56,12 @@ export function DemoRelease({ focusOnMount = false }: { focusOnMount?: boolean }
     release(target).then(async (result) => {
       setView({ kind: 'done', target, result });
       // A sent release ends this escrow: look for the next one still waiting. A dry one changes nothing.
-      if (!result.sent || target.mode === 'mock') return;
-      const next = await offer(target.mode, new Set([target.address]), addresses).catch(() => undefined);
+      if (!result.sent) return;
+      announceRelease(target.address);
+      const next = target.mode === 'mock' ? undefined
+        : await offer(target.mode, new Set([target.address]), addresses).catch(() => undefined);
       if (next?.status === 'paid') setView({ kind: 'done', target, result, next });
+      else setView({ kind: 'done', target, result, pool: next?.pool ?? await fetchPool(demo.pool.indexPath) });
     }, () => setView({ kind: 'error' }));
   };
 
@@ -70,6 +86,7 @@ export function DemoRelease({ focusOnMount = false }: { focusOnMount?: boolean }
         <p data-testid="demo-closed">{t('demo.closed', { status: t(`demo.status.${view.status}`) })}
           {view.last && <> <TxLink txid={view.last} live={live(view.target)} /></>}</p>
       )}
+      {view.kind === 'status' && view.status !== 'paid' && <PoolLine pool={view.pool} />}
       {view.kind === 'working' && <p role="status">{t('demo.working')}</p>}
       {view.kind === 'done' && (
         <p role="status" data-testid="demo-result">
@@ -77,6 +94,7 @@ export function DemoRelease({ focusOnMount = false }: { focusOnMount?: boolean }
           {' '}<TxLink txid={view.result.txid} live={view.result.sent && live(view.target)} />
         </p>
       )}
+      {view.kind === 'done' && !view.next && <PoolLine pool={view.pool} />}
       {view.kind === 'done' && view.next && (
         <p data-testid="demo-next">{t('demo.next')}{' '}
           <button type="button" className="btn" onClick={() => view.next &&

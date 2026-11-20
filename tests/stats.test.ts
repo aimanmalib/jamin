@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import mainnet from '../examples/mainnet.json' with { type: 'json' };
 import config from '../config/jamin.json' with { type: 'json' };
-import { bchText, recordedStats, secondsAgo, statsPollMs, tokenText, unrecordedPool } from '../web/data/stats.js';
+import {
+  bchText, recordedStats, releaseCount, secondsAgo, statsPollMs, tokenText, unrecordedPool, unreleasedDemo,
+} from '../web/data/stats.js';
 import type { MainnetRun } from '../web/data/examples.js';
 import { mockTip, statsMode, tipHeight } from '../web/net/tip.js';
 import { lockedOf, unlockedTxids, withLocked, type VerboseOutput } from '../src/lifecycle/locked.js';
@@ -53,6 +55,32 @@ describe('recorded numbers', () => {
     const recorded = run.escrows.find((e) => e.address)?.address as string;
     expect(unrecordedPool([recorded, 'bitcoincash:pnew', 'bitcoincash:pnew'], run)).toBe(1);
     expect(unrecordedPool([], run)).toBe(0);
+  });
+});
+
+describe('releases on mainnet', () => {
+  const raw2 = mainnet as unknown as { escrows: { address?: string; demo?: boolean; steps: RawStep[] }[] };
+  const plain = raw2.escrows.flatMap((e) => e.steps).filter((s) => s.step === 'release' && !s.refused).length;
+  const demoWaiting = raw2.escrows.filter((e) => e.demo === true && e.address
+    && !e.steps.some((s) => s.step === 'release' && !s.refused)).map((e) => e.address as string);
+
+  it('count the release steps the file records, a refused one not counted', () => {
+    expect(releaseCount([], run)).toBe(plain);
+    expect(plain).toBeGreaterThan(0);
+  });
+
+  it('add a demo escrow seen released once, and never one the file already records', () => {
+    const recordedRelease = raw2.escrows.find((e) => e.address && e.steps.some((s) => s.step === 'release' && !s.refused));
+    const fresh = 'bitcoincash:pseen';
+    expect(releaseCount([fresh, fresh], run)).toBe(plain + 1);
+    expect(releaseCount([recordedRelease?.address as string], run)).toBe(plain);
+  });
+
+  it('asks the chain only about demo escrows with no recorded release, the pool list added once', () => {
+    expect(unreleasedDemo([], run)).toEqual(demoWaiting);
+    expect(unreleasedDemo([...demoWaiting, 'bitcoincash:pnew'], run)).toEqual([...demoWaiting, 'bitcoincash:pnew']);
+    const released = raw2.escrows.find((e) => e.address && e.steps.some((s) => s.step === 'release'))?.address as string;
+    expect(unreleasedDemo([released], run)).not.toContain(released);
   });
 });
 

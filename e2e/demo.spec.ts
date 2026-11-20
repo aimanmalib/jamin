@@ -8,10 +8,17 @@ import mainnet from '../examples/mainnet.json' with { type: 'json' };
 
 const staged = (mainnet.escrows as { demo?: boolean }[]).some((e) => e.demo === true);
 
+const releases = (mainnet as unknown as { escrows: { steps: { step: string; refused?: boolean }[] }[] }).escrows
+  .flatMap((e) => e.steps).filter((s) => s.step === 'release' && s.refused !== true).length;
+
 test('demo card on the mock network: staged, released in the page, fits 320 px', async ({ page }) => {
   const errors = watchErrors(page);
+  // The pool's list as the host cron writes it: it ran just now, every 10 minutes, and can still stage.
+  await page.route('**/pool/pool.json', (route) => route.fulfill({ json: { updatedAt: new Date().toISOString(),
+    lastRunAt: new Date().toISOString(), everyMinutes: 10, closed: false, escrows: [] } }));
   await page.setViewportSize({ width: 320, height: 640 });
-  await page.goto('/?demo=mock#/');
+  await page.goto('/?demo=mock&stats=mock#/');
+  await expect(page.getByTestId('stats-releases')).toHaveText(String(releases));
   await page.getByTestId('hero-release').click();
   const card = page.getByTestId('demo-release');
   await card.scrollIntoViewIfNeeded();
@@ -21,6 +28,10 @@ test('demo card on the mock network: staged, released in the page, fits 320 px',
   await button.click();
   await expect(card.getByTestId('demo-result')).toContainText('Released.', { timeout: 120_000 });
   await expect(card.getByTestId('demo-result').locator('.txid')).toHaveText(/^[0-9a-f]{64}$/);
+  // No other escrow waits: the card counts the minutes to the next staging, and the strip counts the release at once.
+  await expect(card.getByTestId('demo-pool-next')).toHaveText(
+    /^All demo escrows were released\. The next one is being prepared: ready in about 1[12] min\.$/);
+  await expect(page.getByTestId('stats-releases')).toHaveText(String(releases + 1));
   await noHorizontalOverflow(page);
   expect(errors).toEqual([]);
 });

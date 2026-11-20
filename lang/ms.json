@@ -325,7 +325,9 @@
       "resolved": "diputuskan oleh panel"
     },
     "next": "Satu lagi escrow demo menunggu pelawat seterusnya.",
-    "nextButton": "Papar escrow seterusnya"
+    "nextButton": "Papar escrow seterusnya",
+    "poolSoon": "Semua escrow demo sudah dilepaskan. Yang seterusnya sedang disediakan: sedia dalam kira-kira {minutes} min.",
+    "poolClosed": "Kolam demo sudah ditutup. Pelepasan yang direkodkan ada dalam Kitaran hayat."
   },
   "depth": {
     "title": "Di sebalik kontrak",
@@ -341,6 +343,7 @@
   "stats": {
     "title": "Di mainnet",
     "escrows": "Escrow di mainnet",
+    "releases": "Pelepasan di mainnet",
     "locked": "Syiling pernah dikunci",
     "refused": "Panggilan ditolak rangkaian",
     "block": "Blok semasa",

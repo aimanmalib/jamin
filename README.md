@@ -205,9 +205,11 @@ other ten are not are in the same file.
   from any wallet (`docs/decisions/0020-public-demo-escrow.md`). Each demo escrow (branch P in
   `examples/mainnet.json`) was created, funded and marked paid on mainnet by the test wallet; one press releases it
   for good, and the card moves on to the next one still waiting. A host cron keeps three such escrows waiting within a pool
-  budget of 145,000 sats (`docs/decisions/0021-demo-escrow-pool.md`): three wait now, and it stages again after a
-  release until that budget or `restageUntil` in `config/demo.json` runs out; then the card shows the last release
-  (`docs/MEASURED.md` "Demo pool on mainnet").
+  budget of 400,000 sats net of what it sweeps back (`docs/decisions/0021-demo-escrow-pool.md`): three wait now, and
+  it stages again after a release until that budget or `restageUntil` in `config/demo.json` runs out. A release
+  costs the pool about 36,600 sats net on regtest, so the budget covers about eight more after the first three
+  (`docs/MEASURED.md` "Demo pool"). While none waits, the card says when the next one should be ready; once the
+  pool is closed, it says so and shows the last release.
 - **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
   and left out (`docs/decisions/0013-closing-an-escrow.md`). Its covenant caps the miner fee below 2,000 sats, but
   the closing transaction is about 7,000 bytes, under the relay minimum of 1 sat per byte; and at that size a close

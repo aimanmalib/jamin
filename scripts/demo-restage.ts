@@ -18,7 +18,7 @@ import { demoKeys, validDemoConfig, type DemoConfig } from '../src/demo/config.j
 import { attachDemo, demoStatus, releaseDemo, type DemoParties } from '../src/demo/escrow.js';
 import { stageDemo, sweepDemoKeys, type StageTerms } from '../src/demo/stage.js';
 import {
-  emptyLedger, netSpent, poolAddresses, readLedger, recordFailure, recordSuccess, restage, validPool,
+  emptyLedger, netSpent, poolIndex, readLedger, recordFailure, recordSuccess, restage, validPool,
   writeJsonAtomic, type PoolLedger, type RestageDeps,
 } from '../src/demo/pool.js';
 import { readRecord } from '../src/lifecycle/record.js';
@@ -105,7 +105,12 @@ function deps(ledger: PoolLedger): RestageDeps {
     sweepBack: async (keep) => {
       const net = await side.payer();
       console.log(`  sweeping the demo keys' spare coins, keeping ${keep} at the seller`);
-      return sweepDemoKeys(net.provider, side.parties, keep, net.returnAddress, terms.feeRate);
+      const held = async (): Promise<bigint> => (await net.provider.getUtxos(net.returnAddress))
+        .filter((u) => !u.token).reduce((a, u) => a + u.satoshis, 0n);
+      const before = await held();
+      const back = await sweepDemoKeys(net.provider, side.parties, keep, net.returnAddress, terms.feeRate);
+      console.log(`  return address ${net.returnAddress}: ${before} sats before the sweep, ${await held()} after`);
+      return back;
     },
     stage: async () => {
       const net = await side.payer();
@@ -153,7 +158,7 @@ try {
     else if (!r.waitingFunds) ledger = recordSuccess(ledger);
     if (ledgerFile) writeJsonAtomic(ledgerFile, ledger);
     if (network === 'mainnet') {
-      writeJsonAtomic(publicFile, { updatedAt: new Date().toISOString(), escrows: poolAddresses(side.known, ledger) });
+      writeJsonAtomic(publicFile, poolIndex(pool, side.known, ledger, new Date()));
     }
   }
 } catch (error) {

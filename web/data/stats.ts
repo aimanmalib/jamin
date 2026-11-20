@@ -1,6 +1,6 @@
 // The numbers of the Home stats strip (decision 0023). The recorded ones are counted from examples/mainnet.json by
 // pure functions, so a test can tie each number to that file; only the block height comes from the network.
-import { isRefused, mainnet, type MainnetRun } from './examples.js';
+import { isRefused, mainnet, type EscrowStep, type MainnetRun } from './examples.js';
 
 export interface RecordedStats {
   /** Escrows recorded on mainnet. */
@@ -28,6 +28,31 @@ export function recordedStats(run: MainnetRun = mainnet): RecordedStats {
 export function unrecordedPool(pool: string[], run: MainnetRun = mainnet): number {
   const recorded = new Set(run.escrows.map((e) => e.address));
   return new Set(pool.filter((a) => !recorded.has(a))).size;
+}
+
+const isRelease = (s: EscrowStep): boolean => !isRefused(s) && s.step === 'release';
+
+/** Addresses of the escrows examples/mainnet.json records a release for. */
+export function recordedReleaseAddresses(run: MainnetRun = mainnet): Set<string> {
+  return new Set(run.escrows.filter((e) => e.address !== undefined && e.steps.some(isRelease))
+    .map((e) => e.address as string));
+}
+
+/**
+ * Releases on mainnet: the release steps examples/mainnet.json records, plus demo escrows seen released on the chain
+ * (or by this page) that the file does not record yet. A refused release is not a release.
+ */
+export function releaseCount(found: Iterable<string>, run: MainnetRun = mainnet): number {
+  const recorded = recordedReleaseAddresses(run);
+  const extra = new Set([...found].filter((a) => !recorded.has(a)));
+  return run.escrows.flatMap((e) => e.steps).filter(isRelease).length + extra.size;
+}
+
+/** Demo escrows (recorded ones and the pool's list) with no recorded release: the ones worth asking the chain about. */
+export function unreleasedDemo(pool: string[], run: MainnetRun = mainnet): string[] {
+  const recorded = recordedReleaseAddresses(run);
+  const demo = run.escrows.filter((e) => e.demo === true && e.address !== undefined).map((e) => e.address as string);
+  return [...new Set([...demo, ...pool])].filter((a) => !recorded.has(a));
 }
 
 /** Satoshis as BCH with eight decimals, grouped for `locale`. */

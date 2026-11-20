@@ -63,3 +63,24 @@ The keys guard nothing else and are unrelated to any wallet (decision 0020).
 - A wallet too short to pay for a staging ends the run as waiting for funds: no failure counted, no warning, the
   public list still written. A failure after some escrows were staged keeps those in the ledger.
 - Way back: `deploy/demo-restage-cron.sh buang` stops restaging; the escrows already staged stay waiting.
+
+## Amendment, 2026-11-20: a larger budget, the sweep measured, the card's next-escrow line
+
+- **Budget.** The owner allowed the pool to keep the demo alive through the judging week. `budgetSats` is now the
+  smaller of a formula and a hard cap of 400,000 sats: the 76,812 already spent, plus 40 cycles at the net cost of
+  one cycle measured on regtest (36,591 sats: a staging of 41,406 less the 4,815 the next run sweeps back), plus one
+  gross staging (41,406). The formula gives 1,581,858, so the cap applies: 400,000. That leaves room for about
+  eight cycles after the first three escrows (`docs/MEASURED.md` "Demo pool"). The project's own spending gate and
+  its 2,000,000 sat budget are unchanged.
+- **The sweep is proven before mainnet needs it.** On regtest and on the mock network a test releases one escrow,
+  and the next restage sends what the release paid the demo buyer back to the project wallet, records the sweep in
+  the ledger and keeps the fee coins the escrows still waiting need. Mainnet has not swept yet because no demo
+  escrow there has been released.
+- **The list file says when the cron ran.** `/pool/pool.json` now carries `lastRunAt`, `everyMinutes` (from
+  `pool.restageEveryMinutes`, the same value `deploy/demo-restage-cron.sh pasang` writes into the crontab line) and
+  `closed` (no later run could stage: budget, end date or escrow limit). When no demo escrow waits, the card says
+  "ready in about N min": the minutes to the next run plus `pool.estimateReadyMinutes`, the time one run takes to
+  stage. If the last run is older than three intervals the card gives no number, because the cron may have stopped.
+- **Releases on mainnet.** The stats strip counts the release steps `examples/mainnet.json` records, plus demo
+  escrows seen released on the chain (read while the page is open) or released by this page, so a visitor's release
+  shows at once.

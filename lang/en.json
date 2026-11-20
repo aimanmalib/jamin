@@ -325,7 +325,9 @@
       "resolved": "resolved by the panel"
     },
     "next": "Another demo escrow is waiting for the next visitor.",
-    "nextButton": "Show the next escrow"
+    "nextButton": "Show the next escrow",
+    "poolSoon": "All demo escrows were released. The next one is being prepared: ready in about {minutes} min.",
+    "poolClosed": "The demo pool is closed. The recorded releases are in Lifecycle."
   },
   "depth": {
     "title": "Behind the contract",
@@ -341,6 +343,7 @@
   "stats": {
     "title": "On mainnet",
     "escrows": "Escrows on mainnet",
+    "releases": "Releases on mainnet",
     "locked": "Coins ever locked",
     "refused": "Calls the network refused",
     "block": "Current block",

@@ -10,10 +10,11 @@ import { demoKeys, type DemoConfig } from '../src/demo/config.js';
 import { attachDemo, demoStatus, releaseDemo, type DemoStatus } from '../src/demo/escrow.js';
 import { largest, stageDemo, sweepDemoKeys, type Pay, type Staged } from '../src/demo/stage.js';
 import {
-  FundsShort, POOL_LIMITS, emptyLedger, netSpent, planRestage, recordFailure, recordSuccess, restage, validPool,
+  FundsShort, POOL_LIMITS, emptyLedger, netSpent, planRestage, poolIndex, poolOpen, recordFailure, recordSuccess,
+  restage, validPool,
   type PoolConfig, type PoolLedger, type RestageDeps,
 } from '../src/demo/pool.js';
-import { candidates, fetchIndex, parseIndex, pickReady } from '../web/demo/pick.js';
+import { candidates, fetchIndex, fetchPool, parseIndex, parsePool, pickReady, poolNext } from '../web/demo/pick.js';
 
 const jamin = JSON.parse(readFileSync('config/jamin.json', 'utf8')) as {
   escrow: { feeBps: number; disputeFeeSats: number; sellerWaitingTimeSeconds: number; containerReserveSats: number };
@@ -22,19 +23,22 @@ const jamin = JSON.parse(readFileSync('config/jamin.json', 'utf8')) as {
 const demo = JSON.parse(readFileSync('config/demo.json', 'utf8')) as DemoConfig;
 // A fixed pool for the planning tests, so they do not follow the values in config/demo.json.
 const POOL: PoolConfig = { size: 3, budgetSats: 100_000, restageUntil: '2030-01-01T00:00:00Z', maxIndex: 10,
-  estimateSats: 20_000, payFeeSats: 400, indexPath: '/pool/pool.json' };
+  estimateSats: 20_000, payFeeSats: 400, restageEveryMinutes: 10, estimateReadyMinutes: 2, indexPath: '/pool/pool.json' };
 const NOW = new Date('2026-11-20T00:00:00Z');
 
 describe('pool config', () => {
-  it('keeps 3 to 5 escrows within the USD 0.30 budget, the cap the owner set', () => {
+  it('keeps 3 to 5 escrows within the 400,000 sat budget cap the owner set', () => {
     expect(validPool(demo.pool)).toBe(demo.pool);
     expect(demo.pool.budgetSats).toBeLessThanOrEqual(POOL_LIMITS.maxBudgetSats);
-    expect(POOL_LIMITS.maxBudgetSats).toBe(145_000);
+    expect(POOL_LIMITS.maxBudgetSats).toBe(400_000);
+    expect(() => validPool({ ...POOL, restageEveryMinutes: 0 })).toThrow(/1 to 60/);
+    expect(() => validPool({ ...POOL, restageEveryMinutes: 61 })).toThrow(/1 to 60/);
+    expect(() => validPool({ ...POOL, estimateReadyMinutes: -1 })).toThrow(/0 or more/);
     // The escrow staged before the pool (branch P) is its first member: filling the rest leaves at least 40% of the
     // budget for restaging.
     expect((demo.pool.size - 1) * demo.pool.estimateSats).toBeLessThanOrEqual(0.6 * demo.pool.budgetSats);
     expect(() => validPool({ ...POOL, size: 6 })).toThrow(/3 to 5/);
-    expect(() => validPool({ ...POOL, budgetSats: 145_001 })).toThrow(/at most/);
+    expect(() => validPool({ ...POOL, budgetSats: 400_001 })).toThrow(/at most/);
     expect(() => validPool({ ...POOL, restageUntil: 'soon' })).toThrow(/ISO/);
   });
 });
@@ -225,10 +229,17 @@ describe('pool on the mock network', { timeout: 900_000 }, () => {
     const sent = await releaseDemo(provider, artifact, parties, released, false);
     expect(sent.sent).toBe(true);
 
+    const held = async (a: string): Promise<bigint> => (await provider.getUtxos(a)).reduce((x, u) => x + u.satoshis, 0n);
+    const backBefore = await held(back);
     const second = await run(first.ledger);
     expect(second.ready).toEqual(waiting);
     expect(second.staged).toHaveLength(1);
-    expect(second.swept?.sats ?? 0).toBeGreaterThan(0);
+    // The sweep took the released escrow's coins back to the return address and the ledger counts it.
+    const swept = second.swept?.sats ?? 0;
+    expect(swept).toBeGreaterThan(0);
+    expect(second.ledger.sweptSats).toBe(first.ledger.sweptSats + swept);
+    expect(second.ledger.sweeps.at(-1)).toMatchObject({ sats: swept, txid: second.swept?.txid });
+    expect(await held(back)).toBeGreaterThanOrEqual(backBefore + BigInt(swept));
     // The escrows still waiting kept enough fee coins: each one's dry release signs without a coin split.
     for (const a of [...waiting, ...second.staged]) {
       expect(await demoStatus(await attachDemo(provider, artifact, parties, a))).toBe('paid');
@@ -268,6 +279,47 @@ describe('the card picks the next escrow waiting', () => {
   });
 });
 
+describe('the pool list file and the card line when no escrow waits', () => {
+  const Q = `bitcoincash:p${'q'.repeat(60)}`;
+  const at = Date.parse('2026-11-20T12:00:00Z');
+
+  it('the cron writes when it ran, how often, and whether a later run can still stage', () => {
+    const idx = poolIndex(POOL, [Q], emptyLedger(), new Date(at));
+    expect(idx).toEqual({ updatedAt: '2026-11-20T12:00:00.000Z', lastRunAt: '2026-11-20T12:00:00.000Z',
+      everyMinutes: 10, closed: false, escrows: [Q] });
+    expect(poolOpen(POOL, { ...emptyLedger(), spentSats: 81_000 }, NOW)).toBe(false);
+    expect(poolOpen(POOL, emptyLedger(), new Date(POOL.restageUntil))).toBe(false);
+    expect(poolOpen(POOL, { ...emptyLedger(), escrows: Array(POOL.maxIndex).fill({ costSats: 0 }) as never }, NOW)).toBe(false);
+    expect(poolIndex(POOL, [], { ...emptyLedger(), spentSats: 81_000 }, NOW).closed).toBe(true);
+  });
+
+  it('reads the file, keeping only well-formed fields', () => {
+    expect(parsePool({ escrows: [Q], lastRunAt: '2026-11-20T12:00:00Z', everyMinutes: 10, closed: false }))
+      .toEqual({ escrows: [Q], lastRunAt: at, everyMinutes: 10, closed: false });
+    expect(parsePool({ escrows: [Q], lastRunAt: 'soon', everyMinutes: 1.5, closed: 'no' })).toEqual({ escrows: [Q] });
+    expect(parsePool(null)).toEqual({ escrows: [] });
+  });
+
+  it('counts the minutes to the next run plus a staging, says closed, or says nothing', () => {
+    const info = { escrows: [], lastRunAt: at, everyMinutes: 10, closed: false };
+    const min = 60_000;
+    expect(poolNext(info, at, 2)).toEqual({ kind: 'soon', minutes: 12 });
+    expect(poolNext(info, at + 4 * min + 1, 2)).toEqual({ kind: 'soon', minutes: 8 });
+    // A run late by a few minutes still gives at least the staging time, never zero.
+    expect(poolNext(info, at + 12 * min, 2)).toEqual({ kind: 'soon', minutes: 1 });
+    expect(poolNext(info, at + 11 * min, 3)).toEqual({ kind: 'soon', minutes: 2 });
+    // Three runs missed: the cron may be stopped, so no count is made up.
+    expect(poolNext(info, at + 31 * min, 2)).toBeUndefined();
+    expect(poolNext({ ...info, closed: true }, at, 2)).toEqual({ kind: 'closed' });
+    expect(poolNext({ escrows: [] }, at, 2)).toBeUndefined();
+    expect(poolNext({ escrows: [], lastRunAt: at, everyMinutes: 10 }, at, 2)).toBeUndefined();
+  });
+
+  it('a missing list file is no list and no line', async () => {
+    expect(await fetchPool('/pool/pool.json', async () => new Response('', { status: 404 }))).toEqual({ escrows: [] });
+  });
+});
+
 describe('pool cron and serving', () => {
   const cron = readFileSync('deploy/demo-restage-cron.sh', 'utf8');
 
@@ -280,6 +332,10 @@ describe('pool cron and serving', () => {
     expect(cron).toMatch(/-ge 22/);
     expect(cron).not.toMatch(/\/home\/|\.nvm/);
     expect(cron).toMatch(/--network mainnet/);
+    // The crontab interval is read from config, the same value the card counts the minutes with.
+    expect(cron).toMatch(/pool\.restageEveryMinutes/);
+    expect(cron).toMatch(/line="\*\/\$every /);
+    expect(cron).not.toMatch(/\*\/10 /);
     expect(cron).not.toMatch(/--release-first/);
   });
 

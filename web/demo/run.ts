@@ -15,7 +15,7 @@ import { artifact } from '../sim/load.js';
 import { config } from '../data/config.js';
 import { demoEscrowAddresses } from '../data/examples.js';
 import { demoMode, type DemoMode } from './mode.js';
-import { candidates, fetchIndex, pickReady } from './pick.js';
+import { candidates, fetchPool, pickReady, type PoolInfo } from './pick.js';
 
 export const demo = demoRaw as DemoConfig;
 
@@ -53,12 +53,13 @@ export async function statusOf(t: DemoTarget): Promise<DemoStatus> {
   return demoStatus(await attachDemo(t.provider, await artifact('JaminEscrow'), t.parties, t.address));
 }
 
-export interface Offer { target: DemoTarget; status: DemoStatus; addresses: string[] }
+export interface Offer { target: DemoTarget; status: DemoStatus; addresses: string[]; pool?: PoolInfo }
 
-/** Every demo escrow address the card may offer: recorded ones, then the pool's list. */
-export async function demoAddresses(): Promise<string[]> {
+/** Every demo escrow address the card may offer (recorded ones, then the pool's list), and the pool's list file. */
+export async function demoAddresses(): Promise<{ addresses: string[]; pool: PoolInfo }> {
   const recorded = demoEscrowAddresses();
-  return candidates(recorded, await fetchIndex(demo.pool.indexPath), recorded.length + demo.pool.maxIndex);
+  const pool = await fetchPool(demo.pool.indexPath);
+  return { addresses: candidates(recorded, pool.escrows, recorded.length + demo.pool.maxIndex), pool };
 }
 
 /**
@@ -72,10 +73,11 @@ export async function offer(mode = demoMode(), exclude: ReadonlySet<string> = ne
     const target = await mockTarget();
     return { target, status: await statusOf(target), addresses: [target.address] };
   }
-  const list = addresses ?? await demoAddresses();
+  const found = addresses ? { addresses, pool: await fetchPool(demo.pool.indexPath) } : await demoAddresses();
   const base = { mode, provider: mainnetProvider(), parties: parties('bitcoincash') };
-  const picked = await pickReady(list, (address) => statusOf({ ...base, address }), exclude);
-  return picked && { target: { ...base, address: picked.address }, status: picked.status, addresses: list };
+  const picked = await pickReady(found.addresses, (address) => statusOf({ ...base, address }), exclude);
+  return picked && { target: { ...base, address: picked.address }, status: picked.status, addresses: found.addresses,
+    pool: found.pool };
 }
 
 /** Signs the release in this page; broadcasts it unless the mode is dry. */
@@ -90,4 +92,21 @@ export async function lastTx(t: DemoTarget): Promise<string | undefined> {
     .performRequest('blockchain.address.get_history', t.address) as { tx_hash: string; height: number }[];
   const sorted = [...history].sort((a, b) => (a.height <= 0 ? 1e9 : a.height) - (b.height <= 0 ? 1e9 : b.height));
   return sorted.at(-1)?.tx_hash;
+}
+
+/**
+ * Which of `addresses` are released on mainnet now, read with one Electrum client for the stats strip. An address
+ * that cannot be read counts as not released.
+ */
+export function releaseWatcher(): { released(addresses: string[]): Promise<string[]> } {
+  const base = { mode: 'live' as const, provider: mainnetProvider(), parties: parties('bitcoincash') };
+  return {
+    async released(addresses) {
+      const out: string[] = [];
+      for (const address of addresses) {
+        if (await statusOf({ ...base, address }).catch(() => undefined) === 'released') out.push(address);
+      }
+      return out;
+    },
+  };
 }
