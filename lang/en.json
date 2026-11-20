@@ -41,12 +41,9 @@
     "resolved": "Dispute resolved"
   },
   "home": {
-    "title": "Sell BCH or PUSD to a stranger for cash. A contract holds the coins until you are paid.",
+    "title": "Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.",
     "lede": "The seller locks the coins in a SolidCash contract. The buyer pays by bank transfer or in cash and marks it paid. The seller releases the coins, or an arbitrator decides. Nobody holds the coins in between.",
-    "actionTitle": "Run a trade in your browser",
-    "actionNote": "The real compiled contract on a simulated network. Play seller, buyer and arbitrator. No wallet needed.",
-    "actionButton": "Start a trade",
-    "artTitle": "A seller and a buyer either side of a locked box holding the coins",
+    "artTitle": "A coin moves from the seller into the contract and on to the buyer. In a dispute, two of a panel of three decide.",
     "artContract": "SolidCash contract",
     "judgeTitle": "Judging? Three stops.",
     "judge1": "Start a trade and act as each role. Wrong moves come back with the contract's own error name.",
@@ -65,7 +62,12 @@
     "limitsTitle": "Limits",
     "limit1": "Hackathon build, not audited. Nothing you do in the simulator is broadcast.",
     "limit2": "While a dispute is open, only the arbitrator can settle the trade.",
-    "limit3": "A closed escrow keeps {reserve} sats (and one token unit for a token trade): the contract needs them to exist."
+    "limit3": "A closed escrow keeps {reserve} sats (and one token unit for a token trade): the contract needs them to exist.",
+    "heroNote": "A real escrow on Bitcoin Cash mainnet is waiting, already paid. Release it yourself: no wallet, no sign-up.",
+    "heroRelease": "Release on mainnet",
+    "heroTry": "Try the simulator",
+    "artDispute": "dispute",
+    "artPanel": "2 of 3 panel"
   },
   "diagram": {
     "title": "Escrow states. Current: {state}",
@@ -299,7 +301,7 @@
     "title": "Release on mainnet",
     "note": "A real escrow on Bitcoin Cash mainnet, already created, funded and marked paid. You play the seller: the button signs the release in this page with a public demo key and sends it. The demo keys are published on purpose and can never move more than {max} sats.",
     "reading": "Reading the escrow from the network...",
-    "none": "The demo escrow is not on mainnet yet. Until it is, run a trade in the simulator above.",
+    "none": "The demo escrow is not on mainnet yet. Until it is, try the simulator.",
     "failed": "Could not read or release the escrow. The network may be busy; try again later.",
     "ready": "Ready: the buyer has marked the trade paid and {sats} sats wait in the escrow.",
     "dryNote": "Dry run: the release is signed here and not sent.",

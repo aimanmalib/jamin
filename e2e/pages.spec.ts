@@ -46,7 +46,7 @@ test('language toggle switches to Malay and is remembered', async ({ page }) => 
   await page.goto('/');
   await page.getByRole('button', { name: 'Bahasa Melayu' }).click();
   await expect(page.locator('html')).toHaveAttribute('lang', 'ms');
-  await expect(page.getByRole('link', { name: 'Mula dagangan' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Cuba simulator' })).toBeVisible();
   await page.reload();
   await expect(page.getByRole('button', { name: 'English' })).toBeVisible();
 });

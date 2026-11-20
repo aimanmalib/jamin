@@ -1,5 +1,5 @@
 /// <reference lib="dom" />
-// The "Release on mainnet" card (docs/decisions/0020-public-demo-escrow.md). The live button is never pressed here:
+// The "Release on mainnet" card (docs/decisions/0020-public-demo-escrow.md), opened from the Home hero (0024). The live button is never pressed here:
 // mock mode stages a demo escrow on the mock network in the page and releases it there; on mainnet only dry mode,
 // which signs and sends nothing, is pressed.
 import { expect, test } from '@playwright/test';
@@ -12,6 +12,7 @@ test('demo card on the mock network: staged, released in the page, fits 320 px',
   const errors = watchErrors(page);
   await page.setViewportSize({ width: 320, height: 640 });
   await page.goto('/?demo=mock#/');
+  await page.getByTestId('hero-release').click();
   const card = page.getByTestId('demo-release');
   await card.scrollIntoViewIfNeeded();
   const button = card.getByRole('button', { name: 'Release on mainnet' });
@@ -27,6 +28,7 @@ test('demo card on the mock network: staged, released in the page, fits 320 px',
 test('demo card on mainnet: dry mode signs without sending, or says the escrow is not staged yet', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/?demo=dry#/');
+  await page.getByTestId('hero-release').click();
   const card = page.getByTestId('demo-release');
   await card.scrollIntoViewIfNeeded();
   if (!staged) {
@@ -47,5 +49,6 @@ test('demo card on mainnet: dry mode signs without sending, or says the escrow i
 test('demo card in Malay', async ({ page }) => {
   await page.goto('/#/');
   await page.getByRole('button', { name: 'Bahasa Melayu' }).click();
+  await page.getByTestId('hero-release').click();
   await expect(page.getByTestId('demo-release').getByRole('heading')).toHaveText('Lepaskan di mainnet');
 });

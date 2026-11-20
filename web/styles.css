@@ -81,7 +81,34 @@ section + section { margin-top: 2.5rem; }
 .hero .lede { font-size: 1.1rem; color: var(--ink-soft); max-width: 40rem; }
 .hero .lede.after { margin-top: 1rem; }
 .hero-art { width: 100%; max-width: 26rem; height: auto; justify-self: center; }
-.action { display: grid; gap: 0.75rem; justify-items: start; }
+.hero-text { display: grid; gap: 1rem; min-width: 0; }
+.hero-text h1, .hero-text .lede { margin: 0; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+/* Focus moves to the card by script so a screen reader lands there; it is not a control: no ring over its border. */
+.hero .demo:focus, .hero .demo:focus-visible { outline: none; }
+/* Hero animation (decision 0024): transform, opacity and stroke-dashoffset only; no motion when reduced. */
+.a-river { fill: var(--river); }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-coin { animation: hero-coin 7s ease-in-out infinite; }
+  .hero-branch { animation: hero-branch 7s ease-in-out infinite; }
+  .hero-vote { animation: hero-vote 7s ease-in-out infinite; }
+  .hero-vote-2 { animation-delay: 0.3s; }
+}
+@keyframes hero-coin {
+  0%, 8% { transform: translate(-156px, 2px); opacity: 0; }
+  14% { transform: translate(-156px, 2px); opacity: 1; }
+  34%, 58% { transform: translate(0, 0); opacity: 1; }
+  80% { transform: translate(156px, 2px); opacity: 1; }
+  92%, 100% { transform: translate(156px, 2px); opacity: 0; }
+}
+@keyframes hero-branch {
+  0%, 38% { stroke-dashoffset: 34; }
+  52%, 100% { stroke-dashoffset: 0; }
+}
+@keyframes hero-vote {
+  0%, 52% { opacity: 0.25; }
+  60%, 100% { opacity: 1; }
+}
 .judge { border-left: 4px solid var(--lamp); background: var(--lamp-soft); border-radius: 0 var(--radius) var(--radius) 0;
   padding: 1rem 1.25rem; }
 .judge ol { margin: 0.5rem 0 0; padding-left: 1.25rem; }

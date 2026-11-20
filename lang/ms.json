@@ -41,12 +41,9 @@
     "resolved": "Pertikaian diputuskan"
   },
   "home": {
-    "title": "Jual BCH atau PUSD kepada orang asing untuk wang tunai. Kontrak memegang syiling sehingga anda dibayar.",
+    "title": "Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, memegang syiling.",
     "lede": "Penjual mengunci syiling dalam kontrak SolidCash. Pembeli membayar melalui pindahan bank atau tunai dan menanda sudah bayar. Penjual melepaskan syiling, atau penimbang tara memutuskan. Tiada sesiapa memegang syiling di tengah-tengah.",
-    "actionTitle": "Jalankan dagangan dalam pelayar anda",
-    "actionNote": "Kontrak sebenar yang sudah dikompil, atas rangkaian simulasi. Main peranan penjual, pembeli dan penimbang tara. Tidak perlu dompet.",
-    "actionButton": "Mula dagangan",
-    "artTitle": "Penjual dan pembeli di kiri dan kanan sebuah peti berkunci yang memegang syiling",
+    "artTitle": "Syiling bergerak dari penjual ke dalam kontrak dan terus ke pembeli. Jika ada pertikaian, dua daripada panel tiga orang memutuskan.",
     "artContract": "Kontrak SolidCash",
     "judgeTitle": "Menilai? Tiga hentian.",
     "judge1": "Mula dagangan dan bertindak sebagai setiap peranan. Langkah salah dipulangkan dengan nama ralat kontrak itu sendiri.",
@@ -65,7 +62,12 @@
     "limitsTitle": "Had",
     "limit1": "Binaan hackathon, belum diaudit. Apa-apa yang anda buat dalam simulator tidak disiarkan.",
     "limit2": "Semasa pertikaian dibuka, hanya penimbang tara boleh menyelesaikan dagangan.",
-    "limit3": "Escrow yang ditutup menyimpan {reserve} sat (dan satu unit token untuk dagangan token): kontrak memerlukannya untuk wujud."
+    "limit3": "Escrow yang ditutup menyimpan {reserve} sat (dan satu unit token untuk dagangan token): kontrak memerlukannya untuk wujud.",
+    "heroNote": "Escrow sebenar di mainnet Bitcoin Cash sedang menunggu, sudah dibayar. Lepaskan sendiri: tanpa dompet, tanpa daftar.",
+    "heroRelease": "Lepaskan di mainnet",
+    "heroTry": "Cuba simulator",
+    "artDispute": "pertikaian",
+    "artPanel": "panel 2 daripada 3"
   },
   "diagram": {
     "title": "Keadaan escrow. Semasa: {state}",
@@ -299,7 +301,7 @@
     "title": "Lepaskan di mainnet",
     "note": "Escrow sebenar di mainnet Bitcoin Cash, sudah dicipta, didanai dan ditanda bayar. Anda menjadi penjual: butang ini menandatangani pelepasan dalam halaman ini dengan kunci demo awam dan menghantarnya. Kunci demo diterbitkan dengan sengaja dan tidak boleh memindahkan lebih daripada {max} sat.",
     "reading": "Membaca escrow dari rangkaian...",
-    "none": "Escrow demo belum ada di mainnet. Sementara itu, jalankan dagangan dalam simulator di atas.",
+    "none": "Escrow demo belum ada di mainnet. Sementara itu, cuba simulator.",
     "failed": "Escrow tidak dapat dibaca atau dilepaskan. Rangkaian mungkin sibuk; cuba lagi nanti.",
     "ready": "Sedia: pembeli sudah menanda dagangan dibayar dan {sats} sat menunggu dalam escrow.",
     "dryNote": "Larian kering: pelepasan ditandatangani di sini dan tidak dihantar.",

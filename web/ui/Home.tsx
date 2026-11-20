@@ -1,30 +1,16 @@
-// First screen: one sentence, one action card with one primary button, the judges' strip. Then the mainnet demo
-// escrow, the demo video and how it works.
-import { Suspense, lazy, type ReactNode } from 'react';
+// First screen: the hero (one sentence, "Release on mainnet", the simulator second), then the stats strip, the judges'
+// strip, the demo video and how it works.
+import type { ReactNode } from 'react';
 import { useLang } from '../i18n.js';
-import { HeroArt } from './Art.js';
+import { Hero } from './Hero.js';
 import { config, sitePath } from '../data/config.js';
 import { StatsStrip } from './StatsStrip.js';
-
-// The demo card carries the SolidCash SDK: loaded after the first screen.
-const DemoRelease = lazy(async () => ({ default: (await import('./DemoRelease.js')).DemoRelease }));
 
 export function Home(): ReactNode {
   const { t } = useLang();
   return (
     <>
-      <section className="hero" aria-labelledby="home-title">
-        <div>
-          <h1 id="home-title">{t('home.title')}</h1>
-          <div className="card action">
-            <h2 className="h3">{t('home.actionTitle')}</h2>
-            <p className="muted small">{t('home.actionNote')}</p>
-            <a className="btn btn-primary" href="#/try">{t('home.actionButton')}</a>
-          </div>
-          <p className="lede after">{t('home.lede')}</p>
-        </div>
-        <HeroArt />
-      </section>
+      <Hero />
       <StatsStrip />
       <section className="judge" aria-labelledby="judge-title">
         <h2 id="judge-title" className="h3">{t('home.judgeTitle')}</h2>
@@ -34,10 +20,10 @@ export function Home(): ReactNode {
           <li><a href="#/contract">{t('home.judge3')}</a></li>
         </ol>
       </section>
-      <Suspense fallback={null}><DemoRelease /></Suspense>
       {config.banner.videoUrl && <DemoVideo />}
       <section aria-labelledby="how-title">
         <h2 id="how-title">{t('home.howTitle')}</h2>
+        <p className="lede">{t('home.lede')}</p>
         <div className="steps3">
           {(['1', '2', '3'] as const).map((n) => (
             <article className="card" key={n}>

@@ -2,7 +2,7 @@
 // `release` in this page with the public demo seller key and broadcasts it; `?demo=dry` signs and sends nothing.
 // The escrow's state is read from the chain, so a release by an earlier visitor shows as such. A pool of demo escrows
 // waits (decision 0021): the card offers the first still at `paid`, and after a release points to the next one.
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config, explorerLink } from '../data/config.js';
 import { demo, lastTx, offer, release, type DemoTarget, type Offer } from '../demo/run.js';
@@ -19,8 +19,11 @@ function TxLink({ txid, live }: { txid: string; live: boolean }): ReactNode {
     : <span className="txid">{txid}</span>;
 }
 
-export function DemoRelease(): ReactNode {
+/** `focusOnMount`: the card replaces the button that opened it, so keyboard focus moves to the card. */
+export function DemoRelease({ focusOnMount = false }: { focusOnMount?: boolean }): ReactNode {
   const { t } = useLang();
+  const self = useRef<HTMLElement>(null);
+  useEffect(() => { if (focusOnMount) self.current?.focus(); }, [focusOnMount]);
   const [view, setView] = useState<View>({ kind: 'loading' });
   const [addresses, setAddresses] = useState<string[]>([]);
   useEffect(() => {
@@ -48,7 +51,8 @@ export function DemoRelease(): ReactNode {
 
   const live = (target: DemoTarget): boolean => target.mode !== 'mock';
   return (
-    <section className="card demo" aria-labelledby="demo-title" data-testid="demo-release">
+    <section className="card demo" aria-labelledby="demo-title" data-testid="demo-release" ref={self}
+      tabIndex={-1}>
       <h2 id="demo-title" className="h3">{t('demo.title')}</h2>
       <p className="muted small">{t('demo.note', { max: demo.maxSats.toLocaleString('en') })}</p>
       {view.kind === 'loading' && <p className="muted" role="status">{t('demo.reading')}</p>}
