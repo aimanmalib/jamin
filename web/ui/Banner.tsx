@@ -1,8 +1,10 @@
 // The event banner on every page: event name, bounty, source link, prize address with a copy button, slides when
-// config.banner.deckUrl is set, the demo video when config.banner.videoUrl is set. Elements without a value are not shown.
+// config.banner.deckUrl is set, the demo video when config.banner.videoUrl is set, and a "new project" line with a link
+// to the first commit when config.banner.note is true. Elements without a value are not shown.
 import { useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config } from '../data/config.js';
+import { bannerNote } from './banner-note.js';
 
 /** `bitcoincash:zplryd...7e7q`: the prefix, the first six and the last four characters; the copy button copies it all. */
 export function shorten(address: string): string {
@@ -15,6 +17,7 @@ export function Banner(): ReactNode {
   const { t } = useLang();
   const b = config.banner;
   const [copied, setCopied] = useState(false);
+  const note = bannerNote(b, t);
   const copy = (): void => {
     void navigator.clipboard?.writeText(b.prizeAddress).then(() => setCopied(true), () => setCopied(false));
   };
@@ -32,6 +35,12 @@ export function Banner(): ReactNode {
             <code title={b.prizeAddress} aria-label={b.prizeAddress}>{shorten(b.prizeAddress)}</code>
             <button type="button" className="btn-copy" onClick={copy}>{copied ? t('banner.copied') : t('banner.copy')}</button>
           </span>
+        )}
+        {note && (
+          <p className="banner-note" data-testid="banner-note">
+            <span className="banner-note-text" title={note.text}>{note.text}</span>
+            <a href={note.href}>{note.linkText}</a>
+          </p>
         )}
       </div>
     </aside>

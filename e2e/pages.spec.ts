@@ -21,6 +21,22 @@ test('home: one sentence, one primary button, the banner, no console errors', as
   expect(errors).toEqual([]);
 });
 
+// Event rule: a new project says so. The note is one line on any width (the text gives way, the link stays whole).
+test('banner: the new-project note links to the first commit and stays one line at 320 px', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto('/');
+  const note = page.getByTestId('banner-note');
+  await expect(note).toContainText('New project.');
+  await expect(note.getByRole('link', { name: 'first commit' })).toHaveAttribute('href', config.banner.firstCommitUrl);
+  const lines = await note.evaluate((el) => ({
+    height: el.getBoundingClientRect().height, lh: parseFloat(getComputedStyle(el).lineHeight) || 20 }));
+  expect(lines.height, 'one line').toBeLessThan(lines.lh * 1.5);
+  await noHorizontalOverflow(page);
+  await page.getByRole('button', { name: 'Bahasa Melayu' }).click();
+  await expect(note).toContainText('Projek baharu.');
+  await expect(note.getByRole('link', { name: 'komit pertama' })).toHaveAttribute('href', config.banner.firstCommitUrl);
+});
+
 test('home: the demo video loads only on play, answers range requests, and fits 320 px', async ({ page }) => {
   const errors = watchErrors(page);
   await page.setViewportSize({ width: 320, height: 640 });

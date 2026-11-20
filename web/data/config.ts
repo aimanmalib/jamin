@@ -9,7 +9,7 @@ export interface WebConfig {
   simulator: { bchAmountSats: number; tokenAmount: number; tokenSymbol: string; tokenDecimals: number };
   banner: {
     event: string; bounty: string; repoUrl: string; prizeAddress: string; deckUrl: string;
-    videoUrl: string; videoPosterUrl: string; videoSeconds: number;
+    videoUrl: string; videoPosterUrl: string; videoSeconds: number; note: boolean; firstCommitUrl: string;
   };
   web: { tabs: string[]; contracts: string[]; languageStorageKey: string };
   walletSigning: { roleKeyMessage: string };

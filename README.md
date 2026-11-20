@@ -10,6 +10,9 @@ the contract only lets each role do what the trade rules allow, checked by signa
 Jamin is an entry for **BCH BLAZE 2026**, bounty **Best SolidCash Application**. It is a port of the MIT-licensed
 `OpenPeerEscrow.sol` contract from EVM to the Bitcoin Cash UTXO model (see `NOTICE`).
 
+New project. First commit after the 14 November start:
+[first commit](https://github.com/aimanmalib/jamin/commit/4ad48710f055ef59b318338b0020f817be1dc277).
+
 ## For judges: one minute
 
 - **Demo video (59 seconds, no sound):** https://jamin.sasateguh.com/media/jamin-demo.mp4, also on the

@@ -21,7 +21,9 @@
     "video": "Video demo",
     "prizeAddress": "Alamat hadiah",
     "copy": "Salin",
-    "copied": "Disalin"
+    "copied": "Disalin",
+    "note": "Projek baharu. Komit pertama selepas permulaan 14 November.",
+    "firstCommit": "komit pertama"
   },
   "roles": {
     "seller": "Penjual",

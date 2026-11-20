@@ -21,7 +21,9 @@
     "video": "Demo video",
     "prizeAddress": "Prize address",
     "copy": "Copy",
-    "copied": "Copied"
+    "copied": "Copied",
+    "note": "New project. First commit after the 14 November start.",
+    "firstCommit": "first commit"
   },
   "roles": {
     "seller": "Seller",

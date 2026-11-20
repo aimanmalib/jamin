@@ -121,7 +121,9 @@
     "deckUrl": "https://jamin.sasateguh.com/deck.pdf",
     "videoUrl": "https://jamin.sasateguh.com/media/jamin-demo.mp4",
     "videoPosterUrl": "https://jamin.sasateguh.com/media/jamin-demo.jpg",
-    "videoSeconds": 59
+    "videoSeconds": 59,
+    "note": true,
+    "firstCommitUrl": "https://github.com/aimanmalib/jamin/commit/4ad48710f055ef59b318338b0020f817be1dc277"
   },
   "mainnetExamples": "examples/mainnet.json",
   "regtest": {

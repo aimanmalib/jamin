@@ -43,6 +43,10 @@ code, .mono { font-family: var(--font-mono); font-size: 0.9em; }
 .banner .wrap { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; align-items: center; padding-block: 0.4rem; }
 .banner a { color: var(--lamp-soft); }
 .banner strong { color: var(--lamp); letter-spacing: 0.04em; }
+/* The "new project" note: its own row, one line on any width; the text gives way (ellipsis), the link does not. */
+.banner-note { flex: 1 0 100%; display: flex; gap: 0.5rem; min-width: 0; max-width: 100%; margin: 0; }
+.banner-note-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.banner-note a { flex: none; white-space: nowrap; }
 .prize { display: inline-flex; align-items: center; gap: 0.4rem; min-width: 0; max-width: 100%; }
 .prize code { overflow-wrap: anywhere; color: var(--paper); }
 .btn-copy { min-height: 32px; padding: 0 0.6rem; border-radius: 6px; border: 1px solid var(--lamp-soft);
@@ -83,14 +87,14 @@ section + section { margin-top: 2.5rem; }
 .hero-art { width: 100%; max-width: 26rem; height: auto; justify-self: center; }
 .hero-text { display: grid; gap: 1rem; min-width: 0; }
 .hero-text h1, .hero-text .lede { margin: 0; }
-/* Phones (decision 0024): sentence, note, Release and the whole animation fit in the first 664 px of an iPhone 13 under
+/* Phones (decisions 0024, 0025): sentence, note, Release and the whole animation fit in the first 664 px of an iPhone 13 under
    the banner and tabs, so the hero is tighter below 52rem and the art is capped in height. */
 @media (max-width: 51.99rem) {
   .hero { gap: 1rem; }
   .hero-text { gap: 0.6rem; }
   .hero-text h1 { font-size: 1.375rem; }
   .hero .lede { font-size: 0.95rem; }
-  .hero-art { max-height: 10.25rem; }
+  .hero-art { max-height: 9.75rem; }
 }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 /* Focus moves to the card by script so a screen reader lands there; it is not a control: no ring over its border. */
