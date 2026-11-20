@@ -30,7 +30,7 @@ function Person({ x, label }: { x: number; label: string }): ReactNode {
 export function HeroArt(): ReactNode {
   const { t } = useLang();
   return (
-    <svg className="hero-art" viewBox="0 0 400 250" role="img" aria-labelledby="hero-art-title">
+    <svg className="hero-art" viewBox="8 22 384 226" role="img" aria-labelledby="hero-art-title">
       <title id="hero-art-title">{t('home.artTitle')}</title>
       <rect x="0" y="126" width="400" height="3" rx="1.5" className="a-line" />
       <Person x={44} label={t('roles.seller')} />

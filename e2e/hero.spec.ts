@@ -13,6 +13,14 @@ async function shot(page: Page, name: string): Promise<void> {
   if (dir) await page.screenshot({ path: `${dir}/jamin-q4-${test.info().project.name}-${name}.png` });
 }
 
+// The whole animation, not only the button: its box and the coin's path end above the fold.
+async function artAboveFold(page: Page): Promise<void> {
+  const art = await page.locator('.hero-art').boundingBox();
+  expect(art && art.y + art.height, 'hero art bottom').toBeLessThanOrEqual(FOLD);
+  const coin = await page.locator('.hero-coin').boundingBox();
+  expect(coin && coin.y + coin.height, 'coin bottom').toBeLessThanOrEqual(FOLD);
+}
+
 test('hero: Release on mainnet above the fold, the simulator second, dry release from the pool', async ({ page }) => {
   const errors = watchErrors(page);
   if (test.info().project.name === 'chromium') await page.setViewportSize({ width: 1280, height: 800 });
@@ -28,6 +36,7 @@ test('hero: Release on mainnet above the fold, the simulator second, dry release
   const tryBox = await tryIt.boundingBox();
   expect(tryBox && box && tryBox.y + 1 >= box.y, 'simulator after Release').toBe(true);
   expect(await page.locator('.hero-art').evaluate((el) => el.outerHTML.length)).toBeLessThanOrEqual(8192);
+  await artAboveFold(page);
   await shot(page, 'before');
   await release.click();
   const card = page.getByTestId('demo-release');
@@ -64,4 +73,7 @@ test('hero in Malay', async ({ page }) => {
   await page.getByRole('button', { name: 'Bahasa Melayu' }).click();
   await expect(page.getByTestId('hero-release')).toHaveText('Lepaskan di mainnet');
   await expect(page.getByTestId('hero-try')).toHaveText('Cuba simulator');
+  const release = await page.getByTestId('hero-release').boundingBox();
+  expect(release && release.y + release.height, 'Release button bottom').toBeLessThanOrEqual(FOLD);
+  await artAboveFold(page);
 });

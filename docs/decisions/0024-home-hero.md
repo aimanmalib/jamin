@@ -24,10 +24,16 @@ locked box but not what moves, and not the dispute path.
    change only `transform`, `opacity` and `stroke-dashoffset`: an animated blur or backdrop filter crashes WebKit.
    Animations start only inside `prefers-reduced-motion: no-preference`; otherwise the frame is still, with the
    coin in the contract and the dispute branch drawn.
+   Below 52rem the banner and tabs already take about 250 px of an iPhone 13, so the whole hero (sentence, note,
+   buttons and the full animation down to the panel) must fit in the remaining 410 px: the hero there uses a
+   smaller heading (1.375rem), a 0.95rem note, tighter gaps and an art height capped at 10.25rem, and the SVG
+   viewBox is cropped to the drawing (`8 22 384 226`). Measured on WebKit iPhone 13: the art ends near 642 px in
+   English and Malay. Wide screens keep the original sizes.
 4. Tests: `tests/hero.test.ts` checks the sentence length in both languages, the animated properties and the
    reduced-motion guard (with cases that must fail). `e2e/hero.spec.ts` checks, on WebKit iPhone 13 and on
    Chromium at 1280 x 800, that the bottom of "Release on mainnet" is at most 664 px from the top, that the
-   simulator button follows it, that the rendered SVG is at most 8 KB, that the opened card takes focus and offers
+   simulator button follows it, that the bottom of the whole art and of the coin are also within 664 px (English
+   and Malay), that the rendered SVG is at most 8 KB, that the opened card takes focus and offers
    only the dry release (`?demo=dry`), that the animation stops with reduced motion, and that nothing is wider
    than 320 px. No test presses the live button.
 
