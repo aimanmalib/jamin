@@ -1,6 +1,7 @@
 // The Wallet tab after the judges' notes (docs/decisions/0022): the WizardConnect link as a QR code, copy, the header
 // balance chip and polling that replaces the refresh button.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import qrcode from 'qrcode-generator';
 import { qrShape } from '../web/wallet/qr.js';
@@ -144,5 +145,23 @@ describe('no refresh button', () => {
       expect(text.wallet.refresh).toBeUndefined();
       expect(text.wallet.copied).toBeTruthy();
     }
+  });
+});
+
+describe('callers of the Wallet tab', () => {
+  const sources = (dir: string): string[] => readdirSync(dir, { recursive: true, encoding: 'utf8' })
+    .filter((f) => /\.(ts|tsx)$/.test(f)).map((f) => join(dir, f));
+  const files = ['scripts', 'web', 'src'].flatMap(sources).map((f) => ({ f, text: readFileSync(f, 'utf8') }));
+
+  it('scans the scripts that drive the tab', () => {
+    expect(files.some(({ f }) => f.endsWith('third-party-wallet.ts'))).toBe(true);
+  });
+
+  it('no longer refer to the removed refresh button', () => {
+    expect(files.filter(({ text }) => /wallet-refresh|wallet\.refresh/.test(text)).map(({ f }) => f)).toEqual([]);
+  });
+
+  it('read the WizardConnect link as text, not as a form field', () => {
+    expect(files.filter(({ text }) => /wallet-link['"]\)\s*\.inputValue/.test(text)).map(({ f }) => f)).toEqual([]);
   });
 });

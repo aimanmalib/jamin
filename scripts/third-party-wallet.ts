@@ -111,7 +111,10 @@ try {
   await site.goto(RESUME ? `${SITE}/#/wallet?trade=${RESUME.trade}&escrow=${RESUME.escrow}&buyer=${buyerHex}` : `${SITE}/#/wallet`);
   if (!RESUME) await site.getByTestId('buyer-key').fill(buyerHex);
   await site.getByTestId('wallet-connect').click();
-  const link = await site.getByTestId('wallet-link').inputValue({ timeout: 60_000 });
+  const linkBox = site.getByTestId('wallet-link');
+  await linkBox.waitFor({ timeout: 60_000 });
+  const link = ((await linkBox.textContent()) ?? '').trim();
+  if (!link) throw new Error('the site showed no WizardConnect link');
   await wallet.locator('nav').getByText('Connect', { exact: true }).click();
   await wallet.getByPlaceholder('Connection URI').fill(link);
   await wallet.locator('input.primaryButton[value*="Connect"]').click();
@@ -127,6 +130,8 @@ try {
   else {
     let escrow = RESUME?.escrow ?? '';
     let paid = RESUME?.paid;
+    // The tab polls the escrow on its own (walletTrade.pollMs): a funded or paid status means the fund step landed.
+    const settled = site.locator('[data-testid="wallet-status"][data-status="funded"], [data-testid="wallet-status"][data-status="paid"]');
     if (!RESUME) {
       const need = BigInt(cfg.walletTrade.amountSats);
       const coins = (await raw.getUtxos(address)).filter((u) => !u.token);
@@ -141,9 +146,9 @@ try {
       escrow = await site.getByTestId('escrow-address').innerText();
       log(`escrow ${escrow}`);
       await site.getByTestId('wallet-fund').click();
-      await signUntil(wallet, site, site.getByTestId('wallet-refresh'), 'fund');
+      await signUntil(wallet, site, settled, 'fund');
     } else {
-      await site.getByTestId('wallet-refresh').waitFor({ timeout: 120_000 });
+      await settled.waitFor({ timeout: 120_000 });
     }
     if (paid === undefined) {
       const sc = await attachEscrow(gated, escrow, keysFrom({ seller: roleKey, buyer: buyerHex,
@@ -161,10 +166,9 @@ try {
       await seen(address, txid);
     }
     const release = site.getByTestId('wallet-release');
-    for (let i = 0; i < 20 && !(await release.isEnabled()); i++) {
-      await site.waitForTimeout(6_000);
-      await site.getByTestId('wallet-refresh').click();
-    }
+    await release.waitFor({ timeout: 120_000 });
+    // Release turns on once the tab's own polling reads the paid state; there is no refresh button to press.
+    for (let i = 0; i < 20 && !(await release.isEnabled()); i++) await site.waitForTimeout(6_000);
     await release.click();
     await signUntil(wallet, site, site.locator('[data-testid="wallet-txs"] li[data-step="release"]'), 'release');
     await site.waitForTimeout(1_500);
