@@ -1,11 +1,19 @@
-# Jamin
+# <img src="brand/logo.svg" width="44" height="44" alt="Jamin logo: a padlock"> Jamin
 
 Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.
+
+<p><a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-0e6b5c" alt="Licence: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-live-0e6b5c" alt="Live demo"></a> <a href="docs/MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Run on BCH mainnet"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/written%20in-SolidCash-0e6b5c" alt="Written in SolidCash"></a></p>
+
+<p><i>Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.</i><br>
+<a href="https://jamin.sasateguh.com"><b>live demo</b></a> · <a href="#for-judges-one-minute"><b>Judging? Start here</b></a> · <a href="#try-it">Try it</a> · <a href="#run-it-locally">Run it</a> · <a href="#proof">Tests and proof</a> · <a href="#known-limits">Limits</a> · <a href="README.ms.md">Bahasa Melayu</a><br>
+Built in Malaysia by <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
 
 Press **Release on mainnet** at https://jamin.sasateguh.com to release a waiting demo escrow on Bitcoin Cash mainnet, signed in your browser, or **Try the simulator** to play every branch on the SolidCash mock network.
 
 On mainnet so far: 12 escrows, 0.00155460 BCH and 0.23 PUSD locked in them, and 2 calls refused by the network.
 Counted from `examples/mainnet.json`, the same numbers as the strip on the home page.
+
+![The Jamin home page: the title, the Release on mainnet and Try the simulator buttons, and the strip of numbers behind the contract](docs/img/home.png)
 
 Jamin is peer-to-peer trade escrow for Bitcoin Cash, written in SolidCash. A seller locks BCH (or a CashToken such as PUSD) in a contract. The buyer pays in fiat off chain (bank transfer, e-wallet)
 and marks the trade as paid. The seller then releases the coins to the buyer. If the two disagree, either side can open a
@@ -58,6 +66,19 @@ New project. First commit after the 14 November start:
 - **Slides:** https://jamin.sasateguh.com/deck.pdf, eight slides printed from `tools/deck/slides.json`
   (`npx tsx tools/deck/build.ts`); every number on them cites its section of `docs/MEASURED.md` or the findings.
 - **Port:** every OpenPeerEscrow function, event and modifier and what became of it, in `docs/PORTING.md`.
+
+## Try it
+
+1. Open https://jamin.sasateguh.com and press **Release on mainnet**. A demo escrow that is already funded and marked
+   paid on Bitcoin Cash mainnet is released in your browser, with no wallet and no sign-up, and the page links the
+   transaction. While no demo escrow is waiting, the card says when the next one should be ready.
+2. Press **Try the simulator** (the **Try it** tab), then **Start a trade**. The compiled contracts run on the
+   SolidCash mock network inside the page. Pick a role (seller, buyer, arbitrator or someone else) and press its
+   actions: each one shows the transaction it built, or the contract's named error when the role may not do it.
+3. The **Lifecycle** tab lists every escrow run outside the simulator, on regtest and on mainnet, with its
+   transactions; mainnet ones link to an explorer. The **Contract** tab shows the sources with the feature table.
+
+![The Try it tab after a trade: the buyer marked the trade paid, then tried to release the coins, and the contract refused with NotSeller](docs/img/try-a-trade.png)
 
 ## Who it is for
 
@@ -245,7 +266,7 @@ other nine are not are in the same file.
   at output 0 for the escrow's token genesis, and sells only BCH, at an amount the site fixes, with disputes going
   to the site's demo panel. Payments back to such a seller go to the escrow key's address.
 
-## Development
+## Run it locally
 
 Requires Node 22.
 
@@ -322,3 +343,9 @@ rules the agent works under and reviews the result.
 ## License
 
 MIT, see `LICENSE`. Third-party attribution is in `NOTICE`.
+
+## Work with Sasa Teguh
+
+I built this project. I run [Sasa Teguh](https://sasateguh.com), a studio in Malaysia that builds websites found on Google and in AI answers, and sets up systems like this one for businesses.
+
+[Book a call](https://sasateguh.com/book) · hello@sasateguh.com · [More from Sasa Teguh](https://github.com/sasateguh)
