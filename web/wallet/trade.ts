@@ -20,6 +20,7 @@ import { artifact } from '../sim/load.js';
 import { config } from '../data/config.js';
 import type { WizSession } from './session.js';
 import type { TradeApi, TradeTx } from './types.js';
+import type { LinkView } from './link.js';
 import type { Balance } from './store.js';
 
 export type { TradeApi, TradeStep, TradeTx } from './types.js';
@@ -67,15 +68,15 @@ export class WalletTrade implements TradeApi {
   private last: ScanResult | undefined;
 
   private constructor(readonly provider: NetworkProvider, private seller: WalletSeller, readonly trade: string,
-    readonly walletName: string, private readonly keys: ScanKeys) {}
+    readonly walletName: string, private readonly keys: ScanKeys, readonly link: LinkView) {}
 
   /** Waits for the wallet, then asks it to sign the role key request for `trade`. */
   static async start(session: WizSession, trade: string, provider = mainnetProvider()): Promise<WalletTrade> {
-    const { walletName, publicKey, keys } = await session.ready;
+    const { walletName, publicKey, keys, link } = await session.ready;
     const wallet = new WizardWallet(session.transport, publicKey);
     const seller = await walletSeller(provider, wallet, { template: config.walletSigning.roleKeyMessage,
       site: new URL(config.site.url).host, trade }, 'bitcoincash', BigInt(config.walletTrade.roleKeyRequestSats));
-    return new WalletTrade(provider, seller, trade, walletName, keys);
+    return new WalletTrade(provider, seller, trade, walletName, keys, link);
   }
 
   /** Walks the wallet's receive and change chains; before an escrow exists, the address shown is the likely payer. */

@@ -2,9 +2,13 @@
 // test accepts the connection through `window.jaminWalletMock.accept()`, and the escrow turns from funded to paid by
 // itself after a few status reads, as when the buyer marks it paid from their own wallet. Nothing is signed or sent.
 // Its coins sit at several addresses, as a real wallet's do (decision 0027): the balance shown is their sum.
-// `?wallet=mock-empty` is a wallet with no coins at all.
+// `?wallet=mock-empty` is a wallet with no coins at all. The test drops the connection as a wallet would
+// (decision 0028) through `window.jaminWalletMock.drop('ended' | 'reconnect' | 'back')`, or with `&drop=ended` or
+// `&drop=reconnect` in the URL a moment after it connects; neither hook exists outside the stand-in.
 import type { Balance } from './store.js';
 import type { TradeApi, TradeTx, WalletBackend } from './types.js';
+import { watchLink, type Link, type LinkSource } from './link.js';
+import { config } from '../data/config.js';
 
 export const MOCK = {
   uri: 'wiz://mock?relay=none&session=jamin-test',
@@ -17,7 +21,31 @@ export const MOCK = {
   emptyScanned: 40,
   /** Status reads after the deposit before the escrow shows as paid. */
   paidAfterReads: 2,
+  /** With `&drop=…` in the URL: how long after connecting the stand-in drops. */
+  dropAfterMs: 1500,
 };
+
+export type MockDrop = 'ended' | 'reconnect' | 'back';
+
+/** The manager events of a wallet that drops, ends or comes back, on demand. */
+class MockSource implements LinkSource {
+  private readonly listeners = new Map<string, (() => void)[]>();
+  on(event: 'walletready' | 'reconnecting' | 'disconnect', listener: () => void): void {
+    this.listeners.set(event, [...(this.listeners.get(event) ?? []), listener]);
+  }
+  emit(event: 'walletready' | 'reconnecting' | 'disconnect'): void {
+    for (const l of this.listeners.get(event) ?? []) l();
+  }
+}
+
+const DROP_EVENT = { ended: 'disconnect', reconnect: 'reconnecting', back: 'walletready' } as const;
+
+/** `&drop=ended` or `&drop=reconnect` in the search or the hash query. */
+export function mockDrop(search: string, hash: string): MockDrop | undefined {
+  const at = hash.indexOf('?');
+  const value = new URLSearchParams(search).get('drop') ?? new URLSearchParams(at === -1 ? '' : hash.slice(at + 1)).get('drop');
+  return value === 'ended' || value === 'reconnect' ? value : undefined;
+}
 
 const STATUS_FUNDED = 1n;
 const STATUS_PAID = 2n;
@@ -35,7 +63,7 @@ class MockTrade implements TradeApi {
   private stage = 0n;
   private reads = 0;
 
-  constructor(readonly trade: string, private readonly empty: boolean) {}
+  constructor(readonly trade: string, private readonly empty: boolean, readonly link: Link) {}
 
   async balance(): Promise<Balance> {
     const held = this.empty ? [] : MOCK.addresses.filter((a) => a.sats > 0);
@@ -68,16 +96,22 @@ class MockTrade implements TradeApi {
 }
 
 declare global {
-  interface Window { jaminWalletMock?: { accept(): void } }
+  interface Window { jaminWalletMock?: { accept(): void; drop(kind: MockDrop): void } }
 }
 
-export function mockBackend(empty = false): WalletBackend {
+export function mockBackend(empty = false, autoDrop?: MockDrop): WalletBackend {
   return {
     open: () => {
       let accept: () => void = () => undefined;
       const accepted = new Promise<void>((resolve) => { accept = resolve; });
-      window.jaminWalletMock = { accept: () => { accept(); } };
-      return { uri: MOCK.uri, start: async (trade) => { await accepted; return new MockTrade(trade, empty); } };
+      const source = new MockSource();
+      window.jaminWalletMock = { accept: () => { accept(); }, drop: (kind) => { source.emit(DROP_EVENT[kind]); } };
+      return { uri: MOCK.uri, start: async (trade) => {
+        await accepted;
+        const link = watchLink(source, config.walletTrade.reconnectGraceMs, () => undefined);
+        if (autoDrop !== undefined) setTimeout(() => { source.emit(DROP_EVENT[autoDrop]); }, MOCK.dropAfterMs);
+        return new MockTrade(trade, empty, link);
+      } };
     },
   };
 }

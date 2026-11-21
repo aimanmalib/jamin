@@ -1,6 +1,7 @@
 // Shapes shared by the live wallet trade, the test stand-in and the Wallet tab; free of SDK imports, so unit tests
 // and the root typecheck load them without the web build's bundler types.
 import type { Balance } from './store.js';
+import type { LinkView } from './link.js';
 
 export type TradeStep = 'createEscrow' | 'fund' | 'release';
 
@@ -14,6 +15,8 @@ export interface TradeApi {
   readonly sellerAddress: string;
   readonly roleKey: Uint8Array;
   readonly txs: TradeTx[];
+  /** Whether the wallet is still connected (decision 0028). */
+  readonly link: LinkView;
   hasEscrow(): boolean;
   create(buyer: Uint8Array): Promise<string>;
   resume(escrow: string, buyer: Uint8Array): Promise<void>;

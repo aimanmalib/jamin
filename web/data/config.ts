@@ -15,7 +15,7 @@ export interface WebConfig {
   walletSigning: { roleKeyMessage: string };
   walletTrade: {
     network: 'mainnet'; dappName: string; relayUrls: string[]; amountSats: number; minGenesisCoinSats: number;
-    roleKeyRequestSats: number; connectTimeoutMs: number; tradeNamePrefix: string; panel: string[];
+    roleKeyRequestSats: number; connectTimeoutMs: number; reconnectGraceMs: number; tradeNamePrefix: string; panel: string[];
     feeRecipientPkh: string; wallets: string[]; pollMs: number; pollRangeMs: { min: number; max: number };
     copiedMs: number;
     scan: { gapLimit: number; maxAddresses: number; batchSize: number; payerFeeMarginSats: number };

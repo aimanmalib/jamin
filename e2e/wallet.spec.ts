@@ -148,3 +148,94 @@ test('wallet: the empty state fits 320 px in Malay', async ({ page }) => {
   const box = await page.getByTestId('wallet-try-demo').boundingBox();
   expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
 });
+
+type Drop = 'ended' | 'reconnect' | 'back';
+const drop = async (page: import('@playwright/test').Page, kind: Drop): Promise<void> => {
+  await page.evaluate((k) => {
+    (window as unknown as { jaminWalletMock: { drop(kind: Drop): void } }).jaminWalletMock.drop(k);
+  }, kind);
+};
+
+test('wallet: a dropped connection pauses the buttons, an ended session is noticed and Connect again continues',
+  async ({ page }, info) => {
+    const errors = watchErrors(page);
+    await page.goto('/?wallet=mock#/wallet');
+    await page.getByTestId('buyer-key').fill(BUYER);
+    await page.getByTestId('wallet-connect').click();
+    await page.evaluate(() => { (window as unknown as { jaminWalletMock: { accept(): void } }).jaminWalletMock.accept(); });
+    await expect(page.getByTestId('header-balance')).toHaveText('0.00123456 BCH');
+    const tradeName = (await page.getByTestId('trade-name').textContent()) ?? '';
+    const roleKey = (await page.getByTestId('role-key').textContent()) ?? '';
+    await page.getByTestId('wallet-create').click();
+    await page.getByTestId('wallet-fund').click();
+    await expect(page.getByTestId('wallet-status')).toHaveAttribute('data-status', 'funded');
+
+    // The relay drops: "Reconnecting..." in the chip and the tab, the buttons wait; the wallet comes back.
+    await drop(page, 'reconnect');
+    await expect(page.getByTestId('header-wallet')).toHaveText(en.wallet.reconnecting);
+    await expect(page.getByTestId('wallet-reconnecting')).toContainText(en.wallet.reconnectingDetail);
+    await expect(page.getByTestId('wallet-release')).toBeDisabled();
+    await drop(page, 'back');
+    await expect(page.getByTestId('wallet-reconnecting')).toHaveCount(0);
+    await expect(page.getByTestId('header-balance')).toHaveText('0.00123456 BCH');
+
+    // The wallet ends the session: the chip is back to "Connect wallet", the tab says so, the escrow stays shown.
+    await drop(page, 'ended');
+    await expect(page.getByTestId('header-wallet')).toHaveText('Connect wallet');
+    const ended = page.getByTestId('wallet-ended');
+    await expect(ended).toContainText(en.wallet.ended);
+    await expect(ended).toContainText(en.wallet.endedDetail);
+    await expect(page.getByTestId('wallet-connected')).toHaveCount(0);
+    await expect(page.getByTestId('wallet-release')).toHaveCount(0);
+    await expect(page.getByTestId('escrow-address')).toBeVisible();
+    await page.screenshot({ path: info.outputPath('wallet-ended.png') });
+
+    // Connect again: a new session for the same trade name, so the same seller key, and the escrow continues.
+    await page.getByTestId('wallet-connect-again').click();
+    await expect(page.getByTestId('wallet-link-box')).toBeVisible();
+    await page.evaluate(() => { (window as unknown as { jaminWalletMock: { accept(): void } }).jaminWalletMock.accept(); });
+    await expect(page.getByTestId('wallet-ended')).toHaveCount(0);
+    await expect(page.getByTestId('trade-name')).toHaveText(tradeName);
+    await expect(page.getByTestId('role-key')).toHaveText(roleKey);
+    await expect(page.getByTestId('header-balance')).toHaveText('0.00123456 BCH');
+    await expect(page.getByTestId('wallet-status')).toHaveAttribute('data-status', 'paid',
+      { timeout: config.walletTrade.pollMs * 5 });
+    await expect(page.getByTestId('wallet-release')).toBeEnabled();
+    expect(errors).toEqual([]);
+  });
+
+test('wallet: &drop=ended shows the ended session in Malay and fits 320 px', async ({ page }, info) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto('/?wallet=mock&drop=reconnect#/wallet');
+  await page.getByRole('button', { name: 'Bahasa Melayu' }).click();
+  await page.getByTestId('buyer-key').fill(BUYER);
+  await page.getByTestId('wallet-connect').click();
+  await page.evaluate(() => { (window as unknown as { jaminWalletMock: { accept(): void } }).jaminWalletMock.accept(); });
+  await expect(page.getByTestId('header-wallet')).toHaveText(ms.wallet.reconnecting);
+  await page.evaluate(() => { window.scrollTo(0, 0); });
+  await noHorizontalOverflow(page);
+  const [chip, lang] = [await page.getByTestId('header-wallet').boundingBox(),
+    await page.locator('.btn-lang').boundingBox()];
+  expect((chip?.x ?? 0) + (chip?.width ?? 0)).toBeLessThanOrEqual(320);
+  expect((lang?.x ?? 0) + (lang?.width ?? 0)).toBeLessThanOrEqual(320);
+  // The reconnecting chip stays on the brand's row, as the other chip states do.
+  const brand = await page.locator('.brand').boundingBox();
+  expect(Math.abs((chip?.y ?? 0) + (chip?.height ?? 0) / 2 - (brand?.y ?? 0) - (brand?.height ?? 0) / 2)).toBeLessThan(8);
+  await page.screenshot({ path: info.outputPath('wallet-reconnecting-320.png') });
+
+  await page.goto('/?wallet=mock&drop=ended#/wallet');
+  await page.getByTestId('buyer-key').fill(BUYER);
+  await page.getByTestId('wallet-connect').click();
+  await page.evaluate(() => { (window as unknown as { jaminWalletMock: { accept(): void } }).jaminWalletMock.accept(); });
+  const ended = page.getByTestId('wallet-ended');
+  await expect(ended).toContainText(ms.wallet.ended);
+  await expect(page.getByTestId('wallet-connect-again')).toHaveText(ms.wallet.connectAgain);
+  await expect(page.getByTestId('header-wallet')).toHaveText(ms.wallet.connectShort);
+  const text = (await page.locator('main').textContent()) ?? '';
+  expect(text).not.toMatch(/hantar [^.]*ke (laman|halaman)|alamat deposit/i);
+  await ended.scrollIntoViewIfNeeded();
+  await noHorizontalOverflow(page);
+  const box = await page.getByTestId('wallet-connect-again').boundingBox();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
+  await page.screenshot({ path: info.outputPath('wallet-ended-320.png') });
+});

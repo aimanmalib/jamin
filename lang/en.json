@@ -306,7 +306,15 @@
     "createNeeds": "Creating the escrow needs one coin of at least {sats} sat at a single address of your wallet.",
     "spread": "Your wallet holds {total} in all, but the most at one address is {largest}. Each escrow step is paid from one address of your wallet. In your wallet app, send at least {need} sat to yourself (to an address of your own wallet), then come back: the balance updates by itself.",
     "notEnough": "Your wallet holds {total}; this step needs at least {need} sat at one address of your wallet.",
-    "failedFunds": "Your wallet does not hold enough at one address for this step."
+    "failedFunds": "Your wallet does not hold enough at one address for this step.",
+    "reconnecting": "Reconnecting...",
+    "reconnectingDetail": "The connection to your wallet dropped. Keep your wallet open; the buttons work again as soon as it is back.",
+    "ended": "Your wallet ended the connection.",
+    "endedDetail": "Your escrows are safe on chain; connect again to continue.",
+    "connectAgain": "Connect again",
+    "endedSign": "The wallet ended the connection before answering this request. If it signed anyway, the step may still appear on chain: check the escrow before you try again.",
+    "timeout": "No wallet connected within {seconds} seconds, so this link has expired.",
+    "tryAgain": "Try again"
   },
   "demo": {
     "title": "Release on mainnet",

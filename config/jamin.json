@@ -213,6 +213,7 @@
     "minGenesisCoinSats": 5000,
     "roleKeyRequestSats": 1000,
     "connectTimeoutMs": 120000,
+    "reconnectGraceMs": 45000,
     "tradeNamePrefix": "wallet",
     "panel": [
       "02d41acb71425a81ebe647daf94004bd535c6e7a698e5d70c16e7291f44bd00593",

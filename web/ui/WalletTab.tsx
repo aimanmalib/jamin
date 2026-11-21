@@ -4,7 +4,9 @@
 // transaction and keeps no wallet key; the link is hidden once the wallet has connected. The escrow's status and the
 // wallet's balance stay current by themselves (docs/decisions/0022): there is no refresh button. The balance covers
 // every receive and change address of the wallet, and each step is paid from the address that holds enough (0027).
-import { useCallback, useMemo, useState, type ReactNode } from 'react';
+// A wallet whose connection drops shows "Reconnecting..." and pauses the buttons; a wallet that ends the session, or
+// stays away longer than `walletTrade.reconnectGraceMs`, ends it here too, with "Connect again" (0028).
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config, explorerLink } from '../data/config.js';
 import { STATUS, type StatusName } from '../sim/engine.js';
@@ -17,8 +19,13 @@ import { WalletQr } from './WalletQr.js';
 import { WizardHat } from './WizardHat.js';
 import { WalletBalance, useCanCreate } from './WalletBalance.js';
 import { failureText } from '../wallet/failure.js';
+import { useLinkState } from '../wallet/useLink.js';
+import { WalletEnded } from './WalletEnded.js';
 
 type Phase = 'idle' | 'linking' | 'connected' | 'created' | 'funded';
+
+/** The trade a session that ended leaves behind: connecting again with the same name continues it. */
+interface Again { trade: string; escrow: string }
 
 function sats(n: bigint | number): string {
   return Number(n).toLocaleString('en');
@@ -45,10 +52,22 @@ export function WalletTab(): ReactNode {
   const [txs, setTxs] = useState<TradeTx[]>([]);
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState('');
+  const [ended, setEnded] = useState<Again | null>(null);
+  const [tried, setTried] = useState(false);
   const backend = useMemo(() => walletBackend(), []);
   const terms = tradeTerms();
   const buyer = parsePublicKey(buyerHex);
   const canCreate = useCanCreate();
+  const linkState = useLinkState(trade?.link);
+  const away = linkState === 'reconnecting';
+
+  useEffect(() => {
+    if (linkState !== 'ended' || !trade) return;
+    setEnded({ trade: trade.trade, escrow });
+    setTrade(null);
+    setConnectedWallet(null);
+    setPhase('idle');
+  }, [linkState, trade, escrow]);
 
   const run = useCallback(async (work: () => Promise<void>) => {
     setBusy(true);
@@ -56,22 +75,33 @@ export function WalletTab(): ReactNode {
     try { await work(); } catch (e) { setFailure(failureText(t, e)); } finally { setBusy(false); }
   }, [t]);
 
-  const connect = (): void => {
+  const connect = (again?: Again): void => {
     const link = backend.open();
     setUri(link.uri);
     setPhase('linking');
+    setTried(true);
     void run(async () => {
-      const name = resume?.trade ?? `${config.walletTrade.tradeNamePrefix}-${Math.floor(Date.now() / 1000)}`;
-      const w = await link.start(name);
+      const name = again?.trade ?? resume?.trade ?? `${config.walletTrade.tradeNamePrefix}-${Math.floor(Date.now() / 1000)}`;
+      let w: TradeApi;
+      try {
+        w = await link.start(name);
+      } catch (e) {
+        setUri('');
+        setPhase('idle');
+        throw e;
+      }
       setUri('');
+      setEnded(null);
       setTrade(w);
-      setConnectedWallet({ name: w.walletName, address: w.sellerAddress,
+      setConnectedWallet({ name: w.walletName, address: w.sellerAddress, link: w.link,
         readBalance: () => w.balance() });
-      if (resume && buyer) {
-        await w.resume(resume.escrow, buyer);
-        setEscrow(resume.escrow);
-        setStatus(STATUS[Number(await w.status())] ?? null);
-        setPhase('funded');
+      const at = again?.escrow || resume?.escrow;
+      if (at && buyer) {
+        await w.resume(at, buyer);
+        setEscrow(at);
+        const now = STATUS[Number(await w.status())] ?? null;
+        setStatus(now);
+        setPhase(now === 'created' ? 'created' : 'funded');
       } else {
         setPhase('connected');
       }
@@ -88,7 +118,7 @@ export function WalletTab(): ReactNode {
     });
   };
 
-  const live = phase === 'funded' && !busy && status !== 'released' && trade !== null;
+  const live = phase === 'funded' && !busy && !away && status !== 'released' && trade !== null;
   usePolling(async () => { if (trade) setStatus(STATUS[Number(await trade.status())] ?? null); }, live);
 
   return (
@@ -106,14 +136,17 @@ export function WalletTab(): ReactNode {
           <label className="field">
             <span>{t('wallet.buyerLabel')}</span>
             <input type="text" inputMode="text" autoComplete="off" spellCheck={false} value={buyerHex}
-              disabled={phase !== 'idle'} onChange={(e) => setBuyerHex(e.target.value)} data-testid="buyer-key"
+              disabled={phase !== 'idle' || (ended !== null && ended.escrow !== '')} onChange={(e) => setBuyerHex(e.target.value)} data-testid="buyer-key"
               aria-invalid={buyerHex !== '' && !buyer} aria-describedby="buyer-help" />
           </label>
           <p id="buyer-help" className="small muted">{buyerHex !== '' && !buyer ? t('wallet.buyerInvalid') : t('wallet.buyerHelp')}</p>
-          {phase === 'idle' && (
-            <button type="button" className="btn btn-primary" disabled={!buyer} onClick={connect}
-              data-testid="wallet-connect"><WizardHat />{t('wallet.connect')}</button>
+          {phase === 'idle' && ended === null && (
+            <button type="button" className="btn btn-primary" disabled={!buyer} onClick={() => { connect(); }}
+              data-testid="wallet-connect"><WizardHat />{t(tried && failure !== '' ? 'wallet.tryAgain' : 'wallet.connect')}</button>
           )}
+          {phase === 'idle' && ended !== null && <WalletEnded disabled={!buyer} onConnect={() => { connect(ended); }} />}
+          {away && <p className="wallet-reconnecting small" role="status" data-testid="wallet-reconnecting">
+            <strong>{t('wallet.reconnecting')}</strong> {t('wallet.reconnectingDetail')}</p>}
           {phase === 'linking' && uri !== '' && <WalletQr uri={uri} waiting={busy} />}
           {trade && (
             <div className="wallet" data-testid="wallet-connected">
@@ -127,16 +160,16 @@ export function WalletTab(): ReactNode {
           )}
           <div className="actions">
             {phase === 'connected' && buyer && (
-              <button type="button" className="btn btn-primary" disabled={busy || !canCreate} data-testid="wallet-create"
+              <button type="button" className="btn btn-primary" disabled={busy || away || !canCreate} data-testid="wallet-create"
                 onClick={step(async (w) => { await w.create(buyer); setEscrow(await w.address()); }, 'created')}>
                 {t('wallet.create')}</button>
             )}
             {phase === 'created' && (
-              <button type="button" className="btn btn-primary" disabled={busy} data-testid="wallet-fund"
+              <button type="button" className="btn btn-primary" disabled={busy || away} data-testid="wallet-fund"
                 onClick={step(async (w) => { await w.fund(); }, 'funded')}>{t('wallet.fund')}</button>
             )}
             {phase === 'funded' && (
-              <button type="button" className="btn btn-primary" disabled={busy || status !== 'paid'}
+              <button type="button" className="btn btn-primary" disabled={busy || away || status !== 'paid'}
                 data-testid="wallet-release" onClick={step(async (w) => { await w.release(); })}>{t('wallet.release')}</button>
             )}
           </div>

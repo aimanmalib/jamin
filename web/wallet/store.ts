@@ -3,6 +3,7 @@
 // scan of decision 0027 finds) and the last balance read, which the Wallet tab shows too; never a key.
 import { useSyncExternalStore } from 'react';
 import type { ScanSummary } from '../../src/wallet/payer.js';
+import type { LinkView } from './link.js';
 
 export interface Balance { sats: number; tokenUnits: number; scan?: ScanSummary }
 
@@ -10,6 +11,8 @@ export interface ConnectedWallet {
   name: string;
   address: string;
   readBalance: () => Promise<Balance>;
+  /** Whether the wallet is still there (decision 0028); the chip says "Reconnecting..." while it is away. */
+  link?: LinkView;
 }
 
 let current: ConnectedWallet | null = null;

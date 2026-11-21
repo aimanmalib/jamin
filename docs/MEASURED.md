@@ -974,3 +974,18 @@ into the cache (about 640 MB a clone).
 rounds of 10, host load average 40 to 90: first scan 48 addresses (receive/0 to /7 used, 20 unused after them, 20
 unused change) in 56 requests and 9,106 to 9,814 ms after a 1,804 to 3,311 ms connect; the repeat scan that reuses
 the first result 48 requests in 3,691 ms.
+
+## Wallet disconnect (decision 0028)
+
+2026-11-21, local build of this commit served on the host, Cashonize `v0.15.2` built from source (decision 0014) with
+a new empty HD wallet in Playwright Chromium, public relays of `walletTrade.relayUrls`, no signature and no broadcast:
+the wallet connected and showed the role key sign request, then
+
+| How the wallet left | Seconds until the Wallet tab showed it | Runs |
+|---|---|---|
+| Removed the session in Cashonize (trash icon) | 9.0, 9.5 | 2 |
+| Wallet tab closed, nothing sent | 121.6 | 1 |
+
+The first is the library's 8 s grace plus the relay; the second is its 75 s ping limit, rounded up to the 10 s ping,
+plus `walletTrade.reconnectGraceMs` (45,000). In both, the request still waiting failed with the `wallet.endedSign`
+text. `e2e/wallet.spec.ts` (stand-in wallet, both projects, `webkit-iphone13` included): 12 passed.

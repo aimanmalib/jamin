@@ -258,6 +258,15 @@ main { padding-top: 2rem; }
 .wallet-qr .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; }
 .copied { color: var(--river); font-weight: 600; }
 
+/* Wallet link state (decision 0028): a dropped connection waiting to come back, and a session the wallet ended. */
+.btn-wallet.reconnecting { background: var(--lamp-soft); border-color: var(--lamp); color: var(--ink); font-weight: 600; }
+.wallet-reconnecting { border-left: 4px solid var(--lamp); background: var(--lamp-soft); border-radius: 8px;
+  padding: 0.6rem 0.8rem; margin: 0 0 1rem; }
+.wallet-ended { border: 1px solid var(--line); border-left: 4px solid var(--danger); border-radius: 8px;
+  background: var(--card); padding: 0.75rem 0.9rem; }
+.wallet-ended-title { font-weight: 600; margin: 0 0 0.25rem; }
+.wallet-ended .btn { margin-top: 0.25rem; }
+
 /* Narrow screens: brand and language on one row, tabs below */
 @media (max-width: 40rem) {
   .top nav { order: 3; width: 100%; }
@@ -265,9 +274,10 @@ main { padding-top: 2rem; }
   .btn-lang { min-height: 40px; font-size: 0.9rem; }
   .top .wrap { column-gap: 0.5rem; }
   .btn-wallet { min-height: 40px; padding: 0 0.6rem; font-size: 0.85rem; }
-  /* Phones: the hat alone before a wallet connects (the label stays for screen readers), BCH alone after. */
-  .btn-wallet:not(.connected) { min-width: 40px; justify-content: center; padding: 0; }
-  .btn-wallet:not(.connected) .chip-label { position: absolute; width: 1px; height: 1px; overflow: hidden;
+  /* Phones: the hat alone before a wallet connects and on amber while it reconnects (the label stays for screen
+     readers), BCH alone after. */
+  .btn-wallet:not(.connected), .btn-wallet.reconnecting { min-width: 40px; justify-content: center; padding: 0; }
+  .btn-wallet:not(.connected) .chip-label, .btn-wallet.reconnecting .chip-label { position: absolute; width: 1px; height: 1px; overflow: hidden;
     clip-path: inset(50%); white-space: nowrap; }
   .btn-wallet .chip-token { display: none; }
   .banner { font-size: 0.8rem; }

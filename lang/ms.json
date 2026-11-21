@@ -306,7 +306,15 @@
     "createNeeds": "Mencipta escrow memerlukan satu syiling sekurang-kurangnya {sats} sat di satu alamat dompet anda.",
     "spread": "Dompet anda memegang {total} kesemuanya, tetapi paling banyak di satu alamat ialah {largest}. Setiap langkah escrow dibayar dari satu alamat dompet anda. Dalam aplikasi dompet anda, hantar sekurang-kurangnya {need} sat kepada diri sendiri (ke alamat dompet anda sendiri), kemudian kembali: baki dikemas kini sendiri.",
     "notEnough": "Dompet anda memegang {total}; langkah ini memerlukan sekurang-kurangnya {need} sat di satu alamat dompet anda.",
-    "failedFunds": "Dompet anda tidak memegang cukup di satu alamat untuk langkah ini."
+    "failedFunds": "Dompet anda tidak memegang cukup di satu alamat untuk langkah ini.",
+    "reconnecting": "Menyambung semula...",
+    "reconnectingDetail": "Sambungan ke dompet anda terputus. Biarkan dompet anda terbuka; butang berfungsi semula sebaik sahaja ia kembali.",
+    "ended": "Dompet anda menamatkan sambungan.",
+    "endedDetail": "Escrow anda selamat di rantaian; sambung semula untuk meneruskan.",
+    "connectAgain": "Sambung semula",
+    "endedSign": "Dompet menamatkan sambungan sebelum menjawab permintaan ini. Jika ia tetap menandatangani, langkah itu mungkin masih muncul di rantaian: semak escrow sebelum anda cuba lagi.",
+    "timeout": "Tiada dompet bersambung dalam {seconds} saat, jadi pautan ini sudah tamat.",
+    "tryAgain": "Cuba lagi"
   },
   "demo": {
     "title": "Lepaskan di mainnet",
