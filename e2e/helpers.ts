@@ -1,10 +1,14 @@
 /// <reference lib="dom" />
 import { expect, type Page } from '@playwright/test';
 
+/** Chromium's note that the test host's network interfaces changed (containers of other services starting and
+ * stopping on a shared host): about the machine running the test, not the page. Only this exact message is ignored. */
+const HOST_NETWORK_CHANGED = 'Failed to load resource: net::ERR_NETWORK_CHANGED';
+
 /** Collects console errors and uncaught page errors for the rest of the test. */
 export function watchErrors(page: Page): string[] {
   const errors: string[] = [];
-  page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
+  page.on('console', (m) => { if (m.type() === 'error' && m.text() !== HOST_NETWORK_CHANGED) errors.push(m.text()); });
   page.on('pageerror', (e) => errors.push(e.message));
   return errors;
 }

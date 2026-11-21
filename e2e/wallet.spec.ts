@@ -188,7 +188,11 @@ test('wallet: a dropped connection pauses the buttons, an ended session is notic
     await expect(page.getByTestId('wallet-connected')).toHaveCount(0);
     await expect(page.getByTestId('wallet-release')).toHaveCount(0);
     await expect(page.getByTestId('escrow-address')).toBeVisible();
+    // WebKit logs a CSP refusal for the style Playwright injects while taking a screenshot on the public site (strict
+    // style-src); drop only what is logged during the screenshot, as the first test does.
+    const before = errors.length;
     await page.screenshot({ path: info.outputPath('wallet-ended.png') });
+    errors.splice(before);
 
     // Connect again: a new session for the same trade name, so the same seller key, and the escrow continues.
     await page.getByTestId('wallet-connect-again').click();
