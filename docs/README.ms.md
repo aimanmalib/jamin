@@ -1,14 +1,14 @@
-# <img src="brand/logo.svg" width="44" height="44" alt="Logo Jamin: mangga kunci"> Jamin
+# <img src="../public/favicon.svg" width="44" height="44" alt="Logo Jamin: mangga kunci"> Jamin
 
 Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.
 
-<p><a href="LICENSE"><img src="https://img.shields.io/badge/lesen-MIT-0e6b5c" alt="Lesen: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-hidup-0e6b5c" alt="Demo hidup"></a> <a href="docs/MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Dijalankan di mainnet BCH"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/ditulis%20dalam-SolidCash-0e6b5c" alt="Ditulis dalam SolidCash"></a></p>
+<p><a href="../LICENSE"><img src="https://img.shields.io/badge/lesen-MIT-0e6b5c" alt="Lesen: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-hidup-0e6b5c" alt="Demo hidup"></a> <a href="MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Dijalankan di mainnet BCH"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/ditulis%20dalam-SolidCash-0e6b5c" alt="Ditulis dalam SolidCash"></a></p>
 
 <p><i>Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.</i><br>
-<a href="https://jamin.sasateguh.com"><b>demo hidup</b></a> · <a href="#cuba">Cuba</a> · <a href="#jalankan-sendiri">Jalankan</a> · <a href="#ujian-dan-bukti">Ujian dan bukti</a> · <a href="#had">Had</a> · <a href="README.md">English</a><br>
+<a href="https://jamin.sasateguh.com"><b>demo hidup</b></a> · <a href="#cuba">Cuba</a> · <a href="#jalankan-sendiri">Jalankan</a> · <a href="#ujian-dan-bukti">Ujian dan bukti</a> · <a href="#had">Had</a> · <a href="../README.md">English</a><br>
 Dibina di Malaysia oleh <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
 
-Ini ringkasan Bahasa Melayu bagi [README.md](README.md). Jadual penuh, angka ukuran dan setiap txid ada dalam versi
+Ini ringkasan Bahasa Melayu bagi [README.md](../README.md). Jadual penuh, angka ukuran dan setiap txid ada dalam versi
 Inggeris dan `docs/MEASURED.md`; jika kedua-duanya berbeza, versi Inggeris yang terpakai.
 
 Jamin ialah escrow dagangan rakan ke rakan untuk Bitcoin Cash, ditulis dalam SolidCash. Penjual mengunci BCH (atau
@@ -22,7 +22,7 @@ Jamin ialah entri **BCH BLAZE 2026**, ganjaran **Best SolidCash Application**, i
 (lesen MIT) dari EVM ke model UTXO Bitcoin Cash (lihat `NOTICE`). Projek baharu: komit pertama selepas 14 November,
 [komit pertama](https://github.com/aimanmalib/jamin/commit/4ad48710f055ef59b318338b0020f817be1dc277).
 
-![Halaman utama Jamin: tajuk, butang Release on mainnet dan Try the simulator, dan jalur angka di sebalik kontrak](docs/img/home.png)
+![Halaman utama Jamin: tajuk, butang Release on mainnet dan Try the simulator, dan jalur angka di sebalik kontrak](img/home.png)
 
 ## Cuba
 
@@ -35,7 +35,7 @@ Jamin ialah entri **BCH BLAZE 2026**, ganjaran **Best SolidCash Application**, i
 3. Tab **Lifecycle** menyenaraikan setiap escrow yang dijalankan di luar simulator, di regtest dan di mainnet, bersama
    transaksinya. Tab **Contract** menunjukkan kod sumber bersama jadual ciri. Laman ini dalam bahasa Inggeris dan Melayu.
 
-![Tab Try it selepas satu dagangan: pembeli menanda dibayar, kemudian cuba melepaskan syiling, dan kontrak menolak dengan NotSeller](docs/img/try-a-trade.png)
+![Tab Try it selepas satu dagangan: pembeli menanda dibayar, kemudian cuba melepaskan syiling, dan kontrak menolak dengan NotSeller](img/try-a-trade.png)
 
 Video demo (tanpa bunyi): https://jamin.sasateguh.com/media/jamin-demo.mp4 · slaid: https://jamin.sasateguh.com/deck.pdf
 
@@ -69,7 +69,7 @@ npm run gate            # lint, jenis, ujian SolidHat, ujian unit, binaan
   kunci (`docs/MEASURED.md`, `examples/mainnet.json`).
 - Ujian hujung ke hujung aplikasi web di Chromium dan WebKit (iPhone 13), dan pada URL awam (`e2e/`).
 - Empat pembaikan yang ditemui semasa membina ini dibuka sebagai pull request kepada SolidCash
-  ([README.md](README.md#upstream-contributions)).
+  ([README.md](../README.md#upstream-contributions)).
 
 ## Had
 
@@ -82,7 +82,7 @@ npm run gate            # lint, jenis, ujian SolidHat, ujian unit, binaan
 - Semasa pertikaian dibuka, hanya panel penimbang tara boleh menyelesaikannya; pelepasan dan pembatalan pembeli tidak lagi
   dibenarkan.
 - Dompet pihak ketiga di mainnet ialah Cashonize yang dipandu skrip; tiada dompet telefon yang telah dicuba.
-- Senarai penuh: [README.md](README.md#known-limits).
+- Senarai penuh: [README.md](../README.md#known-limits).
 
 ## Jalankan sendiri
 

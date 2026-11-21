@@ -1,11 +1,11 @@
-# <img src="brand/logo.svg" width="44" height="44" alt="Jamin logo: a padlock"> Jamin
+# <img src="public/favicon.svg" width="44" height="44" alt="Jamin logo: a padlock"> Jamin
 
 Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.
 
 <p><a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-0e6b5c" alt="Licence: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-live-0e6b5c" alt="Live demo"></a> <a href="docs/MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Run on BCH mainnet"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/written%20in-SolidCash-0e6b5c" alt="Written in SolidCash"></a></p>
 
 <p><i>Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.</i><br>
-<a href="https://jamin.sasateguh.com"><b>live demo</b></a> · <a href="#for-judges-one-minute"><b>Judging? Start here</b></a> · <a href="#try-it">Try it</a> · <a href="#run-it-locally">Run it</a> · <a href="#proof">Tests and proof</a> · <a href="#known-limits">Limits</a> · <a href="README.ms.md">Bahasa Melayu</a><br>
+<a href="https://jamin.sasateguh.com"><b>live demo</b></a> · <a href="#for-judges-one-minute"><b>Judging? Start here</b></a> · <a href="#try-it">Try it</a> · <a href="#run-it-locally">Run it</a> · <a href="#proof">Tests and proof</a> · <a href="#known-limits">Limits</a> · <a href="docs/README.ms.md">Bahasa Melayu</a><br>
 Built in Malaysia by <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
 
 Press **Release on mainnet** at https://jamin.sasateguh.com to release a waiting demo escrow on Bitcoin Cash mainnet, signed in your browser, or **Try the simulator** to play every branch on the SolidCash mock network.
