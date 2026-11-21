@@ -107,3 +107,23 @@ The keys guard nothing else and are unrelated to any wallet (decision 0020).
   on mainnet swept 4,815 sats back (`docs/MEASURED.md` "Demo pool on mainnet").
 - Way back: give `payer` no argument again in `scripts/demo-restage.ts` and drop the output check in
   `src/wallet/gather.ts`.
+
+## Amendment, 2026-11-21: why the pool is closed
+
+- `closed: true` meant two different things: the wallet is too short to stage (the cron stages again by itself
+  once the wallet is restocked) and the pool is over (budget used up, past `restageUntil`, escrow limit). The card
+  said "the pool is closed" for both, which is wrong in the first case.
+- The cron now also writes `closedReason`: `funds`, `budget`, `ended` or `limit` (`src/demo/closed-reason.ts`).
+  A final stop wins over a short wallet, because money in the wallet would not open a pool that is over. `closed`
+  stays, so an older site still reads the file; an older file without the field keeps the old line.
+- With `funds`, the card says: "The next demo escrow will be staged when the project's demo wallet is restocked.
+  The recorded mainnet releases are in Lifecycle." (`demo.poolRestock`, English and Malay). It explains and does not
+  invite: no address, no request to send anything. Restocking is the project's job, through its own funding.
+- Funding target for 23-27 Nov: six cycles at the measured net cost plus one staging, less what the wallet holds,
+  capped by what is left of `pool.budgetSats` and by the shared wallet's single-transfer limit (`docs/MEASURED.md`
+  "Second funding request"). `pool.budgetSats` stays 400,000.
+- Tests: `tests/demo-pool.test.ts` (the reason for each stop, and the card's reading of it), `e2e/demo.spec.ts`
+  (the restock line at 320 px, Chromium and WebKit iPhone 13).
+- Way back: drop `closedReason` from `poolIndex` in `src/demo/pool.ts` and `PoolLine`'s reason fetch in
+  `web/ui/DemoRelease.tsx`; the card falls back to "the pool is closed".
+

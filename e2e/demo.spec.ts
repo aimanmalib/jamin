@@ -36,6 +36,33 @@ test('demo card on the mock network: staged, released in the page, fits 320 px',
   expect(errors).toEqual([]);
 });
 
+test('demo card when the pool waits for its wallet to be restocked: says so, asks for nothing, fits 320 px',
+  async ({ page }) => {
+    const errors = watchErrors(page);
+    // The pool's list as the cron writes it while the demo wallet is too short to stage (decision 0021).
+    await page.route('**/pool/pool.json', (route) => route.fulfill({ json: { updatedAt: new Date().toISOString(),
+      lastRunAt: new Date().toISOString(), everyMinutes: 10, closed: true, closedReason: 'funds', escrows: [] } }));
+    await page.setViewportSize({ width: 320, height: 640 });
+    await page.goto('/?demo=mock#/');
+    await page.getByTestId('hero-release').click();
+    const card = page.getByTestId('demo-release');
+    await card.scrollIntoViewIfNeeded();
+    const button = card.getByRole('button', { name: 'Release on mainnet' });
+    await expect(button).toBeVisible({ timeout: 170_000 });
+    await button.click();
+    await expect(card.getByTestId('demo-result')).toContainText('Released.', { timeout: 120_000 });
+    const line = card.getByTestId('demo-pool-next');
+    await expect(line).toHaveText("The next demo escrow will be staged when the project's demo wallet is restocked. "
+      + 'The recorded mainnet releases are in Lifecycle.');
+    await expect(line).not.toContainText(/bitcoincash:|send/i);
+    await noHorizontalOverflow(page);
+    // WebKit logs a CSP refusal for the style Playwright injects while taking a screenshot (strict style-src).
+    const before = errors.length;
+    await line.screenshot({ path: test.info().outputPath('demo-restock.png') });
+    errors.splice(before);
+    expect(errors).toEqual([]);
+  });
+
 test('demo card on mainnet: dry mode signs without sending, or says the escrow is not staged yet', async ({ page }) => {
   const errors = watchErrors(page);
   await page.goto('/?demo=dry#/');

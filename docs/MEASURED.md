@@ -489,6 +489,16 @@ by `npx tsx scripts/demo-pool-record.ts` (read only: sizes, fees and heights fro
   spent 76,812, swept 4,815, net 71,997 of 400,000.
 - Two demo escrows still wait at `paid`.
 
+#### Second funding request and the reason in the pool file, 2026-11-21
+
+- 15:30 UTC cron run: the wallet holds 16,345 sats at the seller; "2 of 3 waiting at paid; plan stage 1"; waiting
+  for funds (staging needs 46,000). Pool ledger: net 71,997 of 400,000, so 328,003 left in the pool budget.
+- Requested at 15:40 UTC from the shared test wallet: 249,201 sats = 6 release and restage cycles through 23-27 Nov
+  at the regtest net cost of 36,591 ("Sweep and net cost per cycle"), plus one 46,000 staging, less the 16,345 held. The request was queued, not refused or short; whether it arrives is recorded here later.
+- `/pool/pool.json` now says why it is closed (`closedReason`, decision 0021 amendment "why the pool is closed"):
+  while the wallet is short the card says the next demo escrow will be staged when the project's demo wallet is
+  restocked. It shows no address and asks no visitor for anything.
+
 ## Demo video
 
 Recorded 2026-11-20 17:00 to 17:40 UTC from the live site with Playwright (Chromium, 1920 by 1080), cut and

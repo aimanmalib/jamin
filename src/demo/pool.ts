@@ -5,11 +5,12 @@
 // The pool's ledger is a file the cron writes (not tracked); the site reads only the list of escrow addresses.
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import type { ClosedReason } from './closed-reason.js';
 import type { PoolConfig } from './config.js';
 import type { DemoStatus } from './escrow.js';
 import type { Staged } from './stage.js';
 
-export type { PoolConfig };
+export type { ClosedReason, PoolConfig };
 
 /** The wallet holds too little to stage: the pool waits for funds; not a failure, so no warning. */
 export class FundsShort extends Error {}
@@ -145,14 +146,27 @@ export interface PoolIndex {
   /** No staging will follow (budget, end date, escrow limit), or the wallet is too short to pay for one: the card
    *  says the pool is closed instead of counting minutes. A later run that can stage again writes false. */
   closed: boolean;
+  /** Why, when closed (closed-reason.ts); absent while open and in files written before it existed. */
+  closedReason?: ClosedReason;
   escrows: string[];
+}
+
+const FINAL: Partial<Record<Stop, ClosedReason>> = { budget: 'budget', 'after-date': 'ended', 'max-index': 'limit' };
+
+/** Why the pool is closed, or undefined when a later run can stage. A final stop wins over a short wallet: money
+ *  sent to the wallet would not open a pool whose budget or date is over. */
+export function closedReason(pool: PoolConfig, l: PoolLedger, now: Date, waitingFunds: boolean):
+  ClosedReason | undefined {
+  const plan = planRestage(pool, l, 0, now);
+  if (plan.stage === 0) return (plan.stop && FINAL[plan.stop]) ?? 'budget';
+  return waitingFunds ? 'funds' : undefined;
 }
 
 export function poolIndex(pool: PoolConfig, known: string[], l: PoolLedger, now: Date, waitingFunds = false): PoolIndex {
   const at = now.toISOString();
-  return { updatedAt: at, lastRunAt: at, everyMinutes: pool.restageEveryMinutes,
-    closed: waitingFunds || !poolOpen(pool, l, now),
-    escrows: poolAddresses(known, l) };
+  const reason = closedReason(pool, l, now, waitingFunds);
+  return { updatedAt: at, lastRunAt: at, everyMinutes: pool.restageEveryMinutes, closed: reason !== undefined,
+    ...(reason ? { closedReason: reason } : {}), escrows: poolAddresses(known, l) };
 }
 
 /** Every demo escrow address the pool knows, oldest first, each once. */

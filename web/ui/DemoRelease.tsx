@@ -2,14 +2,15 @@
 // `release` in this page with the public demo seller key and broadcasts it; `?demo=dry` signs and sends nothing.
 // The escrow's state is read from the chain, so a release by an earlier visitor shows as such. A pool of demo escrows
 // waits (decision 0021): the card offers the first still at `paid`, and after a release points to the next one. When
-// none waits, the pool's list file says when the host's cron runs next (the card adds the minutes a staging takes)
-// or that the pool is closed.
+// none waits, the pool's list file says when the host's cron runs next (the card adds the minutes a staging takes),
+// that the pool waits for its wallet to be restocked, or that it is closed.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config, explorerLink } from '../data/config.js';
 import { demo, lastTx, offer, release, type DemoTarget, type Offer } from '../demo/run.js';
 import { fetchPool, poolNext, type PoolInfo } from '../demo/pick.js';
 import { announceRelease } from '../demo/events.js';
+import { fetchClosedReason, poolLineKey } from '../data/pool-reason.js';
 import type { DemoStatus, Released } from '../../src/demo/escrow.js';
 
 type View =
@@ -18,13 +19,22 @@ type View =
   | { kind: 'working'; target: DemoTarget }
   | { kind: 'done'; target: DemoTarget; result: Released; next?: Offer | undefined; pool?: PoolInfo | undefined };
 
-/** "The next one is ready in about N min" or "the pool is closed", when no demo escrow waits. */
+/** "The next one is ready in about N min", or why the pool is closed (waiting for the demo wallet to be restocked,
+ *  or closed for good), when no demo escrow waits. The reason is read once the pool says it is closed. */
 function PoolLine({ pool }: { pool: PoolInfo | undefined }): ReactNode {
   const { t } = useLang();
   const next = pool && poolNext(pool, Date.now(), demo.pool.estimateReadyMinutes);
-  if (!next) return null;
-  return <p data-testid="demo-pool-next">{next.kind === 'closed' ? t('demo.poolClosed')
-    : t('demo.poolSoon', { minutes: String(next.minutes) })}</p>;
+  const closed = next?.kind === 'closed';
+  const [reason, setReason] = useState<{ key: ReturnType<typeof poolLineKey> }>();
+  useEffect(() => {
+    if (!closed) return undefined;
+    let alive = true;
+    void fetchClosedReason(demo.pool.indexPath).then((r) => { if (alive) setReason({ key: poolLineKey(r) }); });
+    return () => { alive = false; };
+  }, [closed]);
+  if (!next || (closed && !reason)) return null;
+  return <p data-testid="demo-pool-next">{closed && reason ? t(reason.key)
+    : next.kind === 'soon' ? t('demo.poolSoon', { minutes: String(next.minutes) }) : null}</p>;
 }
 
 function TxLink({ txid, live }: { txid: string; live: boolean }): ReactNode {

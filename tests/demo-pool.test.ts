@@ -10,10 +10,11 @@ import { demoKeys, type DemoConfig } from '../src/demo/config.js';
 import { attachDemo, demoStatus, releaseDemo, type DemoStatus } from '../src/demo/escrow.js';
 import { largest, stageDemo, sweepDemoKeys, type Pay, type Staged } from '../src/demo/stage.js';
 import {
-  FundsShort, POOL_LIMITS, emptyLedger, netSpent, planRestage, poolIndex, poolOpen, recordFailure, recordSuccess,
-  restage, validPool,
+  FundsShort, POOL_LIMITS, closedReason, emptyLedger, netSpent, planRestage, poolIndex, poolOpen, recordFailure,
+  recordSuccess, restage, validPool,
   type PoolConfig, type PoolLedger, type RestageDeps,
 } from '../src/demo/pool.js';
+import { parseClosedReason, poolLineKey } from '../web/data/pool-reason.js';
 import { candidates, fetchIndex, fetchPool, parseIndex, parsePool, pickReady, poolNext } from '../web/demo/pick.js';
 
 const jamin = JSON.parse(readFileSync('config/jamin.json', 'utf8')) as {
@@ -296,6 +297,30 @@ describe('the pool list file and the card line when no escrow waits', () => {
   it('says closed while the wallet is too short to stage, so the card promises no minutes it cannot keep', () => {
     expect(poolIndex(POOL, [Q], emptyLedger(), NOW, true).closed).toBe(true);
     expect(poolIndex(POOL, [Q], emptyLedger(), NOW, false).closed).toBe(false);
+  });
+
+  it('writes why it is closed: a short wallet is "funds", a final stop names itself and wins over a short wallet', () => {
+    const spent = { ...emptyLedger(), spentSats: 81_000 };
+    const full = { ...emptyLedger(), escrows: Array(POOL.maxIndex).fill({ costSats: 0 }) as never };
+    expect(poolIndex(POOL, [Q], emptyLedger(), NOW, true)).toMatchObject({ closed: true, closedReason: 'funds' });
+    expect(poolIndex(POOL, [Q], spent, NOW, false)).toMatchObject({ closed: true, closedReason: 'budget' });
+    expect(poolIndex(POOL, [Q], spent, NOW, true)).toMatchObject({ closed: true, closedReason: 'budget' });
+    const after = new Date(POOL.restageUntil);
+    expect(poolIndex(POOL, [Q], emptyLedger(), after, true)).toMatchObject({ closed: true, closedReason: 'ended' });
+    expect(poolIndex(POOL, [Q], full, NOW, false)).toMatchObject({ closed: true, closedReason: 'limit' });
+    expect(poolIndex(POOL, [Q], emptyLedger(), NOW, false)).not.toHaveProperty('closedReason');
+    expect(closedReason(POOL, emptyLedger(), NOW, false)).toBeUndefined();
+  });
+
+  it('the card reads the reason only when it is one it knows; an older file without it keeps the old line', () => {
+    expect(parseClosedReason({ closed: true, closedReason: 'funds' })).toBe('funds');
+    expect(parseClosedReason({ closed: true, closedReason: 'budget' })).toBe('budget');
+    expect(parseClosedReason({ closed: true })).toBeUndefined();
+    expect(parseClosedReason({ closed: true, closedReason: 'later' })).toBeUndefined();
+    expect(parseClosedReason({ closed: false, closedReason: 'funds' })).toBeUndefined();
+    expect(parseClosedReason(null)).toBeUndefined();
+    expect(poolLineKey('funds')).toBe('demo.poolRestock');
+    for (const r of ['budget', 'ended', 'limit', undefined] as const) expect(poolLineKey(r)).toBe('demo.poolClosed');
   });
 
   it('reads the file, keeping only well-formed fields', () => {

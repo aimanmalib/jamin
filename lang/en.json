@@ -344,7 +344,8 @@
     "next": "Another demo escrow is waiting for the next visitor.",
     "nextButton": "Show the next escrow",
     "poolSoon": "All demo escrows were released. The next one is being prepared: ready in about {minutes} min.",
-    "poolClosed": "The demo pool is closed. The recorded releases are in Lifecycle."
+    "poolClosed": "The demo pool is closed. The recorded releases are in Lifecycle.",
+    "poolRestock": "The next demo escrow will be staged when the project's demo wallet is restocked. The recorded mainnet releases are in Lifecycle."
   },
   "depth": {
     "title": "Behind the contract",
