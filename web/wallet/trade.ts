@@ -1,20 +1,26 @@
 // One mainnet escrow traded from a WizardConnect wallet, step by step, for the "Wallet" tab: the wallet signs the
 // role key request, the creation, the deposit and the release; the buyer marks the trade paid from their own wallet;
 // this page broadcasts each transaction to the Electrum server in config/jamin.json. It holds no wallet key; the role
-// key lives in this page's memory only and is derived again from the same wallet and trade name.
+// key lives in this page's memory only and is derived again from the same wallet and trade name. The wallet's coins
+// are found over its receive and change addresses (decision 0027) and each step is paid from the one address that
+// holds enough; the role key stays at `receive/0`.
 import { binToHex, cashAddressToLockingBytecode, hexToBin } from '@bitauth/libauth';
 import { Network, type NetworkProvider } from '@solidcash/solidcash';
 import { ElectrumNetworkProvider } from '@solidcash/solidcash/network/electrum';
 import { StatefulContract } from '@solidcash/solidcash/stateful';
 import { WizardWallet } from '../../src/wallet/wizard.js';
 import {
-  createEscrow, escrowStatus, fundEscrow, releaseEscrow, walletSeller, type Counterparties, type TradeTerms,
+  createEscrow, escrowStatus, fundEscrow, payWith, releaseEscrow, walletSeller, type Counterparties, type TradeTerms,
   type WalletSeller,
 } from '../../src/wallet/wizard-trade.js';
+import { largestAddress, scanWallet, type ScanKeys, type ScanResult, type WalletAddress } from '../../src/wallet/scan.js';
+import { genesisPayer, keyOf, requireGenesisPayer, requirePayer, summary } from '../../src/wallet/payer.js';
+import { withScanChain } from '../net/utxos.js';
 import { artifact } from '../sim/load.js';
 import { config } from '../data/config.js';
 import type { WizSession } from './session.js';
 import type { TradeApi, TradeTx } from './types.js';
+import type { Balance } from './store.js';
 
 export type { TradeApi, TradeStep, TradeTx } from './types.js';
 
@@ -48,20 +54,48 @@ export function mainnetProvider(): NetworkProvider {
     encrypted: s.scheme === 'wss' }) as unknown as NetworkProvider;
 }
 
+const minGenesis = (): number => config.walletTrade.minGenesisCoinSats;
+
+/** Satoshis one address must hold to pay the deposit: amount, the escrow fee and a margin for the network fee. */
+export function depositNeed(t: TradeTerms = tradeTerms()): number {
+  return Number(t.amount + (t.amount * t.feeBps + 9_999n) / 10_000n) + config.walletTrade.scan.payerFeeMarginSats;
+}
+
 export class WalletTrade implements TradeApi {
   sc: StatefulContract | undefined;
   readonly txs: TradeTx[] = [];
+  private last: ScanResult | undefined;
 
-  private constructor(readonly provider: NetworkProvider, readonly seller: WalletSeller, readonly trade: string,
-    readonly walletName: string) {}
+  private constructor(readonly provider: NetworkProvider, private seller: WalletSeller, readonly trade: string,
+    readonly walletName: string, private readonly keys: ScanKeys) {}
 
   /** Waits for the wallet, then asks it to sign the role key request for `trade`. */
   static async start(session: WizSession, trade: string, provider = mainnetProvider()): Promise<WalletTrade> {
-    const { walletName, publicKey } = await session.ready;
+    const { walletName, publicKey, keys } = await session.ready;
     const wallet = new WizardWallet(session.transport, publicKey);
     const seller = await walletSeller(provider, wallet, { template: config.walletSigning.roleKeyMessage,
       site: new URL(config.site.url).host, trade }, 'bitcoincash', BigInt(config.walletTrade.roleKeyRequestSats));
-    return new WalletTrade(provider, seller, trade, walletName);
+    return new WalletTrade(provider, seller, trade, walletName, keys);
+  }
+
+  /** Walks the wallet's receive and change chains; before an escrow exists, the address shown is the likely payer. */
+  async scan(): Promise<ScanResult> {
+    const { gapLimit, maxAddresses, batchSize } = config.walletTrade.scan;
+    const r = await withScanChain(async (chain) => scanWallet(this.keys, chain, { gapLimit, maxAddresses, batchSize,
+      prefix: 'bitcoincash', category: config.tokens.pusd.category }, this.last));
+    this.last = r;
+    const likely = genesisPayer(r, minGenesis()) ?? largestAddress(r);
+    if (!this.hasEscrow() && likely !== undefined && likely.sats > 0) this.payFrom(likely);
+    return r;
+  }
+
+  async balance(): Promise<Balance> {
+    const r = await this.scan();
+    return { sats: r.sats, tokenUnits: r.tokenUnits, scan: summary(r, minGenesis()) };
+  }
+
+  private payFrom(a: WalletAddress): void {
+    this.seller = payWith(this.provider, this.seller, keyOf(a), 'bitcoincash', this.trade);
   }
 
   get sellerAddress(): string { return this.seller.address; }
@@ -72,6 +106,7 @@ export class WalletTrade implements TradeApi {
 
   async create(buyer: Uint8Array): Promise<string> {
     const terms = tradeTerms();
+    this.payFrom(requireGenesisPayer(await this.scan(), minGenesis()));
     const now = BigInt(await this.provider.getMedianTimePast());
     const { sc, txid } = await createEscrow(this.provider, await artifact('JaminEscrow'), this.seller,
       counterparties(buyer), terms, now + terms.waitSeconds, BigInt(config.walletTrade.minGenesisCoinSats));
@@ -90,6 +125,7 @@ export class WalletTrade implements TradeApi {
   }
 
   async fund(): Promise<string> {
+    this.payFrom(requirePayer(await this.scan(), depositNeed()));
     const txid = await fundEscrow(this.contract(), this.seller, tradeTerms().amount);
     this.txs.push({ step: 'fund', txid });
     return txid;
@@ -100,6 +136,7 @@ export class WalletTrade implements TradeApi {
   }
 
   async release(): Promise<string> {
+    this.payFrom(requirePayer(await this.scan(), config.walletTrade.scan.payerFeeMarginSats));
     const txid = await releaseEscrow(this.contract(), this.seller);
     this.txs.push({ step: 'release', txid });
     return txid;

@@ -1,6 +1,5 @@
 // Where the Wallet tab gets its wallet from: a WizardConnect session over the public relays, or with `?wallet=mock`
-// in the page URL a stand-in wallet in this page (tests only; nothing is signed or sent).
-import { fetchBalance } from '../net/utxos.js';
+// or `?wallet=mock-empty` in the page URL a stand-in wallet in this page (tests only; nothing is signed or sent).
 import { openSession } from './session.js';
 import { WalletTrade } from './trade.js';
 import { mockBackend } from './mock.js';
@@ -13,9 +12,9 @@ const live: WalletBackend = {
     const session = openSession();
     return { uri: session.uri, start: (trade) => WalletTrade.start(session, trade) };
   },
-  balance: fetchBalance,
 };
 
 export function walletBackend(): WalletBackend {
-  return walletMode(location.search, location.hash) === 'mock' ? mockBackend() : live;
+  const mode = walletMode(location.search, location.hash);
+  return mode === 'live' ? live : mockBackend(mode === 'mock-empty');
 }

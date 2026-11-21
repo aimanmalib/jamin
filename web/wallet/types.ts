@@ -10,6 +10,7 @@ export interface TradeTx { step: TradeStep; txid: string }
 export interface TradeApi {
   readonly trade: string;
   readonly walletName: string;
+  /** The wallet's own address that pays the next step (decision 0027): shown as an address in the visitor's wallet. */
   readonly sellerAddress: string;
   readonly roleKey: Uint8Array;
   readonly txs: TradeTx[];
@@ -20,6 +21,8 @@ export interface TradeApi {
   status(): Promise<bigint>;
   release(): Promise<string>;
   address(): Promise<string>;
+  /** Scans the wallet's receive and change addresses and returns the total (decision 0027). */
+  balance(): Promise<Balance>;
 }
 
 export interface WalletLink {
@@ -31,13 +34,14 @@ export interface WalletLink {
 
 export interface WalletBackend {
   open(): WalletLink;
-  balance(address: string): Promise<Balance>;
 }
 
-/** `?wallet=mock` in the page URL (search or hash route) selects the test stand-in. */
-export function walletMode(search: string, hash: string): 'live' | 'mock' {
+export type WalletMode = 'live' | 'mock' | 'mock-empty';
+
+/** `?wallet=mock` (coins over several addresses) or `?wallet=mock-empty` (none) selects the test stand-in. */
+export function walletMode(search: string, hash: string): WalletMode {
   const at = hash.indexOf('?');
   const fromHash = new URLSearchParams(at === -1 ? '' : hash.slice(at + 1));
   const value = new URLSearchParams(search).get('wallet') ?? fromHash.get('wallet');
-  return value === 'mock' ? 'mock' : 'live';
+  return value === 'mock' || value === 'mock-empty' ? value : 'live';
 }

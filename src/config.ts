@@ -36,7 +36,10 @@ export interface JaminConfig {
     roleKeyMessage: string;
   };
   /** The "Wallet" tab's trade (decision 0014): fixed amount and the demo panel's public keys. */
-  walletTrade: { amountSats: number; panel: string[]; feeRecipientPkh: string; relayUrls: string[] };
+  walletTrade: { amountSats: number; minGenesisCoinSats: number; panel: string[]; feeRecipientPkh: string;
+    relayUrls: string[];
+    /** The connected wallet's address scan (decision 0027): gap limit, ceiling, round size, fee margin of a payer. */
+    scan: { gapLimit: number; maxAddresses: number; batchSize: number; payerFeeMarginSats: number } };
   mainnet: {
     /** The third-party wallet of branch X: its own phrase in the env file, funded through the spending gate. */
     thirdPartyWallet: { mnemonicEnv: string; name: string; fundSats: number; maxFundSats: number; branch: string;

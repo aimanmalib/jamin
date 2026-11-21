@@ -4,7 +4,8 @@
 import { lockingBytecodeToCashAddress } from '@bitauth/libauth';
 import { SignatureTemplate, Signer, type Artifact, type NetworkProvider, type Utxo } from '@solidcash/solidcash';
 import { StatefulContract } from '@solidcash/solidcash/stateful';
-import { wizardRoleKey, type WizardWallet } from './wizard.js';
+import { wizardRoleKey, type WizKey, type WizardWallet } from './wizard.js';
+import { p2pkhAddress } from './scan.js';
 import { roleKeyMessage } from './role-key.js';
 
 export interface TradeTerms {
@@ -30,7 +31,7 @@ export interface WalletSeller {
   /** The SDK's view of the wallet: pays and has the wallet sign its inputs. */
   external: Signer;
   role: SignatureTemplate;
-  /** The wallet's `receive/0` address, where its change goes. */
+  /** The wallet address that pays (decision 0027; `receive/0` until another is chosen); its change returns there. */
   address: string;
   message: string;
 }
@@ -43,15 +44,29 @@ export function walletAddress(wallet: WizardWallet, prefix: AddressPrefix): stri
   return address.address;
 }
 
-/** Asks the wallet for the role key signature and returns the seller as the SDK sees it. */
+/** The same seller (role key unchanged) paying from the wallet address of `payer`, which the wallet learns. */
+export function payWith(provider: NetworkProvider, s: WalletSeller, payer: WizKey, prefix: AddressPrefix,
+  trade: string): WalletSeller {
+  s.wallet.addKeys([payer]);
+  const address = p2pkhAddress(payer.publicKey, prefix);
+  const external = Signer.external({ wallet: s.wallet, address, publicKey: payer.publicKey, userPrompt: `Jamin ${trade}` },
+    provider);
+  return { ...s, external, address };
+}
+
+/**
+ * Asks the wallet for the role key signature and returns the seller as the SDK sees it. The role key request is
+ * always at `receive/0` (decisions 0009, 0027); `payer` picks another address of the wallet to pay from.
+ */
 export async function walletSeller(provider: NetworkProvider, wallet: WizardWallet, text: RoleKeyText,
-  prefix: AddressPrefix, requestSats: bigint): Promise<WalletSeller> {
+  prefix: AddressPrefix, requestSats: bigint, payer?: WizKey): Promise<WalletSeller> {
   const message = roleKeyMessage(text.template, { site: text.site, role: 'seller', trade: text.trade });
   const role = new SignatureTemplate(await wizardRoleKey(wallet, message, requestSats));
   const address = walletAddress(wallet, prefix);
   const external = Signer.external({ wallet, address, publicKey: wallet.publicKey, userPrompt: `Jamin ${text.trade}` },
     provider);
-  return { wallet, external, role, address, message };
+  const s = { wallet, external, role, address, message };
+  return payer === undefined ? s : payWith(provider, s, payer, prefix, text.trade);
 }
 
 /** A plain wallet coin at output 0 holding at least `min`: what a contract's token genesis has to spend. */

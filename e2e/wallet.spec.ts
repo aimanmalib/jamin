@@ -1,8 +1,12 @@
 // The Wallet tab with the stand-in wallet of `?wallet=mock` (no relay, nothing signed or sent): the WizardConnect link
 // as a QR code that copies on tap, the header chip that turns into the wallet's balance, and the escrow status that
-// moves from funded to paid with no click (docs/decisions/0022).
+// moves from funded to paid with no click (docs/decisions/0022). The stand-in's coins sit at several addresses and the
+// balance shown is their sum; `?wallet=mock-empty` is a wallet with none, which gets a plain empty state and the
+// simulator, never a request to send coins to the page (decision 0027).
 import { expect, test } from '@playwright/test';
 import config from '../config/jamin.json' with { type: 'json' };
+import en from '../lang/en.json' with { type: 'json' };
+import ms from '../lang/ms.json' with { type: 'json' };
 import { noHorizontalOverflow, watchErrors } from './helpers.js';
 
 const BUYER = `02${'ab'.repeat(32)}`;
@@ -57,7 +61,13 @@ test('wallet: QR with the hat, tap to copy, balance chip in the header, funded t
   await page.evaluate(() => { (window as unknown as { jaminWalletMock: { accept(): void } }).jaminWalletMock.accept(); });
   await expect(page.getByTestId('wallet-connected')).toBeVisible();
   await expect(page.getByTestId('wallet-link-box')).toHaveCount(0);
+  // 100 000 sat at receive/24 plus 23 456 sat at change/2: the sum, not the first address's (empty) balance.
   await expect(page.getByTestId('header-balance')).toHaveText('0.00123456 BCH');
+  await expect(page.getByTestId('wallet-balance')).toContainText('0.00123456 BCH');
+  await expect(page.getByTestId('wallet-balance')).toContainText('found over 2 of the');
+  await expect(page.getByTestId('wallet-address')).toBeVisible();
+  await expect(page.getByText('Address in your wallet that pays the next step:')).toBeVisible();
+  await expect(page.getByTestId('wallet-empty')).toHaveCount(0);
   // The token count is hidden on phones to keep the header on one row; it is in the page either way.
   await expect(page.getByTestId('header-token')).toHaveText(`2.50 ${config.tokens.pusd.symbol}`);
   await page.evaluate(() => { window.scrollTo(0, 0); });
@@ -100,4 +110,41 @@ test('wallet: the QR box, the header chip and Malay text fit 320 px', async ({ p
   await expect(page.getByTestId('header-balance')).toHaveText('0.00123456 BCH');
   await page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight); });
   await noHorizontalOverflow(page);
+});
+
+test('wallet: an empty wallet gets a plain empty state and the demo, never a request for coins', async ({ page }) => {
+  const errors = watchErrors(page);
+  await page.goto('/?wallet=mock-empty#/wallet');
+  await page.getByTestId('buyer-key').fill(BUYER);
+  await page.getByTestId('wallet-connect').click();
+  await page.evaluate(() => { (window as unknown as { jaminWalletMock: { accept(): void } }).jaminWalletMock.accept(); });
+  const empty = page.getByTestId('wallet-empty');
+  await expect(empty).toBeVisible();
+  await expect(empty.getByRole('heading')).toHaveText(en.wallet.noCoins);
+  await expect(page.getByTestId('wallet-try-demo')).toHaveText(en.wallet.tryDemo);
+  await expect(empty).toContainText('We checked 40 receive and change addresses of Mock wallet');
+  await expect(page.getByTestId('header-balance')).toHaveText('0.00 BCH');
+  await expect(page.getByTestId('wallet-create')).toBeDisabled();
+  const text = (await page.locator('main').textContent()) ?? '';
+  expect(text).not.toMatch(/send [^.]*to (this|the) (page|site)|deposit address/i);
+  await page.evaluate(() => { window.scrollTo(0, document.body.scrollHeight); });
+  await noHorizontalOverflow(page);
+  await page.getByTestId('wallet-try-demo').click();
+  await expect(page).toHaveURL(/#\/try/);
+  await expect(page.getByRole('button', { name: /^Start a trade$/ })).toBeVisible();
+  expect(errors).toEqual([]);
+});
+
+test('wallet: the empty state fits 320 px in Malay', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto('/?wallet=mock-empty#/wallet');
+  await page.getByRole('button', { name: 'Bahasa Melayu' }).click();
+  await page.getByTestId('buyer-key').fill(BUYER);
+  await page.getByTestId('wallet-connect').click();
+  await page.evaluate(() => { (window as unknown as { jaminWalletMock: { accept(): void } }).jaminWalletMock.accept(); });
+  await expect(page.getByTestId('wallet-try-demo')).toHaveText(ms.wallet.tryDemo);
+  await page.getByTestId('wallet-empty').scrollIntoViewIfNeeded();
+  await noHorizontalOverflow(page);
+  const box = await page.getByTestId('wallet-try-demo').boundingBox();
+  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeLessThanOrEqual(320);
 });

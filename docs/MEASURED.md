@@ -967,3 +967,10 @@ and after. Decision: `docs/decisions/0010-vendored-libauth-fork.md`.
 `npm ls @bitauth/libauth` exits 0 in both. `vendor/` holds 1,355,097 bytes (the fork tarball is 1,352,548 bytes).
 Root disk at the time: 504G total, 43G free (92% used). Before the change, each install cloned the fork's whole history
 into the cache (about 640 MB a clone).
+
+## Wallet address scan (decision 0027)
+
+2026-11-21, read only, `bch.imaginary.cash` (wss 50004), public BIP39 test phrase (no project key), gap limit 20,
+rounds of 10, host load average 40 to 90: first scan 48 addresses (receive/0 to /7 used, 20 unused after them, 20
+unused change) in 56 requests and 9,106 to 9,814 ms after a 1,804 to 3,311 ms connect; the repeat scan that reuses
+the first result 48 requests in 3,691 ms.

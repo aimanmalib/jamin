@@ -18,7 +18,7 @@ sign of a connected wallet was inside the tab.
 2. A wizard's hat, drawn for this site (`web/ui/WizardHat.tsx`; the WizardConnect packages ship no logo to copy),
    marks WizardConnect on the connect button, the QR box and the header.
 3. The header has a "Connect wallet" link at the top right on every tab. Once a wallet connects it shows the
-   balance of the wallet's `receive/0` address in BCH, and PUSD units when there are any, read from the configured
+   balance of the wallet's `receive/0` address (since 0027: the total over all its addresses) in BCH, and PUSD units when there are any, read from the configured
    Electrum server. The connected wallet lives in a small store (`web/wallet/store.ts`) holding the address and a
    balance reader, never a key. The Wallet tab stays mounted, hidden, after it is first opened, so the trade and the
    chip survive a visit to another tab. On phones the chip is the hat alone until a wallet connects, which keeps the

@@ -275,7 +275,7 @@
     "linkNote": "Imbas kod ini dengan skrin WizardConnect dompet anda, atau salin pautan ke dalamnya, dan terima. Ia berfungsi sekali dan hanya untuk halaman ini.",
     "waiting": "Menunggu dompet anda. Kemudian ia akan meminta anda menandatangani permintaan kunci penjual.",
     "connected": "Bersambung: {name}.",
-    "address": "Alamat dompet:",
+    "address": "Alamat dalam dompet anda yang membayar langkah seterusnya:",
     "roleKey": "Kunci penjual dalam escrow:",
     "tradeName": "Nama dagangan (dompet dan nama yang sama memberi kunci penjual yang sama):",
     "create": "Cipta escrow",
@@ -297,7 +297,16 @@
     "copyFailed": "Tidak dapat menyalin. Pilih pautan di atas dan salin.",
     "connectShort": "Sambung dompet",
     "chipLabel": "Dompet bersambung: {name}. Buka tab Dompet.",
-    "chipReading": "Membaca baki..."
+    "chipReading": "Membaca baki...",
+    "scanning": "Mencari syiling anda di alamat terima dan alamat baki dompet anda...",
+    "balanceLine": "Baki: {bch}, ditemui di {used} daripada {scanned} alamat terima dan baki yang disemak.",
+    "noCoins": "Dompet ini tiada BCH di alamat yang kami semak",
+    "noCoinsDetail": "Kami menyemak {scanned} alamat terima dan baki dompet {name} dan tidak menemui syiling. Halaman ini tidak pernah meminta syiling. Cuba keseluruhan escrow dalam simulator, tanpa dompet dan tanpa wang.",
+    "tryDemo": "Cuba demo tanpa dompet",
+    "createNeeds": "Mencipta escrow memerlukan satu syiling sekurang-kurangnya {sats} sat di satu alamat dompet anda.",
+    "spread": "Dompet anda memegang {total} kesemuanya, tetapi paling banyak di satu alamat ialah {largest}. Setiap langkah escrow dibayar dari satu alamat dompet anda. Dalam aplikasi dompet anda, hantar sekurang-kurangnya {need} sat kepada diri sendiri (ke alamat dompet anda sendiri), kemudian kembali: baki dikemas kini sendiri.",
+    "notEnough": "Dompet anda memegang {total}; langkah ini memerlukan sekurang-kurangnya {need} sat di satu alamat dompet anda.",
+    "failedFunds": "Dompet anda tidak memegang cukup di satu alamat untuk langkah ini."
   },
   "demo": {
     "title": "Lepaskan di mainnet",

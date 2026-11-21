@@ -1,7 +1,7 @@
 // A wallet behind WizardConnect (docs/decisions/0014) in the shape the SolidCash SDK's `Signer.external` expects.
-// The SDK hands over a transaction with every input empty; this adapter names the inputs at the wallet's `receive/0`
-// key in `inputPaths`, sends the request in the relay's wire form (hex bytes, `<bigint: Nn>` numbers) and checks each
-// signature the wallet returns against that key before the SDK uses the transaction. WizardConnect has no message
+// The SDK hands over a transaction with every input empty; this adapter names each of the wallet's inputs in
+// `inputPaths` at the path of the address that holds its coin (`receive/0`, `change/2`, … decision 0027), sends the request in the relay's wire form (hex bytes, `<bigint: Nn>` numbers) and checks each
+// signature the wallet returns against that address's key before the SDK uses the transaction. WizardConnect has no message
 // signing, so the seller's role key (decision 0009) comes from the wallet's signature over one fixed request that
 // spends a made-up outpoint and is never broadcast; a WizardConnect wallet signs deterministically (Schnorr with a
 // derived nonce), so the same wallet and trade give the same key again.
@@ -52,11 +52,14 @@ export function toWire(value: unknown): Wire {
   return value as Wire;
 }
 
+/** A key the wallet shared: its path, index and public key. */
+export interface WizKey { path: WizPathName; index: number; publicKey: Uint8Array }
+
 /**
- * The relay form of `request` with `own` signed at `receive/<index>`. Source outputs carry no `contract` field, so a
+ * The relay form of `request` with the inputs of `inputPaths` signed at their paths. Source outputs carry no `contract` field, so a
  * wallet leaves the contract inputs as the SDK sent them (empty) and the SDK fills them in afterwards.
  */
-export function wizRequest(request: WalletSignRequest, own: number[], index = 0): WizSignRequest {
+export function wizRequest(request: WalletSignRequest, inputPaths: [number, WizPathName, number][]): WizSignRequest {
   const sourceOutputs = request.transaction.inputs.map((input, i) => {
     const source = request.sourceOutputs[i] as Output;
     return toWire({ outpointIndex: input.outpointIndex, outpointTransactionHash: input.outpointTransactionHash,
@@ -66,7 +69,7 @@ export function wizRequest(request: WalletSignRequest, own: number[], index = 0)
   return {
     transaction: { transaction: binToHex(encodeTransaction(request.transaction)), sourceOutputs, broadcast: false,
       ...(request.userPrompt === undefined ? {} : { userPrompt: request.userPrompt }) },
-    inputPaths: own.map((i) => [i, 'receive', index]),
+    inputPaths,
   };
 }
 
@@ -79,13 +82,36 @@ export function p2pkhSignature(unlocking: Uint8Array): Uint8Array | undefined {
   return unlocking.length === 100 && unlocking[0] === 65 && unlocking[66] === 33 ? unlocking.slice(1, 66) : undefined;
 }
 
+function lockOf(publicKey: Uint8Array): Uint8Array {
+  return Uint8Array.of(0x76, 0xa9, 0x14, ...hash160(publicKey), 0x88, 0xac);
+}
+
 export class WizardWallet {
   readonly lockingBytecode: Uint8Array;
   readonly signed: SignRecord[] = [];
+  private readonly keys: { key: WizKey; lock: Uint8Array }[];
 
-  /** `publicKey` is the wallet's `receive/0` key, from the xpub it shared when the session opened. */
-  constructor(private readonly transport: WizTransport, readonly publicKey: Uint8Array) {
-    this.lockingBytecode = Uint8Array.of(0x76, 0xa9, 0x14, ...hash160(publicKey), 0x88, 0xac);
+  /**
+   * `publicKey` is the wallet's `receive/0` key, from the xpub it shared when the session opened; the role key and
+   * the page's default address come from it. `more` are the other addresses found to hold the wallet's coins.
+   */
+  constructor(private readonly transport: WizTransport, readonly publicKey: Uint8Array, more: readonly WizKey[] = []) {
+    this.lockingBytecode = lockOf(publicKey);
+    this.keys = [{ path: 'receive' as const, index: 0, publicKey }, ...more]
+      .map((key) => ({ key, lock: lockOf(key.publicKey) }));
+  }
+
+  /** Learns more addresses of the wallet (from a scan); known ones are kept once. */
+  addKeys(more: readonly WizKey[]): void {
+    for (const key of more) {
+      const lock = lockOf(key.publicKey);
+      if (!this.keys.some((k) => sameBytes(k.lock, lock))) this.keys.push({ key, lock });
+    }
+  }
+
+  /** The wallet key whose P2PKH lock is `lock`, if the wallet has shared it. */
+  keyFor(lock: Uint8Array | undefined): WizKey | undefined {
+    return this.keys.find((k) => sameBytes(lock, k.lock))?.key;
   }
 
   get pkh(): Uint8Array {
@@ -96,27 +122,31 @@ export class WizardWallet {
   async signTransaction(request: WalletSignRequest): Promise<SignedTx> {
     const { transaction, sourceOutputs } = request;
     if (sourceOutputs.length !== transaction.inputs.length) throw new WalletRefusal('one source output per input');
-    const own = transaction.inputs.flatMap((input, i) =>
-      input.unlockingBytecode.length === 0 && sameBytes(sourceOutputs[i]?.lockingBytecode, this.lockingBytecode) ? [i] : []);
+    const own = transaction.inputs.flatMap((input, i) => {
+      const key = input.unlockingBytecode.length === 0 ? this.keyFor(sourceOutputs[i]?.lockingBytecode) : undefined;
+      return key === undefined ? [] : [{ i, key }];
+    });
     if (own.length === 0) throw new WalletRefusal('no input of this wallet to sign');
-    const { signedTransaction } = await this.transport.signTransaction(wizRequest(request, own));
+    const paths = own.map(({ i, key }): [number, WizPathName, number] => [i, key.path, key.index]);
+    const { signedTransaction } = await this.transport.signTransaction(wizRequest(request, paths));
     const signed = decodeTransaction(hexToBin(signedTransaction));
     if (typeof signed === 'string') throw new WalletRefusal(`the wallet returned a transaction that does not decode: ${signed}`);
-    for (const i of own) this.checkSignature(signed, sourceOutputs, i);
-    this.signed.push({ userPrompt: request.userPrompt, inputs: own });
+    for (const { i, key } of own) this.checkSignature(signed, sourceOutputs, i, key.publicKey);
+    this.signed.push({ userPrompt: request.userPrompt, inputs: own.map(({ i }) => i) });
     return { signedTransaction, signedTransactionHash: binToHex(hash256(hexToBin(signedTransaction)).reverse()) };
   }
 
-  /** Throws unless input `i` of `signed` carries a valid signature of this wallet's key over its P2PKH lock. */
-  private checkSignature(signed: TransactionCommon, sourceOutputs: readonly Output[], i: number): void {
+  /** Throws unless input `i` of `signed` carries a valid signature of `publicKey` (its address's key) over its lock. */
+  private checkSignature(signed: TransactionCommon, sourceOutputs: readonly Output[], i: number,
+    publicKey: Uint8Array): void {
     const unlocking = signed.inputs[i]?.unlockingBytecode ?? Uint8Array.of();
     const sig = p2pkhSignature(unlocking);
-    if (sig === undefined || !sameBytes(unlocking.slice(67), this.publicKey)) {
+    if (sig === undefined || !sameBytes(unlocking.slice(67), publicKey)) {
       throw new WalletRefusal(`input ${i} is not signed by the connected wallet key`);
     }
     const digest = hash256(generateSigningSerializationBCH({ transaction: signed, sourceOutputs: [...sourceOutputs],
-      inputIndex: i }, { coveredBytecode: this.lockingBytecode, signingSerializationType: sig.slice(64) }));
-    if (!secp256k1.verifySignatureSchnorr(sig.slice(0, 64), this.publicKey, digest)) {
+      inputIndex: i }, { coveredBytecode: lockOf(publicKey), signingSerializationType: sig.slice(64) }));
+    if (!secp256k1.verifySignatureSchnorr(sig.slice(0, 64), publicKey, digest)) {
       throw new WalletRefusal(`the wallet's signature on input ${i} does not verify`);
     }
   }

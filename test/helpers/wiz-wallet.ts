@@ -1,11 +1,11 @@
 // A stand-in for a WizardConnect wallet, for tests without a relay: it reads a request in the relay's wire form the
-// way Cashonize does (hex bytes, `<bigint: Nn>` numbers), signs each input listed in `inputPaths` with its one key
-// and the protocol's hash type, and leaves every other input as it came.
+// way Cashonize does (hex bytes, `<bigint: Nn>` numbers), signs each input listed in `inputPaths` with the key of the
+// path it names (one key for every path unless `keyAt` is given; decision 0027) and the protocol's hash type, and leaves every other input as it came.
 import {
   binToHex, decodeTransaction, encodeDataPush, encodeTransaction, generateSigningSerializationBCH, hash256, hexToBin,
   secp256k1, type Output,
 } from '@bitauth/libauth';
-import { WIZ_SIGHASH, type WizSignRequest, type WizTransport } from '../../src/wallet/wizard.js';
+import { WIZ_SIGHASH, type WizPathName, type WizSignRequest, type WizTransport } from '../../src/wallet/wizard.js';
 
 const BIGINT = /^<bigint: (\d+)n>$/;
 
@@ -27,10 +27,15 @@ export class FakeWizWallet implements WizTransport {
   readonly requests: WizSignRequest[] = [];
   readonly publicKey: Uint8Array;
 
-  constructor(private readonly privateKey: Uint8Array) {
+  constructor(private readonly privateKey: Uint8Array,
+    private readonly keyAt?: (path: WizPathName, index: number) => Uint8Array) {
+    this.publicKey = FakeWizWallet.pub(privateKey);
+  }
+
+  private static pub(privateKey: Uint8Array): Uint8Array {
     const pub = secp256k1.derivePublicKeyCompressed(privateKey);
     if (typeof pub === 'string') throw new Error(pub);
-    this.publicKey = pub;
+    return pub;
   }
 
   signTransaction(request: WizSignRequest): Promise<{ signedTransaction: string }> {
@@ -38,16 +43,18 @@ export class FakeWizWallet implements WizTransport {
     const tx = decodeTransaction(hexToBin(request.transaction.transaction));
     if (typeof tx === 'string') throw new Error(tx);
     const sourceOutputs = fromWire(request.transaction.sourceOutputs) as Output[];
-    const paths = new Map(request.inputPaths.map(([i]) => [i, true]));
+    const paths = new Map(request.inputPaths.map(([i, path, index]) => [i, { path, index }]));
     const inputs = tx.inputs.map((input, inputIndex) => {
-      if (!paths.has(inputIndex)) return input;
+      const at = paths.get(inputIndex);
+      if (at === undefined) return input;
+      const privateKey = this.keyAt?.(at.path, at.index) ?? this.privateKey;
       const source = sourceOutputs[inputIndex] as Output;
       const digest = hash256(generateSigningSerializationBCH({ transaction: tx, sourceOutputs, inputIndex },
         { coveredBytecode: source.lockingBytecode, signingSerializationType: Uint8Array.of(WIZ_SIGHASH) }));
-      const sig = secp256k1.signMessageHashSchnorr(this.privateKey, digest);
+      const sig = secp256k1.signMessageHashSchnorr(privateKey, digest);
       if (typeof sig === 'string') throw new Error(sig);
       return { ...input, unlockingBytecode: Uint8Array.of(...encodeDataPush(Uint8Array.of(...sig, WIZ_SIGHASH)),
-        ...encodeDataPush(this.publicKey)) };
+        ...encodeDataPush(FakeWizWallet.pub(privateKey))) };
     });
     return Promise.resolve({ signedTransaction: binToHex(encodeTransaction({ ...tx, inputs })) });
   }

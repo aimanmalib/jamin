@@ -18,6 +18,7 @@ export interface WebConfig {
     roleKeyRequestSats: number; connectTimeoutMs: number; tradeNamePrefix: string; panel: string[];
     feeRecipientPkh: string; wallets: string[]; pollMs: number; pollRangeMs: { min: number; max: number };
     copiedMs: number;
+    scan: { gapLimit: number; maxAddresses: number; batchSize: number; payerFeeMarginSats: number };
   };
   stats: { pollMs: number; pollRangeMs: { min: number; max: number }; tickMs: number; mockPollMs: number;
     mockStartHeight: number };

@@ -275,7 +275,7 @@
     "linkNote": "Scan this code with your wallet's WizardConnect screen, or copy the link into it, and accept. It works once and only for this page.",
     "waiting": "Waiting for your wallet. It will then ask you to sign the seller key request.",
     "connected": "Connected: {name}.",
-    "address": "Wallet address:",
+    "address": "Address in your wallet that pays the next step:",
     "roleKey": "Seller key in the escrow:",
     "tradeName": "Trade name (the same wallet and name give the same seller key):",
     "create": "Create the escrow",
@@ -297,7 +297,16 @@
     "copyFailed": "Could not copy. Select the link above and copy it.",
     "connectShort": "Connect wallet",
     "chipLabel": "Connected wallet: {name}. Open the Wallet tab.",
-    "chipReading": "Reading balance..."
+    "chipReading": "Reading balance...",
+    "scanning": "Looking for your coins on your wallet's receive and change addresses...",
+    "balanceLine": "Balance: {bch}, found over {used} of the {scanned} receive and change addresses checked.",
+    "noCoins": "This wallet has no BCH at the addresses we checked",
+    "noCoinsDetail": "We checked {scanned} receive and change addresses of {name} and found no coins. This page never asks for coins. Try the whole escrow in the simulator instead, with no wallet and no money.",
+    "tryDemo": "Try the demo without a wallet",
+    "createNeeds": "Creating the escrow needs one coin of at least {sats} sat at a single address of your wallet.",
+    "spread": "Your wallet holds {total} in all, but the most at one address is {largest}. Each escrow step is paid from one address of your wallet. In your wallet app, send at least {need} sat to yourself (to an address of your own wallet), then come back: the balance updates by itself.",
+    "notEnough": "Your wallet holds {total}; this step needs at least {need} sat at one address of your wallet.",
+    "failedFunds": "Your wallet does not hold enough at one address for this step."
   },
   "demo": {
     "title": "Release on mainnet",

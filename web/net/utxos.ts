@@ -1,7 +1,8 @@
 // Reads coins on mainnet straight from the configured Electrum server, in the browser. Read only: an escrow's coins
-// (Lifecycle) and a connected wallet's balance (header chip).
+// (Lifecycle) and a connected wallet's addresses (the scan of decision 0027, which feeds the header chip).
 import { ElectrumClient } from '@electrum-cash/network';
 import { config } from '../data/config.js';
+import type { ScanChain, Unspent as ScanUnspent } from '../../src/wallet/scan.js';
 
 export interface Coins { count: number; sats: number; tokenCoins: number }
 
@@ -20,24 +21,38 @@ export function balanceOf(unspent: Unspent[], category: string): { sats: number;
     .reduce((a, u) => a + Number(u.token_data?.amount ?? 0), 0) };
 }
 
-async function listUnspent(address: string): Promise<Unspent[]> {
+/** Runs `work` over one connection to the configured server, closed afterwards. */
+async function withElectrum<T>(work: (ask: (method: string, ...params: string[]) => Promise<unknown>) => Promise<T>):
+  Promise<T> {
   const s = config.electrum.mainnet;
   const client = new ElectrumClient('jamin-web', '1.5.3', s.hostname,
     { port: s.port, encrypted: s.scheme === 'wss', timeoutInMilliSeconds: s.timeoutMs });
   await client.connect();
   try {
-    const result = await client.request('blockchain.address.listunspent', address, 'include_tokens');
-    if (result instanceof Error) throw result;
-    return result as Unspent[];
+    return await work(async (method, ...params) => {
+      const result = await client.request(method, ...params);
+      if (result instanceof Error) throw result;
+      return result;
+    });
   } finally {
     await client.disconnect(true);
   }
 }
 
-export async function fetchCoins(address: string): Promise<Coins> {
-  return summarise(await listUnspent(address));
+async function listUnspent(address: string): Promise<Unspent[]> {
+  return withElectrum(async (ask) => await ask('blockchain.address.listunspent', address, 'include_tokens') as Unspent[]);
 }
 
-export async function fetchBalance(address: string): Promise<{ sats: number; tokenUnits: number }> {
-  return balanceOf(await listUnspent(address), config.tokens.pusd.category);
+/** Runs a wallet scan over one connection: history says whether an address was ever used, listunspent its coins. */
+export async function withScanChain<T>(work: (chain: ScanChain) => Promise<T>): Promise<T> {
+  return withElectrum(async (ask) => work({
+    used: async (addresses) => Promise.all(addresses.map(async (a) =>
+      (await ask('blockchain.address.get_history', a) as unknown[]).length > 0)),
+    unspent: async (addresses) => Promise.all(addresses.map(async (a) =>
+      await ask('blockchain.address.listunspent', a, 'include_tokens') as ScanUnspent[])),
+  }));
+}
+
+export async function fetchCoins(address: string): Promise<Coins> {
+  return summarise(await listUnspent(address));
 }

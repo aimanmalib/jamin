@@ -229,7 +229,13 @@
       "min": 2000,
       "max": 30000
     },
-    "copiedMs": 2000
+    "copiedMs": 2000,
+    "scan": {
+      "gapLimit": 20,
+      "maxAddresses": 200,
+      "batchSize": 10,
+      "payerFeeMarginSats": 3000
+    }
   },
   "stats": {
     "pollMs": 15000,

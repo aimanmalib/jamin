@@ -1,8 +1,9 @@
 // The header's wallet button on every page: "Connect wallet" with the WizardConnect hat before a wallet is connected,
-// then the wallet's BCH balance (and PUSD when it holds some), read from the network and kept current by itself.
-import { useState, type ReactNode } from 'react';
+// then the wallet's BCH balance over all its addresses (and PUSD when it holds some), read from the network and kept
+// current by itself; the Wallet tab shows the same read.
+import type { ReactNode } from 'react';
 import { useLang } from '../i18n.js';
-import { useConnectedWallet, type Balance } from '../wallet/store.js';
+import { publishBalance, useConnectedWallet, useWalletBalance } from '../wallet/store.js';
 import { formatBalance } from '../wallet/format.js';
 import { usePolling } from '../wallet/poll.js';
 import { WizardHat } from './WizardHat.js';
@@ -10,8 +11,8 @@ import { WizardHat } from './WizardHat.js';
 export function WalletChip(): ReactNode {
   const { t } = useLang();
   const wallet = useConnectedWallet();
-  const [balance, setBalance] = useState<Balance | null>(null);
-  usePolling(async () => { if (wallet) setBalance(await wallet.readBalance()); }, wallet !== null);
+  const balance = useWalletBalance();
+  usePolling(async () => { if (wallet) publishBalance(await wallet.readBalance()); }, wallet !== null);
   if (!wallet) {
     return (
       <a className="btn-wallet" href="#/wallet" data-testid="header-wallet">

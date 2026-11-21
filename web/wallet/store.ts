@@ -1,8 +1,10 @@
 // The connected wallet, shared by the Wallet tab (which connects it) and the header chip (which shows its balance), so
-// the chip stays across tabs. Holds the wallet's public address and a way to read its balance; never a key.
+// the chip stays across tabs. Holds the wallet's public address, a way to read its balance (over every address the
+// scan of decision 0027 finds) and the last balance read, which the Wallet tab shows too; never a key.
 import { useSyncExternalStore } from 'react';
+import type { ScanSummary } from '../../src/wallet/payer.js';
 
-export interface Balance { sats: number; tokenUnits: number }
+export interface Balance { sats: number; tokenUnits: number; scan?: ScanSummary }
 
 export interface ConnectedWallet {
   name: string;
@@ -11,11 +13,27 @@ export interface ConnectedWallet {
 }
 
 let current: ConnectedWallet | null = null;
+let lastBalance: Balance | null = null;
 const listeners = new Set<() => void>();
+
+function notify(): void {
+  for (const l of listeners) l();
+}
 
 export function setConnectedWallet(wallet: ConnectedWallet | null): void {
   current = wallet;
-  for (const l of listeners) l();
+  lastBalance = null;
+  notify();
+}
+
+/** The chip's latest read of the connected wallet's balance. */
+export function publishBalance(balance: Balance): void {
+  lastBalance = balance;
+  notify();
+}
+
+function walletBalance(): Balance | null {
+  return lastBalance;
 }
 
 export function connectedWallet(): ConnectedWallet | null {
@@ -29,4 +47,8 @@ function subscribe(listener: () => void): () => void {
 
 export function useConnectedWallet(): ConnectedWallet | null {
   return useSyncExternalStore(subscribe, connectedWallet, connectedWallet);
+}
+
+export function useWalletBalance(): Balance | null {
+  return useSyncExternalStore(subscribe, walletBalance, walletBalance);
 }

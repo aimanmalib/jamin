@@ -2,7 +2,8 @@
 // pastes the connection link into their wallet, the wallet signs the role key request, the creation, the deposit and
 // the release, and the buyer marks the trade paid from their own wallet in between. The page broadcasts each
 // transaction and keeps no wallet key; the link is hidden once the wallet has connected. The escrow's status and the
-// wallet's balance stay current by themselves (docs/decisions/0022): there is no refresh button.
+// wallet's balance stay current by themselves (docs/decisions/0022): there is no refresh button. The balance covers
+// every receive and change address of the wallet, and each step is paid from the address that holds enough (0027).
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { useLang } from '../i18n.js';
 import { config, explorerLink } from '../data/config.js';
@@ -14,6 +15,8 @@ import { usePolling } from '../wallet/poll.js';
 import { hashQuery } from '../route.js';
 import { WalletQr } from './WalletQr.js';
 import { WizardHat } from './WizardHat.js';
+import { WalletBalance, useCanCreate } from './WalletBalance.js';
+import { failureText } from '../wallet/failure.js';
 
 type Phase = 'idle' | 'linking' | 'connected' | 'created' | 'funded';
 
@@ -45,12 +48,13 @@ export function WalletTab(): ReactNode {
   const backend = useMemo(() => walletBackend(), []);
   const terms = tradeTerms();
   const buyer = parsePublicKey(buyerHex);
+  const canCreate = useCanCreate();
 
   const run = useCallback(async (work: () => Promise<void>) => {
     setBusy(true);
     setFailure('');
-    try { await work(); } catch (e) { setFailure(e instanceof Error ? e.message : String(e)); } finally { setBusy(false); }
-  }, []);
+    try { await work(); } catch (e) { setFailure(failureText(t, e)); } finally { setBusy(false); }
+  }, [t]);
 
   const connect = (): void => {
     const link = backend.open();
@@ -62,7 +66,7 @@ export function WalletTab(): ReactNode {
       setUri('');
       setTrade(w);
       setConnectedWallet({ name: w.walletName, address: w.sellerAddress,
-        readBalance: () => backend.balance(w.sellerAddress) });
+        readBalance: () => w.balance() });
       if (resume && buyer) {
         await w.resume(resume.escrow, buyer);
         setEscrow(resume.escrow);
@@ -118,11 +122,12 @@ export function WalletTab(): ReactNode {
               <p className="small muted">{t('wallet.roleKey')} <span className="txid" data-testid="role-key">{
                 Array.from(trade.roleKey, (b) => b.toString(16).padStart(2, '0')).join('')}</span></p>
               <p className="small muted">{t('wallet.tradeName')} <span className="txid" data-testid="trade-name">{trade.trade}</span></p>
+              {phase === 'connected' && <WalletBalance name={trade.walletName} />}
             </div>
           )}
           <div className="actions">
             {phase === 'connected' && buyer && (
-              <button type="button" className="btn btn-primary" disabled={busy} data-testid="wallet-create"
+              <button type="button" className="btn btn-primary" disabled={busy || !canCreate} data-testid="wallet-create"
                 onClick={step(async (w) => { await w.create(buyer); setEscrow(await w.address()); }, 'created')}>
                 {t('wallet.create')}</button>
             )}
@@ -136,7 +141,7 @@ export function WalletTab(): ReactNode {
             )}
           </div>
           {busy && phase !== 'linking' && <p className="small muted" role="status">{t('wallet.signInWallet')}</p>}
-          {failure && <p role="alert" className="small" data-testid="wallet-error">{t('wallet.failed', { message: failure })}</p>}
+          {failure && <p role="alert" className="small" data-testid="wallet-error">{failure}</p>}
         </div>
         <div className="card">
           <h2 className="h3">{t('wallet.escrowTitle')}</h2>
