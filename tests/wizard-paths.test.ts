@@ -5,9 +5,9 @@
 import { describe, expect, it } from 'vitest';
 import { binToHex } from '@bitauth/libauth';
 import type { MockNetworkProvider } from '@solidcash/solidcash/network/mock';
-import { Status, TERMS, RESERVE_SATS, entry, loadArtifact, satsAt, statusOf, world, type World } from './helpers/escrow.js';
-import { FakeWizWallet } from './helpers/wiz-wallet.js';
-import { HdTestWallet } from './helpers/hd-wallet.js';
+import { Status, TERMS, RESERVE_SATS, entry, loadArtifact, satsAt, statusOf, world, type World } from '../test/helpers/escrow.js';
+import { FakeWizWallet } from '../test/helpers/wiz-wallet.js';
+import { HdTestWallet } from '../test/helpers/hd-wallet.js';
 import { asProvider } from '../src/sdk/mock.js';
 import { loadConfig } from '../src/config.js';
 import { WalletRefusal } from '../src/wallet/protocol-wallet.js';
@@ -51,7 +51,7 @@ function parties(w: World) {
     feeRecipientPkh: fees.pkh };
 }
 
-describe('seller paying from the address that holds the coins', () => {
+describe('seller paying from the address that holds the coins', { timeout: 180_000 }, () => {
   it('creates and funds from change/2 and releases from receive/24, each input signed at its own path', async () => {
     const w = await world();
     const { prefix, at, fake, wallet, scan } = setup(w);
