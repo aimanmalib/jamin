@@ -189,7 +189,7 @@ requests #1 and #4 to #7, issues #2 and #3).
   defines its own unlocker for the same reason.
 - Effect in this project: `src/coins/filler.ts` writes the lock and its unlock out, and the event sweep adds the
   filler of an escrow's own transactions (the 576 sats of branch B).
-- Upstream: fix prepared, not yet submitted. Branch `fix/filler-unlocker` on upstream `master` at `eda85a88d`
+- Upstream: open pull request [#15](https://github.com/solidcash/solidcash/pull/15), opened 21 November 2026. Branch `fix/filler-unlocker` on upstream `master` at `eda85a88d`
   exports `fillerUnlocker()` and `FILLER_SEQUENCE` beside `fillerOutput` from the stateful entry point, adds a line to
   `website/docs/guides/stateful-guide.md`, and has `test/e2e/DrainFiller.test.ts` use the export in place of its own
   unlocker. `packages/solidcash/test/unit/FillerUnlocker.test.ts` and the drain test fail on `master` (the export is
@@ -197,15 +197,17 @@ requests #1 and #4 to #7, issues #2 and #3).
 
 ## Fixes submitted upstream
 
-Three findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
-the change. Each was opened as a pull request to `solidcash/solidcash` on 18 November 2026. On 19 November 2026 at
-01:50 UTC all three were open, not drafts, with no review and no maintainer comment yet.
+Four findings have a small fix with a regression test that fails on upstream `master` at `eda85a88d` and passes with
+the change. F8, F1 and F4 were opened as pull requests to `solidcash/solidcash` on 18 November 2026, F14 on
+21 November 2026. On 21 November 2026 at 03:35 UTC all four were open and not drafts; #8, #9 and #10 had no review
+and no maintainer comment.
 
 | Finding | Pull request | Branch | Change | Test |
 | --- | --- | --- | --- | --- |
 | F8 | [#8](https://github.com/solidcash/solidcash/pull/8) | `fix/constructor-require-site` | `sc-derive-deploy-commitments.ts` names the failing constructor `require` with `probeRequireStatement` | `packages/solidcash/test/e2e/ConstructorRequireSite.test.ts` |
 | F4 | [#10](https://github.com/solidcash/solidcash/pull/10) | `fix/mock-provider-exact-optional` | `NetworkProvider.oraclePoolCategory` declared `?: string \| undefined` | `packages/solidcash/test/unit/MockProviderExactOptionalTypes.test.ts` |
 | F1 | [#9](https://github.com/solidcash/solidcash/pull/9) | `fix/framed-locking-bytecode-instantiation` | `LowerFramedCreate2Address` and the optional-lowering survey skip the built-in locking bytecode classes | `packages/solidc/test/framed/master/locking-bytecode-instantiation.test.ts` |
+| F14 | [#15](https://github.com/solidcash/solidcash/pull/15) | `fix/filler-unlocker` | `fillerUnlocker()` and `FILLER_SEQUENCE` exported beside `fillerOutput`; `DrainFiller.test.ts` uses the export | `packages/solidcash/test/unit/FillerUnlocker.test.ts` |
 
 For F1 the direct composition is unchanged: the bytecode and ABI of the 11 upstream contract files and examples that
 use a built-in locking bytecode class hash the same before and after the change. The fix lets the framed contract
@@ -215,4 +217,4 @@ The others are not prepared as fixes: F2 and F5 change how calls are derived or 
 small patch and needs the maintainers' view first; F3 may be intended; F6 is fixed by open pull request #6; F7 is how
 BCH time locks fail; F9 is a documentation point; F10 needs an asynchronous signing step in the SDK;
 F11 and F13 were found after the pull requests were opened, and each section names the change it would take;
-F12 is addressed by open pull request #13; F14 has a fix prepared but not yet submitted.
+F12 is addressed by open pull request #13.

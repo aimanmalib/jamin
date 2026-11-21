@@ -53,7 +53,7 @@ New project. First commit after the 14 November start:
   files; the keyless relayer checked the transaction against the buyer's intent and broadcast it, and the 10 units
   went back to the seller (3 escrow transactions; `docs/MEASURED.md`, "Relayed token cancel on mainnet").
 - **SolidCash features used:** 26, each with the test that exercises it, in `docs/FEATURES.md`.
-- **Upstream:** three fixes found while building this are open as pull requests to SolidCash (#8, #9, #10;
+- **Upstream:** four fixes found while building this are open as pull requests to SolidCash (#8, #9, #10, #15;
   "Upstream contributions").
 - **Slides:** https://jamin.sasateguh.com/deck.pdf, eight slides printed from `tools/deck/slides.json`
   (`npx tsx tools/deck/build.ts`); every number on them cites its section of `docs/MEASURED.md` or the findings.
@@ -172,7 +172,7 @@ Sizes vary by a few bytes between runs (signature length) and by the number of c
 ## Upstream contributions
 
 Building Jamin turned up fourteen issues in SolidCash 0.51.1, each recorded with a minimal reproduction in
-`docs/SOLIDCASH-FINDINGS.md`. Three have a small fix with a regression test that fails on upstream `master` and
+`docs/SOLIDCASH-FINDINGS.md`. Four have a small fix with a regression test that fails on upstream `master` and
 passes with the change, and each is open as a pull request:
 
 - [solidcash/solidcash#8](https://github.com/solidcash/solidcash/pull/8): a constructor `require` that fails is
@@ -181,10 +181,12 @@ passes with the change, and each is open as a pull request:
   `new LockingBytecodeP2PKH(...)` (F1).
 - [solidcash/solidcash#10](https://github.com/solidcash/solidcash/pull/10): `MockNetworkProvider` does not
   type-check under `exactOptionalPropertyTypes` (F4).
+- [solidcash/solidcash#15](https://github.com/solidcash/solidcash/pull/15): the SDK leaves filler outputs that anyone
+  may sweep but exports no way to spend one (F14).
 
 F12 (the destroy helper spends event records whose lock has not passed) is addressed by open upstream pull request
 [solidcash/solidcash#13](https://github.com/solidcash/solidcash/pull/13), so no duplicate was opened. The reasons the
-other ten are not are in the same file.
+other nine are not are in the same file.
 
 ## Known limits
 

@@ -245,7 +245,8 @@
     "upstreamPrs": [
       8,
       9,
-      10
+      10,
+      15
     ],
     "upstreamPrUrl": "https://github.com/solidcash/solidcash/pull/{n}",
     "links": {
