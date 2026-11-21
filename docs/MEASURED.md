@@ -494,7 +494,15 @@ by `npx tsx scripts/demo-pool-record.ts` (read only: sizes, fees and heights fro
 - 15:30 UTC cron run: the wallet holds 16,345 sats at the seller; "2 of 3 waiting at paid; plan stage 1"; waiting
   for funds (staging needs 46,000). Pool ledger: net 71,997 of 400,000, so 328,003 left in the pool budget.
 - Requested at 15:40 UTC from the shared test wallet: 249,201 sats = 6 release and restage cycles through 23-27 Nov
-  at the regtest net cost of 36,591 ("Sweep and net cost per cycle"), plus one 46,000 staging, less the 16,345 held. The request was queued, not refused or short; whether it arrives is recorded here later.
+  at the regtest net cost of 36,591 ("Sweep and net cost per cycle"), plus one 46,000 staging, less the 16,345 held.
+- Funding: 0.00249201 BCH received from a shared test wallet, txid
+  6bf5cd47c147b72a60e29875c81a2410b14ca8ccaec7aa2d1034fb898613833a, for keeping the demo pool staged through 23-27 Nov.
+- 16:40 UTC cron run: the seller held 265,546 sats; the run staged one demo escrow
+  `bitcoincash:pvhyrzhr7nsux3629gwwwcth602x0jjmvgwttc8nedvdunc7rywwk5c4etwee` for 38,406 sats (createEscrow
+  `c22cdab5b6c8c0d644752bdabc5acf429357dd0f57c422520150d924ac00fc08`, fund
+  `9e23e109573617a05ac73bbfc75adcf565cd38da999212c49075d7e8656de417`, markAsPaid
+  `0614306edb3a2955f373aaa2b6bee7b090630956b0c01343bc84925f34807457`). Pool ledger: spent 115,218, swept 4,815,
+  net 110,403 of 400,000. 16:50 UTC: "3 of 3 waiting at paid", and `/pool/pool.json` reads `closed: false`.
 - `/pool/pool.json` now says why it is closed (`closedReason`, decision 0021 amendment "why the pool is closed"):
   while the wallet is short the card says the next demo escrow will be staged when the project's demo wallet is
   restocked. It shows no address and asks no visitor for anything.
