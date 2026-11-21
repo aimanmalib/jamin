@@ -15,7 +15,13 @@ test('home: one sentence, one primary button, the banner, no console errors', as
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect(page.locator('.btn-primary')).toHaveCount(1);
   await expect(page.locator('.btn-primary')).toBeInViewport();
-  await expect(page.getByLabel(config.banner.prizeAddress)).toBeVisible();
+  const prize = page.getByLabel(config.banner.prizeAddress);
+  await expect(prize).toBeVisible();
+  // The banner shows the address shortened (both ends of the configured one) and keeps it whole in the title.
+  const [head = '', tail = ''] = ((await prize.textContent()) ?? '').split('...');
+  expect(head.length, 'shortened').toBeGreaterThan('bitcoincash:'.length);
+  expect(config.banner.prizeAddress.startsWith(head) && config.banner.prizeAddress.endsWith(tail) && tail.length > 0).toBe(true);
+  await expect(prize).toHaveAttribute('title', config.banner.prizeAddress);
   await expect(page.getByRole('link', { name: 'Source code' }).first()).toHaveAttribute('href', config.banner.repoUrl);
   await expect(page.getByRole('link', { name: 'Slides' })).toHaveAttribute('href', config.banner.deckUrl);
   expect(errors).toEqual([]);

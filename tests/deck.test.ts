@@ -1,5 +1,6 @@
 // The event deck (tools/deck): the PDF the site serves is built from the current slide text, config and tokens; the
 // slides follow the event template; every number on a slide is found in the section of the document it cites.
+import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
@@ -59,10 +60,12 @@ describe('deck', () => {
     for (const t of texts) expect(t, t).not.toMatch(/[–—!]/);
   });
 
-  it('is linked from the banner at the site address of the file the build serves', () => {
+  // Cloudflare keeps deck.pdf for four hours, so the link carries ?v= with the first eight hex digits of the PDF's sha256.
+  it('is linked from the banner at the site address of the file the build serves, versioned by its hash', () => {
     const c = deckConfig();
-    expect(c.deckUrl).toBe(`${c.site}/${OUT.replace(/^public\//, '')}`);
     expect(existsSync(resolve(ROOT, OUT))).toBe(true);
+    const v = createHash('sha256').update(readFileSync(resolve(ROOT, OUT))).digest('hex').slice(0, 8);
+    expect(c.deckUrl).toBe(`${c.site}/${OUT.replace(/^public\//, '')}?v=${v}`);
   });
 
   it('opens with the README opening: the title sentence on slide 1, what to press and the counts on slide 2', () => {

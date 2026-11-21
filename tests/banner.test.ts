@@ -2,6 +2,7 @@
 // first commit, both read from config/jamin.json and lang/*.json, and the README carries the same line above the
 // judges' section.
 import { readFileSync } from 'node:fs';
+import { decodeCashAddress } from '@bitauth/libauth';
 import { describe, expect, it } from 'vitest';
 import raw from '../config/jamin.json' with { type: 'json' };
 import en from '../lang/en.json' with { type: 'json' };
@@ -39,5 +40,18 @@ describe('banner note', () => {
     const top = readme.slice(0, readme.indexOf('## For judges'));
     expect(top).toContain(en.banner.note.replace(/\.$/, ''));
     expect(top).toContain(`(${banner.firstCommitUrl})`);
+  });
+});
+
+// Event rule: one prize and Community Choice vote address per project. The banner shows and copies it, so a typo would
+// send a vote somewhere nobody can spend; the checksum catches that, and the address is read from config only.
+describe('banner prize address', () => {
+  it('is a valid mainnet CashTokens address', () => {
+    const decoded = decodeCashAddress(banner.prizeAddress);
+    expect(typeof decoded, String(decoded)).toBe('object');
+    if (typeof decoded === 'string') return;
+    expect(decoded.prefix).toBe('bitcoincash');
+    expect(decoded.type).toBe('p2pkhWithTokens');
+    expect(banner.prizeAddress.startsWith('bitcoincash:z')).toBe(true);
   });
 });

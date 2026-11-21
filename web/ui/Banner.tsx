@@ -6,7 +6,7 @@ import { useLang } from '../i18n.js';
 import { config } from '../data/config.js';
 import { bannerNote } from './banner-note.js';
 
-/** `bitcoincash:zplryd...7e7q`: the prefix, the first six and the last four characters; the copy button copies it all. */
+/** `bitcoincash:zrj2rs...u2qv`: the prefix, the first six and the last four characters; the copy button copies it all. */
 export function shorten(address: string): string {
   const [prefix, body = ''] = address.includes(':') ? address.split(':') : ['', address];
   if (body.length <= 12) return address;

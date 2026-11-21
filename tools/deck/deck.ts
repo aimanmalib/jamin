@@ -50,12 +50,15 @@ export function tokens(): string {
   return m[0];
 }
 
-/** sha256 over the inputs, the token block and the printed config, so the stamp changes when any of them does. */
+/**
+ * sha256 over the inputs, the token block and the printed config, so the stamp changes when any of them does. The deck
+ * URL is left out: it is not printed, and it carries `?v=` with the PDF's own hash.
+ */
 export function inputsHash(): string {
   const h = createHash('sha256');
   for (const f of INPUTS) h.update(`${f}\0${read(f)}\0`);
   h.update(tokens());
-  h.update(JSON.stringify(deckConfig()));
+  h.update(JSON.stringify({ ...deckConfig(), deckUrl: undefined }));
   return h.digest('hex');
 }
 

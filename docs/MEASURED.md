@@ -1010,3 +1010,11 @@ the wallet connected and showed the role key sign request, then
 The first is the library's 8 s grace plus the relay; the second is its 75 s ping limit, rounded up to the 10 s ping,
 plus `walletTrade.reconnectGraceMs` (45,000). In both, the request still waiting failed with the `wallet.endedSign`
 text. `e2e/wallet.spec.ts` (stand-in wallet, both projects, `webkit-iphone13` included): 12 passed.
+
+## Prize address
+
+2026-11-21: the banner, the deck's last slide and the README give `bitcoincash:zrj2rs2l79uyjvhq2slcxuhfplp29cc3as2kg5u2qv`
+(CashTokens form; plain form `bitcoincash:qrj2rs2l79uyjvhq2slcxuhfplp29cc3asdum2jvll`, same payload) as the prize and
+EMBER2026 Community Choice vote address. Reason: event rule, one address per project. `tests/banner.test.ts` checks its
+checksum and type (`p2pkhWithTokens`); `e2e/pages.spec.ts` (chromium and `webkit-iphone13`): 22 passed. The slides
+link carries `?v=` with the first eight hex digits of `public/deck.pdf`'s sha256.
