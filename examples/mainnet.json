@@ -439,6 +439,36 @@
           "feeSats": 6358
         }
       ]
+    },
+    {
+      "branch": "P",
+      "asset": "BCH",
+      "address": "bitcoincash:pvhyrzhr7nsux3629gwwwcth602x0jjmvgwttc8nedvdunc7rywwk5c4etwee",
+      "demo": true,
+      "steps": [
+        {
+          "step": "createEscrow",
+          "txid": "c22cdab5b6c8c0d644752bdabc5acf429357dd0f57c422520150d924ac00fc08",
+          "height": 978343,
+          "txBytes": 758,
+          "feeSats": 1758
+        },
+        {
+          "step": "fund",
+          "txid": "9e23e109573617a05ac73bbfc75adcf565cd38da999212c49075d7e8656de417",
+          "height": 978343,
+          "txBytes": 7013,
+          "feeSats": 7062,
+          "lockedSats": 6546
+        },
+        {
+          "step": "markAsPaid",
+          "txid": "0614306edb3a2955f373aaa2b6bee7b090630956b0c01343bc84925f34807457",
+          "height": 978343,
+          "txBytes": 6168,
+          "feeSats": 6358
+        }
+      ]
     }
   ]
 }

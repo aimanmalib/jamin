@@ -503,6 +503,9 @@ by `npx tsx scripts/demo-pool-record.ts` (read only: sizes, fees and heights fro
   `9e23e109573617a05ac73bbfc75adcf565cd38da999212c49075d7e8656de417`, markAsPaid
   `0614306edb3a2955f373aaa2b6bee7b090630956b0c01343bc84925f34807457`). Pool ledger: spent 115,218, swept 4,815,
   net 110,403 of 400,000. 16:50 UTC: "3 of 3 waiting at paid", and `/pool/pool.json` reads `closed: false`.
+- 17:20 UTC: all three steps of that escrow mined at height 978,343 (sizes 758, 7,013 and 6,168 bytes; miner fees 1,758,
+  7,062 and 6,358 sats; the fund step locked 6,546 sats). Recorded in `examples/mainnet.json` as the fourth branch P
+  escrow, so the counts on the home page and in the README now read 13 escrows and 0.00162006 BCH locked.
 - `/pool/pool.json` now says why it is closed (`closedReason`, decision 0021 amendment "why the pool is closed"):
   while the wallet is short the card says the next demo escrow will be staged when the project's demo wallet is
   restocked. It shows no address and asks no visitor for anything.

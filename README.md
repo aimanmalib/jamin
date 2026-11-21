@@ -6,7 +6,7 @@ Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.
 
 Press **Release on mainnet** at https://jamin.sasateguh.com to release a waiting demo escrow on Bitcoin Cash mainnet, signed in your browser, or **Try the simulator** to play every branch on the SolidCash mock network.
 
-On mainnet so far: 12 escrows, 0.00155460 BCH and 0.23 PUSD locked in them, and 2 calls refused by the network.
+On mainnet so far: 13 escrows, 0.00162006 BCH and 0.23 PUSD locked in them, and 2 calls refused by the network.
 Counted from `examples/mainnet.json`, the same numbers as the strip on the home page.
 
 ![The Jamin home page: the title, the Release on mainnet and Try the simulator buttons, and the strip of numbers behind the contract](docs/img/home.png)
@@ -153,7 +153,7 @@ keeps its references honest.
 | Mainnet branch X: Cashonize signs the seller's steps on the Wallet tab over WizardConnect | `docs/MEASURED.md` "Third-party wallet on mainnet", `examples/mainnet.json` |
 | Mainnet branch R: two forbidden calls the network refused (server text, raw hashes), then a valid release | `docs/MEASURED.md` "Refused on mainnet", `examples/mainnet.json` |
 | Mainnet branch T: a token escrow's `buyerCancel` broadcast by the keyless relayer | `docs/MEASURED.md` "Relayed token cancel on mainnet", `examples/mainnet.json` |
-| Mainnet branch P: three public demo escrows created, funded and marked paid, left for visitors to release from the home page | `docs/MEASURED.md` "Demo escrow" and "Demo pool on mainnet", `examples/mainnet.json` |
+| Mainnet branch P: four public demo escrows created, funded and marked paid, left for visitors to release from the home page (one released so far) | `docs/MEASURED.md` "Demo escrow" and "Demo pool on mainnet", `examples/mainnet.json` |
 
 ## Size and cost
 
@@ -227,7 +227,7 @@ other nine are not are in the same file.
   for good, and the card moves on to the next one still waiting. A host cron keeps three such escrows waiting within a pool
   budget of 400,000 sats net of what it sweeps back (`docs/decisions/0021-demo-escrow-pool.md`): three wait now, and
   it stages again after a release until that budget or `restageUntil` in `config/demo.json` runs out. A release
-  costs the pool about 36,600 sats net on regtest, so the budget covers about eight more after the first three
+  costs the pool about 36,600 sats net on regtest; 110,403 of the budget is spent so far, which leaves about seven more
   (`docs/MEASURED.md` "Demo pool"). While none waits, the card says when the next one should be ready; once the
   pool is closed, it says so and shows the last release.
 - **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
