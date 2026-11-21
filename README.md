@@ -1,4 +1,4 @@
-# <img src="public/favicon.svg" width="44" height="44" alt="Jamin logo: a padlock"> Jamin
+# <img src="docs/img/logo.svg" width="44" height="44" alt="Jamin logo: a padlock"> Jamin
 
 Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.
 

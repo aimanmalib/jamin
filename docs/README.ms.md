@@ -1,4 +1,4 @@
-# <img src="../public/favicon.svg" width="44" height="44" alt="Logo Jamin: mangga kunci"> Jamin
+# <img src="img/logo.svg" width="44" height="44" alt="Logo Jamin: mangga kunci"> Jamin
 
 Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.
 
