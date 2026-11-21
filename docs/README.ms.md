@@ -1,10 +1,10 @@
-# <img src="img/logo.svg" width="44" height="44" alt="Logo Jamin: mangga kunci"> Jamin
+<p align="center"><img src="img/logo.svg" width="112" height="112" alt="Logo Jamin: mangga kunci"></p>
 
-Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.
+<h1 align="center">Jamin</h1>
 
-<p><a href="../LICENSE"><img src="https://img.shields.io/badge/lesen-MIT-0e6b5c" alt="Lesen: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-hidup-0e6b5c" alt="Demo hidup"></a> <a href="MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Dijalankan di mainnet BCH"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/ditulis%20dalam-SolidCash-0e6b5c" alt="Ditulis dalam SolidCash"></a></p>
+<p align="center"><a href="../LICENSE"><img src="https://img.shields.io/badge/lesen-MIT-0e6b5c" alt="Lesen: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-hidup-0e6b5c" alt="Demo hidup"></a> <a href="MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Dijalankan di mainnet BCH"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/ditulis%20dalam-SolidCash-0e6b5c" alt="Ditulis dalam SolidCash"></a></p>
 
-<p><i>Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.</i><br>
+<p align="center"><b>Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.</b> · <i>Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.</i><br>
 <a href="https://jamin.sasateguh.com"><b>demo hidup</b></a> · <a href="#cuba">Cuba</a> · <a href="#jalankan-sendiri">Jalankan</a> · <a href="#ujian-dan-bukti">Ujian dan bukti</a> · <a href="#had">Had</a> · <a href="../README.md">English</a><br>
 Dibina di Malaysia oleh <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
 
@@ -21,6 +21,7 @@ peranan melakukan apa yang peraturan dagangan benarkan, disemak dengan tandatang
 Jamin ialah entri **BCH BLAZE 2026**, ganjaran **Best SolidCash Application**, iaitu port kontrak `OpenPeerEscrow.sol`
 (lesen MIT) dari EVM ke model UTXO Bitcoin Cash (lihat `NOTICE`). Projek baharu: komit pertama selepas 14 November,
 [komit pertama](https://github.com/aimanmalib/jamin/commit/4ad48710f055ef59b318338b0020f817be1dc277).
+Alamat hadiah dan undian EMBER2026 entri ini: `bitcoincash:zrj2rs2l79uyjvhq2slcxuhfplp29cc3as2kg5u2qv`.
 
 ![Halaman utama Jamin: tajuk, butang Release on mainnet dan Try the simulator, dan jalur angka di sebalik kontrak](img/home.png)
 
