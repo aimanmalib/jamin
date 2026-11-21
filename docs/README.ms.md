@@ -83,6 +83,9 @@ npm run gate            # lint, jenis, ujian SolidHat, ujian unit, binaan
 - Semasa pertikaian dibuka, hanya panel penimbang tara boleh menyelesaikannya; pelepasan dan pembatalan pembeli tidak lagi
   dibenarkan.
 - Dompet pihak ketiga di mainnet ialah Cashonize yang dipandu skrip; tiada dompet telefon yang telah dicuba.
+- Tab Dompet perasan dompet yang menamatkan sesi dalam kira-kira 9 s (Cashonize) dan menunjuk "Sambung semula";
+  dompet yang senyap sahaja dikesan selepas had ping 75 s pustaka ditambah `walletTrade.reconnectGraceMs` (121.6 s
+  diukur sekali).
 - Senarai penuh: [README.md](../README.md#known-limits).
 
 ## Jalankan sendiri

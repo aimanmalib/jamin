@@ -229,7 +229,8 @@ other nine are not are in the same file.
   it stages again after a release until that budget or `restageUntil` in `config/demo.json` runs out. A release
   costs the pool about 36,600 sats net on regtest; 110,403 of the budget is spent so far, which leaves about seven more
   (`docs/MEASURED.md` "Demo pool"). While none waits, the card says when the next one should be ready; once the
-  pool is closed, it says so and shows the last release.
+  pool is closed, it says so and shows the last release; while it is closed only because the demo wallet is short,
+  it says the next escrow follows a restock of the project's demo wallet, with no address and no request for funds.
 - **No close function:** a `close` that ends a finished escrow with `selfdestruct(seller)` was built and measured,
   and left out (`docs/decisions/0013-closing-an-escrow.md`). Its covenant caps the miner fee below 2,000 sats, but
   the closing transaction is about 7,000 bytes, under the relay minimum of 1 sat per byte; and at that size a close
@@ -262,6 +263,10 @@ other nine are not are in the same file.
   signs these transactions, not a person's judgement; no phone wallet has been tried. The tab needs a wallet coin
   at output 0 for the escrow's token genesis, and sells only BCH, at an amount the site fixes, with disputes going
   to the site's demo panel. Payments back to such a seller go to the escrow key's address.
+- **Wallet disconnect:** the Wallet tab notices a wallet that ends the session (9.0 and 9.5 s with Cashonize) and
+  shows "Connect again"; a wallet that just goes silent is noticed only after the library's 75 s ping limit plus
+  `walletTrade.reconnectGraceMs` (121.6 s measured once), and meanwhile the tab shows "Reconnecting..." with its
+  buttons paused (`docs/decisions/0028-wallet-disconnect.md`, `docs/MEASURED.md` "Wallet disconnect").
 
 ## Run it locally
 
