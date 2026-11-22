@@ -1,15 +1,18 @@
-# <p align="center"><img src="docs/img/logo.svg" width="112" height="112" alt="Jamin logo: a padlock"><br>Jamin</p>
+<p align="center"><img src="docs/img/logo.svg" width="112" height="112" alt="Jamin logo: a padlock"></p>
 
-##### <p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-0e6b5c" alt="Licence: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-live-0e6b5c" alt="Live demo"></a> <a href="docs/MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Run on BCH mainnet"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/written%20in-SolidCash-0e6b5c" alt="Written in SolidCash"></a><br><br><i>Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.</i><br><a href="https://jamin.sasateguh.com"><b>live demo</b></a> · <a href="#for-judges-one-minute"><b>Judging? Start here</b></a> · <a href="#try-it">Try it</a> · <a href="#run-it-locally">Run it</a> · <a href="#proof">Tests and proof</a> · <a href="#known-limits">Limits</a> · <a href="docs/README.ms.md">Bahasa Melayu</a><br>Built in Malaysia by <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
+<h1 align="center">Jamin</h1>
 
-Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.
+<p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-0e6b5c" alt="Licence: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-live-0e6b5c" alt="Live demo"></a> <a href="docs/MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Run on BCH mainnet"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/written%20in-SolidCash-0e6b5c" alt="Written in SolidCash"></a></p>
+
+<p align="center"><b>Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.</b> · <i>Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.</i><br>
+<a href="https://jamin.sasateguh.com/media/jamin-demo.mp4?v=1fa77a38"><b>&#9654;&#xFE0E; demo video, 55 s</b></a> · <a href="https://jamin.sasateguh.com"><b>live demo</b></a> · <a href="https://jamin.sasateguh.com/deck.pdf">slides</a> · <a href="#for-judges-one-minute"><b>Judging? Start here</b></a> · <a href="#try-it">Try it</a> · <a href="#run-it-locally">Run it</a> · <a href="#proof">Tests and proof</a> · <a href="#known-limits">Limits</a> · <a href="docs/README.ms.md">Bahasa Melayu</a> · Built in Malaysia by <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
+
+<p align="center"><img src="docs/img/home.png" width="838" alt="The Jamin home page: the title, the Release on mainnet and Try the simulator buttons, and the strip of numbers behind the contract"></p>
 
 Press **Release on mainnet** at https://jamin.sasateguh.com to release a waiting demo escrow on Bitcoin Cash mainnet, signed in your browser, or **Try the simulator** to play every branch on the SolidCash mock network.
 
 On mainnet so far: 13 escrows, 0.00162006 BCH and 0.23 PUSD locked in them, and 2 calls refused by the network.
 Counted from `examples/mainnet.json`, the same numbers as the strip on the home page.
-
-![The Jamin home page: the title, the Release on mainnet and Try the simulator buttons, and the strip of numbers behind the contract](docs/img/home.png)
 
 Jamin is peer-to-peer trade escrow for Bitcoin Cash, written in SolidCash. A seller locks BCH (or a CashToken such as PUSD) in a contract. The buyer pays in fiat off chain (bank transfer, e-wallet)
 and marks the trade as paid. The seller then releases the coins to the buyer. If the two disagree, either side can open a

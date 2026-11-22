@@ -5,8 +5,9 @@
 <p align="center"><a href="../LICENSE"><img src="https://img.shields.io/badge/lesen-MIT-0e6b5c" alt="Lesen: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-hidup-0e6b5c" alt="Demo hidup"></a> <a href="MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Dijalankan di mainnet BCH"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/ditulis%20dalam-SolidCash-0e6b5c" alt="Ditulis dalam SolidCash"></a></p>
 
 <p align="center"><b>Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.</b> · <i>Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.</i><br>
-<a href="https://jamin.sasateguh.com"><b>demo hidup</b></a> · <a href="#cuba">Cuba</a> · <a href="#jalankan-sendiri">Jalankan</a> · <a href="#ujian-dan-bukti">Ujian dan bukti</a> · <a href="#had">Had</a> · <a href="../README.md">English</a><br>
-Dibina di Malaysia oleh <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
+<a href="https://jamin.sasateguh.com/media/jamin-demo.mp4?v=1fa77a38"><b>&#9654;&#xFE0E; video demo, 55 s</b></a> · <a href="https://jamin.sasateguh.com"><b>demo hidup</b></a> · <a href="https://jamin.sasateguh.com/deck.pdf">slaid</a> · <a href="../README.md#for-judges-one-minute"><b>Menilai? Mula di sini</b></a> · <a href="#cuba">Cuba</a> · <a href="#jalankan-sendiri">Jalankan</a> · <a href="#ujian-dan-bukti">Ujian dan bukti</a> · <a href="#had">Had</a> · <a href="../README.md">English</a> · Dibina di Malaysia oleh <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
+
+<p align="center"><img src="img/home.png" width="838" alt="Halaman utama Jamin: tajuk, butang Release on mainnet dan Try the simulator, dan jalur angka di sebalik kontrak"></p>
 
 Ini ringkasan Bahasa Melayu bagi [README.md](../README.md). Jadual penuh, angka ukuran dan setiap txid ada dalam versi
 Inggeris dan `docs/MEASURED.md`; jika kedua-duanya berbeza, versi Inggeris yang terpakai.
@@ -22,8 +23,6 @@ Jamin ialah entri **BCH BLAZE 2026**, ganjaran **Best SolidCash Application**, i
 (lesen MIT) dari EVM ke model UTXO Bitcoin Cash (lihat `NOTICE`). Projek baharu: komit pertama selepas 14 November,
 [komit pertama](https://github.com/aimanmalib/jamin/commit/4ad48710f055ef59b318338b0020f817be1dc277).
 Alamat hadiah dan undian EMBER2026 entri ini: `bitcoincash:zrj2rs2l79uyjvhq2slcxuhfplp29cc3as2kg5u2qv`.
-
-![Halaman utama Jamin: tajuk, butang Release on mainnet dan Try the simulator, dan jalur angka di sebalik kontrak](img/home.png)
 
 ## Cuba
 
