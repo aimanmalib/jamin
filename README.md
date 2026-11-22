@@ -5,7 +5,7 @@
 <p align="center"><a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-0e6b5c" alt="Licence: MIT"></a> <a href="https://jamin.sasateguh.com"><img src="https://img.shields.io/badge/demo-live-0e6b5c" alt="Live demo"></a> <a href="docs/MEASURED.md"><img src="https://img.shields.io/badge/BCH-mainnet-0e6b5c" alt="Run on BCH mainnet"></a> <a href="https://github.com/solidcash/solidcash"><img src="https://img.shields.io/badge/written%20in-SolidCash-0e6b5c" alt="Written in SolidCash"></a></p>
 
 <p align="center"><b>Sell BCH or PUSD for cash. A contract, not a middleman, holds the coins.</b> · <i>Jual BCH atau PUSD untuk wang tunai. Kontrak, bukan orang tengah, yang memegang syiling.</i><br>
-<a href="https://jamin.sasateguh.com/media/jamin-demo.mp4?v=1fa77a38"><b>&#9654;&#xFE0E; demo video, 55 s</b></a> · <a href="https://jamin.sasateguh.com"><b>live demo</b></a> · <a href="https://jamin.sasateguh.com/deck.pdf">slides</a> · <a href="#for-judges-one-minute"><b>Judging? Start here</b></a> · <a href="#try-it">Try it</a> · <a href="#run-it-locally">Run it</a> · <a href="#proof">Tests and proof</a> · <a href="#known-limits">Limits</a> · <a href="docs/README.ms.md">Bahasa Melayu</a> · Built in Malaysia by <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
+<a href="https://youtu.be/BAE7ueR0N3w"><b>&#9654;&#xFE0E; demo video, 55 s</b></a> · <a href="https://jamin.sasateguh.com"><b>live demo</b></a> · <a href="https://jamin.sasateguh.com/deck.pdf">slides</a> · <a href="#for-judges-one-minute"><b>Judging? Start here</b></a> · <a href="#try-it">Try it</a> · <a href="#run-it-locally">Run it</a> · <a href="#proof">Tests and proof</a> · <a href="#known-limits">Limits</a> · <a href="docs/README.ms.md">Bahasa Melayu</a> · Built in Malaysia by <a href="https://aimanmalib.com">Aiman Malib</a> · <a href="https://sasateguh.com">Sasa Teguh</a></p>
 
 <p align="center"><img src="docs/img/home.png" width="838" alt="The Jamin home page: the title, the Release on mainnet and Try the simulator buttons, and the strip of numbers behind the contract"></p>
 
@@ -28,7 +28,7 @@ New project. First commit after the 14 November start:
 
 ## For judges: one minute
 
-- **Demo video (55 seconds, no sound):** https://jamin.sasateguh.com/media/jamin-demo.mp4?v=1fa77a38, also on the
+- **Demo video (55 seconds; narrated version on YouTube: https://youtu.be/BAE7ueR0N3w; silent original):** https://jamin.sasateguh.com/media/jamin-demo.mp4?v=1fa77a38, also on the
   home page of the site.
 - **Try it:** https://jamin.sasateguh.com, tab **Try it**. The compiled contracts run on the SolidCash mock network
   in your browser. Play seller, buyer, arbitrator (panel member A, signing with member B or alone, which the contract refuses) or an outsider through all five branches and see each transaction
