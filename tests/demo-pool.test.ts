@@ -360,7 +360,9 @@ describe('pool cron and serving', () => {
     expect(cron).toMatch(/# jamin-demo-restage/);
     expect(cron).toMatch(/NODE_BIN/);
     expect(cron).toMatch(/-ge 22/);
-    expect(cron).not.toMatch(/\/home\/|\.nvm/);
+    // The two host cron tools are the only host paths allowed (decision 0029: cron runs with PATH=/usr/bin:/bin).
+    const withoutCronTools = cron.replace(/\/home\/claude\/bin\/cron-(buang-tag|tambah-baris)\b/g, '');
+    expect(withoutCronTools).not.toMatch(/\/home\/|\.nvm/);
     expect(cron).toMatch(/--network mainnet/);
     // The crontab interval is read from config, the same value the card counts the minutes with.
     expect(cron).toMatch(/pool\.restageEveryMinutes/);

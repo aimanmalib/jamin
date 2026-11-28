@@ -20,15 +20,26 @@ TAG='# jamin-demo-restage'
 major=$("$NODE_BIN" -p 'process.versions.node.split(".")[0]')
 [ "$major" -ge 22 ] || { echo "NODE_BIN is Node $major; Node 22 or later is needed"; exit 1; }
 
+# The crontab line exactly as given is installed already (read only). CRON_FAIL = a fake crontab file for tests, the
+# same variable the host cron tools read (decision 0029).
+cron_ada() {
+  if [ -n "${CRON_FAIL:-}" ]; then grep -qxF -- "$1" "$CRON_FAIL" 2>/dev/null
+  else grep -qxF -- "$1" <<<"$(crontab -l 2>/dev/null)"; fi
+}
+
 case "${1:-run}" in
   pasang)
     every=$("$NODE_BIN" -p "JSON.parse(require('node:fs').readFileSync('$REPO/config/demo.json', 'utf8')).pool.restageEveryMinutes")
     line="*/$every * * * * $HERE/demo-restage-cron.sh >> $REPO/state/demo-restage.log 2>&1 $TAG"
-    { crontab -l 2>/dev/null | grep -vF "$TAG" || true; echo "$line"; } | crontab -
+    cron_ada "$line" && { echo "already installed: $line"; exit 0; }
+    rc=0; /home/claude/bin/cron-buang-tag "$TAG" || rc=$?
+    case $rc in 0|3) ;; *) echo "cron-buang-tag failed (rc $rc); crontab left as it was"; exit "$rc" ;; esac
+    rc=0; /home/claude/bin/cron-tambah-baris "$TAG" "$line" || rc=$?
+    case $rc in 0|3) ;; *) echo "cron-tambah-baris failed (rc $rc)"; exit "$rc" ;; esac
     echo "installed: $line"; exit 0 ;;
   buang)
-    { crontab -l 2>/dev/null | grep -vF "$TAG" || true; } | crontab -
-    echo "removed the $TAG line"; exit 0 ;;
+    rc=0; /home/claude/bin/cron-buang-tag "$TAG" || rc=$?
+    case $rc in 0) echo "removed the $TAG line"; exit 0 ;; 3) exit 0 ;; *) echo "cron-buang-tag failed (rc $rc); crontab left as it was"; exit "$rc" ;; esac ;;
   --kering) extra=(--kering) ;;
   run) extra=() ;;
   *) echo "usage: demo-restage-cron.sh [--kering|pasang|buang]"; exit 2 ;;
